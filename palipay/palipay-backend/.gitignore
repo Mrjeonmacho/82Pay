@@ -1,0 +1,40 @@
+# Gradle
+.gradle/
+build/
+
+# Java
+*.class
+*.log
+
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# logs
+logs/
+
+# env
+.env
+.env.*
+
+# local config
+application-local.yml
+application-local.properties
+application-secret.yml
+
+# database
+*.h2.db
+*.sqlite
+*.sqlite3
+
+# temp
+*.swp
+*~
