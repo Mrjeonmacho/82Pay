@@ -1,0 +1,20 @@
+# 사용될 이미지 (Flutter 환경)
+image: ghcr.io/cirruslabs/flutter:stable
+
+# 파이프라인 단계 정의
+stages:
+  - analyze
+  - test
+
+# 1단계: 코드 분석 (Lint 체크)
+lint_analysis:
+  stage: analyze
+  script:
+    - flutter pub get
+    - flutter analyze # 여기서 린트 에러가 나면 파이프라인이 멈춥니다.
+
+# 2단계: 유닛 테스트
+unit_test:
+  stage: test
+  script:
+    - flutter test
