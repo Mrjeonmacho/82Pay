@@ -1,0 +1,32 @@
+# 사용될 이미지 (Flutter 환경)
+image: ghcr.io/cirruslabs/flutter:stable
+
+# 파이프라인 단계 정의
+stages:
+  - analyze
+  - test
+
+# 공통 규칙 정의 (중복 방지를 위해 상단에 배치하거나 각 작업에 넣음)
+.base_rules: &base_rules
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" # MR 생성 시 실행
+    - if: $CI_COMMIT_BRANCH == "frontend/palipay" # 특정 브랜치 푸시 시 실행
+
+# 모든 작업 시작 전 공통 실행!
+before_script:
+  - cd palipay-frontend
+  - flutter pub get
+
+# 1단계: 코드 분석 (Lint 체크)
+lint_analysis:
+  stage: analyze
+  <<: *base_rules # 위에서 정의한 규칙 적용
+  script:
+    - flutter analyze
+
+# 2단계: 유닛 테스트
+unit_test:
+  stage: test
+  <<: *base_rules # 위에서 정의한 규칙 적용
+  script:
+    - flutter test
