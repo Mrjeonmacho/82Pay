@@ -43,3 +43,15 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# 1. Android/iOS 로컬 설정 (경로 충돌 방지 핵심)
+**/android/local.properties      
+**/android/key.properties        
+**/ios/.generated/               
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+
+# 2. 민감한 보안 정보 (API 키 등)
+.env* # 백엔드 주소나 API 키 저장용
+*.keystore                       
+*.jks                            
