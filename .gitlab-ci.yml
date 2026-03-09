@@ -14,7 +14,7 @@ stages:
 
 # 모든 작업 시작 전 공통 실행!
 before_script:
-  - cd palipay-frontend
+  - cd palipay/palipay-frontend
   - flutter pub get
 
 # 1단계: 코드 분석 (Lint 체크)
