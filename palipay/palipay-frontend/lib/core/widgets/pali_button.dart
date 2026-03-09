@@ -6,7 +6,8 @@ enum PaliButtonType { primary, point }
 
 class PaliButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  // final VoidCallback onPressed;  //엄격한 타입
+  final Function()? onPressed; // 좀 더 유연한 타입
   final PaliButtonType type;
 
   const PaliButton({
@@ -14,6 +15,7 @@ class PaliButton extends StatelessWidget {
     required this.text,
     required this.onPressed,
     this.type = PaliButtonType.primary,
+    required Color backgroundColor,
   });
 
   @override

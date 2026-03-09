@@ -3,6 +3,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart'; // 모든 공통 위젯 포함
 
+import '../../account/views/account_list_view.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -26,12 +28,22 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 2. 메인 잔액 카드 (그라데이션 및 Title Large 적용)
-            const Padding(
-              padding: EdgeInsets.all(20.0),
-              child: PaliBalanceCard(
-                krwAmount: '₩ 1,250,000',
-                usdAmount: '942.50',
+            // 2. 메인 잔액 카드 (클릭 시 계좌 목록으로 이동)
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: GestureDetector(
+                onTap: () {
+                  // AccountListView로 화면 전환
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AccountListView(),
+                    ),
+                  );
+                },
+                child: const PaliBalanceCard(
+                  krwAmount: '₩ 500,000', // 지갑의 현재 잔액(Balance)
+                ),
               ),
             ),
 
