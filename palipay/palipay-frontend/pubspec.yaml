@@ -80,3 +80,7 @@ flutter:
           weight: 800
         - asset: assets/fonts/SUIT-Heavy.ttf #
           weight: 900
+
+  assets:
+    # --- Service Logos ---
+    - assets/images/logos/palilogo1.png
