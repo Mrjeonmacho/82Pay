@@ -1,4 +1,5 @@
-import 'package:dio/dio.dart'; // 혹은 http 패키지
+import 'package:dio/dio.dart';
+import 'package:palipay_app/features/account/models/pin_request.dart'; // 혹은 http 패키지
 
 class AccountService {
   // mock 서버 등록
@@ -41,18 +42,11 @@ class AccountService {
   }
 
   // 3. PIN 번호 생성/수정 (POST, PATCH /api/users/pin)
-  Future<Response> createPin(
-    int walletId,
-    String pinNumber,
-    String token,
-  ) async {
+  Future<Response> createPin(PinCreateRequest request, String token) async {
     try {
       return await _dio.post(
         '/api/users/pin',
-        data: {
-          'walletId': walletId,
-          'pinNumber': pinNumber, // 프론트에서 암호화 권장
-        },
+        data: request.toJson(), // 모델이 스스로 JSON 변환          },
         options: Options(headers: {'accesstoken': token}),
       );
     } catch (e) {
@@ -61,20 +55,11 @@ class AccountService {
   }
 
   // 4. PIN 번호 변경 (USER_ACCOUNT_004)
-  Future<Response> updatePin(
-    int walletId,
-    String oldPin,
-    String newPin,
-    String token,
-  ) async {
+  Future<Response> updatePin(PinUpdateRequest request, String token) async {
     try {
       return await _dio.patch(
         '/api/users/pin',
-        data: {
-          'walletId': walletId,
-          'oldPinNumber': oldPin,
-          'newPinNumber': newPin,
-        },
+        data: request.toJson(), // 모델이 스스로 JSON 변환
         options: Options(headers: {'accesstoken': token}),
       );
     } catch (e) {
