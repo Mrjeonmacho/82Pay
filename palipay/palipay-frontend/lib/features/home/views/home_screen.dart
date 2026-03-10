@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:palipay_app/features/home/widgets/transactions_section.dart';
 import 'package:provider/provider.dart';
 import 'package:palipay_app/features/account/providers/account_provider.dart';
 import 'package:palipay_app/features/account/views/account_management_view.dart';
@@ -46,33 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            Container(
-              color: Colors.white,
-              child: Column(
-                children: const [
-                  PaliTransactionList(
-                    storeName: 'Starbucks Gangnam',
-                    time: 'Today, 14:20',
-                    amount: '5,500',
-                    isCharge: false,
-                  ),
-                  Divider(height: 1, indent: 20, endIndent: 20),
-                  PaliTransactionList(
-                    storeName: 'Wallet Top-up',
-                    time: 'Yesterday, 10:00',
-                    amount: '50,000',
-                    isCharge: true,
-                  ),
-                  Divider(height: 1, indent: 20, endIndent: 20),
-                  PaliTransactionList(
-                    storeName: 'Public Transport',
-                    time: 'March 08, 08:30',
-                    amount: '1,250',
-                    isCharge: false,
-                  ),
-                ],
-              ),
-            ),
+            const TransactionsSection(),
           ],
         ),
       ),
@@ -82,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() => _currentIndex = index);
         },
       ),
-    ); // <-- 여기서 Scaffold가 안전하게 닫혀야 합니다!
+    );
   }
 
   // --- 여기서부터는 build 메서드 밖입니다 ---

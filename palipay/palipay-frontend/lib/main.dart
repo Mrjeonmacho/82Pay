@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:provider/provider.dart';
 import 'features/home/views/home_screen.dart';
 import 'features/account/providers/account_provider.dart';
@@ -14,6 +15,7 @@ void main() {
       providers: [
         // 추후 생성할 Provider들을 여기에 등록하세요.
         ChangeNotifierProvider(create: (_) => AccountProvider()),
+        ChangeNotifierProvider(create: (_) => HistoryProvider()),
       ],
       child: const PaliPayApp(),
     ),
