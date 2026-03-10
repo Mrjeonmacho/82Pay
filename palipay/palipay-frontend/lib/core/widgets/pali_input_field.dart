@@ -10,6 +10,7 @@ class PaliInputField extends StatelessWidget {
   final TextInputType? keyboardType; // 추가된 변수
   final int? maxLength; // 추가된 변수
   final ValueChanged<String>? onChanged; // 추가된 변수
+  final bool useShadow; // 그림자 사용 여부
 
   const PaliInputField({
     super.key,
@@ -19,26 +20,28 @@ class PaliInputField extends StatelessWidget {
     this.keyboardType, // 생성자에 추가
     this.maxLength, // 생성자에 추가
     this.onChanged, // 옵션
+    this.useShadow = false, // 기존 false
   });
 
-  @override
+   @override
   Widget build(BuildContext context) {
-    return TextField(
+
+    final input = TextField(
       controller: controller,
       obscureText: isPassword,
-      keyboardType: keyboardType, // 실제 TextField에 전달
-      maxLength: maxLength, // 실제 TextField에 전달
+      keyboardType: keyboardType,
+      maxLength: maxLength,
       onChanged: onChanged,
-      style: AppTextStyles.bodyMedium, // 입력 시 16pt, Bold
+      style: AppTextStyles.bodyMedium,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: const TextStyle(
-          color: AppColors.exampleFont, // #BCB6B6 적용
+          color: AppColors.exampleFont,
           fontSize: 14,
-          fontWeight: FontWeight.w500, // Body Medium 대응
+          fontWeight: FontWeight.w500,
         ),
         filled: true,
-        fillColor: AppColors.background,
+        fillColor: AppColors.buttonFont,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 18,
@@ -53,9 +56,30 @@ class PaliInputField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.mainBlue, width: 2),
+          borderSide: const BorderSide(
+            color: AppColors.mainBlue,
+            width: 2,
+          ),
         ),
       ),
+    );
+
+    // 그림자 안쓰는 경우
+    if (!useShadow) return input;
+
+    // 그림자 쓰는 경우
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: input,
     );
   }
 }

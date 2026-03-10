@@ -1,0 +1,218 @@
+import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/pali_button.dart';
+import '../../../core/widgets/pali_input_field.dart';
+import '../../../core/widgets/pali_nav_bars.dart';
+import 'amount_input_screen.dart';
+
+class AccountInputScreen extends StatefulWidget {
+  const AccountInputScreen({super.key});
+
+  @override
+  State<AccountInputScreen> createState() => _AccountInputScreenState();
+}
+
+class _AccountInputScreenState extends State<AccountInputScreen> {
+  final TextEditingController _accountController = TextEditingController();
+  final TextEditingController _bankController = TextEditingController();
+
+  final List<String> _banks = const [
+    'KB 국민',
+    'IBK 기업',
+    'NH 농협',
+    '신한',
+    '우리',
+    '하나',
+  ];
+
+  bool get _canProceed =>
+      _accountController.text.trim().isNotEmpty &&
+      _bankController.text.trim().isNotEmpty;
+
+  @override
+  void dispose() {
+    _accountController.dispose();
+    _bankController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showBankSheet() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(28),
+        ),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 42,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: AppColors.disabledBackground,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Text(
+                  'Select a bank',
+                  style: AppTextStyles.headlineLarge.copyWith(
+                    color: AppColors.mainBlue,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _banks.length,
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    mainAxisExtent: 64,
+                  ),
+                  itemBuilder: (context, index) {
+                    final bank = _banks[index];
+
+                    return InkWell(
+                      onTap: () => Navigator.pop(context, bank),
+                      borderRadius: BorderRadius.circular(18),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: AppColors.disabledBackground,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            bank,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.abledFont,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selected != null) {
+      _bankController.text = selected;
+      setState(() {});
+    }
+  }
+
+  void _onNext() {
+    if (!_canProceed) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AmountInputScreen(
+          bankName: _bankController.text.trim(),
+          accountNumber: _accountController.text.trim(),
+          walletBalance: 500000, // TODO: 실제 사용자 잔액 연결
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F8FB),
+      appBar: PaliTopBar(
+        title: 'Transfer',
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.mainBlue,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 56, 24, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Account Number',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.abledFont,
+                ),
+              ),
+              const SizedBox(height: 14),
+              PaliInputField(
+                hintText: 'Enter the account number',
+                controller: _accountController,
+                keyboardType: TextInputType.number,
+                maxLength: 20,
+                onChanged: (_) {
+                  setState(() {});
+                },
+                useShadow: true,
+              ),
+              const SizedBox(height: 36),
+              Text(
+                'Bank',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.abledFont,
+                ),
+              ),
+              const SizedBox(height: 14),
+              GestureDetector(
+                onTap: _showBankSheet,
+                child: AbsorbPointer(
+                  child: Stack(
+                    alignment: Alignment.centerRight,
+                    children: [
+                      PaliInputField(
+                        hintText: 'Select a bank',
+                        controller: _bankController,
+                        useShadow: true,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.only(right: 14),
+                        child: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: AppColors.exampleFont,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Spacer(),
+              PaliButton(
+                text: 'Next',
+                onPressed: _canProceed ? _onNext : null,
+                backgroundColor: AppColors.mainBlue,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
