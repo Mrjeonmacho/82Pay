@@ -5,7 +5,8 @@ import '../theme/app_text_styles.dart';
 // Top Bar
 class PaliTopBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  const PaliTopBar({super.key, required this.title});
+  final List<Widget>? actions;
+  const PaliTopBar({super.key, required this.title, this.actions});
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +18,7 @@ class PaliTopBar extends StatelessWidget implements PreferredSizeWidget {
         title,
         style: AppTextStyles.headlineLarge.copyWith(color: AppColors.mainBlue),
       ),
+      actions: actions,
     );
   }
 

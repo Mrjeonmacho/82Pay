@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart'; // 혹은 http 패키지
-import '../models/bank_account_model.dart';
 
 class AccountService {
   // final Dio _dio = Dio(BaseOptions(baseUrl: 'https://api.palipay.com'));
