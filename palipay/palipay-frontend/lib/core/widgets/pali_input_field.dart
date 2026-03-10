@@ -9,6 +9,7 @@ class PaliInputField extends StatelessWidget {
   final bool isPassword;
   final TextInputType? keyboardType; // 추가된 변수
   final int? maxLength; // 추가된 변수
+  final ValueChanged<String>? onChanged; // 추가된 변수
 
   const PaliInputField({
     super.key,
@@ -17,6 +18,7 @@ class PaliInputField extends StatelessWidget {
     this.isPassword = false,
     this.keyboardType, // 생성자에 추가
     this.maxLength, // 생성자에 추가
+    this.onChanged, // 옵션
   });
 
   @override
@@ -26,6 +28,7 @@ class PaliInputField extends StatelessWidget {
       obscureText: isPassword,
       keyboardType: keyboardType, // 실제 TextField에 전달
       maxLength: maxLength, // 실제 TextField에 전달
+      onChanged: onChanged,
       style: AppTextStyles.bodyMedium, // 입력 시 16pt, Bold
       decoration: InputDecoration(
         hintText: hintText,

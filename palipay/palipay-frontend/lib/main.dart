@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:palipay_app/features/profile/views/profile_screen.dart';
+import 'package:palipay_app/features/scan/views/scan_screen.dart';
+import 'package:palipay_app/features/scan/views/transfer_input_screen.dart';
+import 'package:palipay_app/features/scan/views/transfer_result_screen.dart';
 import 'package:provider/provider.dart';
 import 'features/account/providers/account_provider.dart';
 
@@ -51,8 +54,12 @@ class PaliPayApp extends StatelessWidget {
         ),
       ),
       // 시작 화면을 분리된 HomeScreen으로 설정
-      home: const HomeScreen(),
+      // home: const HomeScreen(),
       // home: const ProfileScreen(),
+      home: const ScanScreen(),
+      // home: const TransferInputScreen(),
+      // home: const TransferResultScreen(bankName: '농협', accountNumber: '123456')
+      
     );
   }
 }

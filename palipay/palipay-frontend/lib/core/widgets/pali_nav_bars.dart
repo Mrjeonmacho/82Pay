@@ -6,7 +6,10 @@ import '../theme/app_text_styles.dart';
 class PaliTopBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final List<Widget>? actions;
-  const PaliTopBar({super.key, required this.title, this.actions});
+  // 왼쪽 뒤로가기 넣기 위해 추가
+  final Widget? leading;
+
+  const PaliTopBar({super.key, required this.title, this.actions, this.leading,});
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +17,7 @@ class PaliTopBar extends StatelessWidget implements PreferredSizeWidget {
       toolbarHeight: 64, //
       backgroundColor: Colors.white,
       centerTitle: true,
+      leading: leading,
       title: Text(
         title,
         style: AppTextStyles.headlineLarge.copyWith(color: AppColors.mainBlue),
