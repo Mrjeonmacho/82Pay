@@ -21,6 +21,14 @@ class AppTextStyles {
     color: AppColors.abledFont,
   );
 
+  // Title Medium - 마이페이지 섹션 제목
+  static const TextStyle titleMedium = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 18,
+    fontWeight: FontWeight.normal, 
+    color: AppColors.abledFont,
+  );
+
   // Label Large - Confirm 버튼용
   static const TextStyle labelLarge = TextStyle(
     fontFamily: fontFamily,
@@ -37,7 +45,7 @@ class AppTextStyles {
     color: AppColors.abledFont,
   );
 
-  // Body Large - 메인 글씨 1
+  // Body Large - 메인 글씨 2
   static const TextStyle bodyMedium = TextStyle(
     fontFamily: fontFamily,
     fontSize: 14,

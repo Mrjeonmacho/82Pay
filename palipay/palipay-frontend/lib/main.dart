@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:palipay_app/features/profile/views/profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'features/account/providers/account_provider.dart';
 
@@ -51,6 +52,7 @@ class PaliPayApp extends StatelessWidget {
       ),
       // 시작 화면을 분리된 HomeScreen으로 설정
       home: const HomeScreen(),
+      // home: const ProfileScreen(),
     );
   }
 }
