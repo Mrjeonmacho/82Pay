@@ -4,12 +4,11 @@ import 'package:palipay_app/features/scan/views/scan_screen.dart';
 import 'package:palipay_app/features/scan/views/transfer_input_screen.dart';
 import 'package:palipay_app/features/scan/views/transfer_result_screen.dart';
 import 'package:provider/provider.dart';
+import 'features/home/views/home_screen.dart';
 import 'features/account/providers/account_provider.dart';
 
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_text_styles.dart';
-
-import 'features/home/views/home_screen.dart';
 
 void main() {
   runApp(
@@ -59,7 +58,6 @@ class PaliPayApp extends StatelessWidget {
       home: const ScanScreen(),
       // home: const TransferInputScreen(),
       // home: const TransferResultScreen(bankName: '농협', accountNumber: '123456')
-      
     );
   }
 }

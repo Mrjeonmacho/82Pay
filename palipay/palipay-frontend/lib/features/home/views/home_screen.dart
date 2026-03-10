@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:palipay_app/features/account/providers/account_provider.dart';
+import 'package:palipay_app/features/account/views/account_management_view.dart';
+import 'package:palipay_app/features/account/views/pin_setting_view.dart'; // 추가됨
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/widgets.dart'; // 모든 공통 위젯 포함
-
-import '../../account/views/account_list_view.dart';
+import '../../../core/widgets/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,37 +19,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true, // 하단 바 돌출 버튼이 배경과 자연스럽게 어우러지도록 설정
-      backgroundColor: AppColors.background, // #F5F5F8 적용
-      // 1. 커스텀 상단바 (64h)
-      appBar: const PaliTopBar(title: 'PaliPay'),
+    final accountProvider = context.watch<AccountProvider>();
+    final bool hasWallet = accountProvider.hasWallet;
 
+    return Scaffold(
+      extendBody: true,
+      backgroundColor: AppColors.background,
+      appBar: const PaliTopBar(title: 'PaliPay'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 100), // 하단바에 가려지지 않게 여백 추가
+        padding: const EdgeInsets.only(bottom: 100),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 2. 메인 잔액 카드 (클릭 시 계좌 목록으로 이동)
             Padding(
               padding: const EdgeInsets.all(20.0),
-              child: GestureDetector(
-                onTap: () {
-                  // AccountListView로 화면 전환
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AccountListView(),
-                    ),
-                  );
-                },
-                child: const PaliBalanceCard(
-                  krwAmount: '₩ 500,000', // 지갑의 현재 잔액(Balance)
-                ),
-              ),
+              child: hasWallet
+                  ? _buildActiveWalletCard(context, accountProvider)
+                  : _buildEmptyWalletCard(context),
             ),
-
-            // 3. 섹션 타이틀 (Body Large 적용)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Text(
@@ -57,8 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
-            // 4. 거래 내역 리스트 (PaliTransactionTile 활용)
             Container(
               color: Colors.white,
               child: Column(
@@ -67,14 +54,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     storeName: 'Starbucks Gangnam',
                     time: 'Today, 14:20',
                     amount: '5,500',
-                    isCharge: false, // 지출 (#2F2929)
+                    isCharge: false,
                   ),
                   Divider(height: 1, indent: 20, endIndent: 20),
                   PaliTransactionList(
                     storeName: 'Wallet Top-up',
                     time: 'Yesterday, 10:00',
                     amount: '50,000',
-                    isCharge: true, // 충전 (#2426D3)
+                    isCharge: true,
                   ),
                   Divider(height: 1, indent: 20, endIndent: 20),
                   PaliTransactionList(
@@ -89,16 +76,76 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
-      // 5. 돌출형 하단 내비게이션 바
       bottomNavigationBar: PaliBottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          // index 2 (Scan) 클릭 시 OCR 화면으로 이동 로직 추가 가능
+          setState(() => _currentIndex = index);
         },
+      ),
+    ); // <-- 여기서 Scaffold가 안전하게 닫혀야 합니다!
+  }
+
+  // --- 여기서부터는 build 메서드 밖입니다 ---
+
+  Widget _buildActiveWalletCard(
+    BuildContext context,
+    AccountProvider provider,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AccountManagementView(),
+          ),
+        );
+      },
+      child: PaliBalanceCard(
+        krwAmount: '₩ ${provider.linkedAccount?.amount ?? 0}',
+      ),
+    );
+  }
+
+  Widget _buildEmptyWalletCard(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const PinSettingView(walletId: '1004'),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        width: double.infinity,
+        height: 180,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppColors.abledFont, // disabledFont에서 abledFont나 상수로 변경 제안
+            width: 2,
+            style: BorderStyle.solid,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.add_circle_outline,
+              size: 48,
+              color: AppColors.mainBlue,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Link your bank account',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.abledFont,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
