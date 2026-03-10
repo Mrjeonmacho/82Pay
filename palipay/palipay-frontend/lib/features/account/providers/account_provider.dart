@@ -6,8 +6,10 @@ import '../services/account_service.dart';
 class AccountProvider extends ChangeNotifier {
   final AccountService _service = AccountService();
 
-  BankAccount? _linkedAccount;
+  BankAccount? _linkedAccount; // 계좌 데이터
   bool _isLoading = false;
+  // _linkedAccount가 null이 아니면 true를 반환합니다.
+  bool get hasWallet => _linkedAccount != null;
 
   BankAccount? get linkedAccount => _linkedAccount;
   bool get isLoading => _isLoading;

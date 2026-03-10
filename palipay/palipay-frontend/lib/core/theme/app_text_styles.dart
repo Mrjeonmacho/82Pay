@@ -25,7 +25,7 @@ class AppTextStyles {
   static const TextStyle titleMedium = TextStyle(
     fontFamily: fontFamily,
     fontSize: 18,
-    fontWeight: FontWeight.normal, 
+    fontWeight: FontWeight.normal,
     color: AppColors.abledFont,
   );
 
