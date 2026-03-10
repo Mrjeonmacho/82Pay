@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:palipay_app/features/profile/views/profile_screen.dart';
 import 'package:provider/provider.dart';
+import 'features/account/providers/account_provider.dart';
+
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_text_styles.dart';
+
 import 'features/home/views/home_screen.dart';
 
 void main() {
   runApp(
-    const PaliPayApp(),
+    // const PaliPayApp(),
     // 3인 협업을 위한 전역 상태 관리 세팅
-    // MultiProvider(
-    //   providers: [
-    //     // 추후 생성할 Provider들을 여기에 등록하세요.
-    //     // ChangeNotifierProvider(create: (_) => AuthProvider()),
-    //   ],
-    //   child: const PaliPayApp(),
-    // ),
+    MultiProvider(
+      providers: [
+        // 추후 생성할 Provider들을 여기에 등록하세요.
+        ChangeNotifierProvider(create: (_) => AccountProvider()),
+      ],
+      child: const PaliPayApp(),
+    ),
   );
 }
 
@@ -48,6 +52,7 @@ class PaliPayApp extends StatelessWidget {
       ),
       // 시작 화면을 분리된 HomeScreen으로 설정
       home: const HomeScreen(),
+      // home: const ProfileScreen(),
     );
   }
 }
