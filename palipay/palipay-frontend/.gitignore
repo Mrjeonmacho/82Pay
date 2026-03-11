@@ -52,6 +52,7 @@ app.*.map.json
 **/ios/Flutter/flutter_export_environment.sh
 
 # 2. 민감한 보안 정보 (API 키 등)
-.env* 
+.env
+*.env
 *.keystore                       
 *.jks                            
