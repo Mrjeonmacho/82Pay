@@ -40,7 +40,7 @@ class SignUpSuccessScreen extends StatelessWidget {
 
               // 시작하기 버튼
               PaliButton(
-                text: '시작하기',
+                text: 'Sign In',
                 onPressed: () {
                   // 홈 화면으로 이동 (스택을 모두 비우고 이동하는 것이 좋음)
                   Navigator.pushNamedAndRemoveUntil(
