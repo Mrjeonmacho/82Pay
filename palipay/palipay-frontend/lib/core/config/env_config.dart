@@ -3,7 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class EnvConfig {
   static String get baseUrl =>
-      dotenv.env['BASE_URL'] ?? 'http://localhost:8080';
+      dotenv.env['BASE_URL'] ?? 'http://localhost:8080/api';
 }
 
 // 사용 시: 
