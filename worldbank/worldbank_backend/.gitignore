@@ -38,3 +38,6 @@ application-secret.yml
 # temp
 *.swp
 *~
+
+# Finance Global Package
+src/main/java/com/worldbank/worldbank_backend/finance/global/
