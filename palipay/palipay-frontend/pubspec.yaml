@@ -38,6 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   dio: ^5.9.2
   intl: ^0.20.2
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -83,5 +84,7 @@ flutter:
           weight: 900
 
   assets:
+    # --- 환경 변수 파일 ---
+    - .env
     # --- Service Logos ---
     - assets/images/logos/palilogo1.png
