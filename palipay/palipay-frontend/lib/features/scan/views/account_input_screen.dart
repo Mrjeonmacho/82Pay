@@ -3,6 +3,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_button.dart';
 import '../../../core/widgets/pali_input_field.dart';
+import '../../../core/widgets/pali_input_oneline_field.dart';
 import '../../../core/widgets/pali_nav_bars.dart';
 import 'amount_input_screen.dart';
 
@@ -61,7 +62,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 10),
                 Text(
                   'Select a bank',
                   style: AppTextStyles.headlineLarge.copyWith(
@@ -152,48 +153,48 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 56, 24, 28),
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Account Number',
-                style: AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.abledFont,
+                  fontWeight: FontWeight.bold
                 ),
               ),
-              const SizedBox(height: 14),
-              PaliInputField(
+              const SizedBox(height: 6),
+              PaliInputOnelineField(
                 hintText: 'Enter the account number',
                 controller: _accountController,
                 keyboardType: TextInputType.number,
-                maxLength: 20,
                 onChanged: (_) {
                   setState(() {});
                 },
-                useShadow: true,
               ),
               const SizedBox(height: 36),
               Text(
                 'Bank',
-                style: AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.abledFont,
+                  fontWeight: FontWeight.bold
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 6),
               GestureDetector(
                 onTap: _showBankSheet,
                 child: AbsorbPointer(
                   child: Stack(
                     alignment: Alignment.centerRight,
                     children: [
-                      PaliInputField(
+                      PaliInputOnelineField(
                         hintText: 'Select a bank',
                         controller: _bankController,
-                        useShadow: true,
+                        onChanged: (_) {},
                       ),
                       const Padding(
-                        padding: EdgeInsets.only(right: 14),
+                        padding: EdgeInsets.only(right: 4),
                         child: Icon(
                           Icons.keyboard_arrow_down_rounded,
                           color: AppColors.exampleFont,

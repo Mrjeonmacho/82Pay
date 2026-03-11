@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../../core/utils/currency_input_formatter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_button.dart';
-import '../../../core/widgets/pali_input_field.dart';
+import '../../../core/widgets/pali_input_oneline_field.dart';
 import '../../../core/widgets/pali_nav_bars.dart';
 
 class AmountInputScreen extends StatefulWidget {
@@ -64,56 +66,61 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'From My Wallet',
-                style: AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.abledFont,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.bold
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
-                'Balance ₩ ${widget.walletBalance}',
-                style: AppTextStyles.bodySmall.copyWith(
+                'Balance ₩ ${CurrencyInputFormatter.format(widget.walletBalance)}',
+                style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.exampleFont,
+                  fontWeight: FontWeight.normal,
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 26),
               Text(
                 'To ${widget.bankName}',
-                style: AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.abledFont,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.bold
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
                 widget.accountNumber,
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.exampleFont,
+                  fontWeight: FontWeight.normal,
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 26),
               Text(
                 'Amount',
-                style: AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.abledFont,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
-              PaliInputField(
-                hintText: '₩ 0',
+              const SizedBox(height: 0),
+              PaliInputOnelineField(
+                hintText: '₩0',
                 controller: _amountController,
                 keyboardType: TextInputType.number,
                 onChanged: (_) {
                   setState(() {});
                 },
-                useShadow: true,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly,
+                  CurrencyInputFormatter(),
+                ]
               ),
               const SizedBox(height: 8),
               Text(
@@ -125,7 +132,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
               const SizedBox(height: 8),
               if (_isInsufficient)
                 Text(
-                  'Withdrawable amount is ₩ ${widget.walletBalance}',
+                  'Withdrawable amount is ₩ ${CurrencyInputFormatter.format(widget.walletBalance)}',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.warningRed,
                   ),

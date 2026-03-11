@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
+
 import 'package:palipay_app/features/profile/views/profile_screen.dart';
 import 'package:palipay_app/features/scan/views/scan_screen.dart';
 import 'package:palipay_app/features/scan/views/account_input_screen.dart';
 import 'package:palipay_app/features/scan/views/amount_input_screen.dart';
-=======
 import 'package:palipay_app/features/user/views/sign_up_screen.dart';
 import 'package:palipay_app/features/history/providers/history_provider.dart';
->>>>>>> frontend/palipay
 import 'package:provider/provider.dart';
 import 'features/home/views/home_screen.dart';
 import 'features/account/providers/account_provider.dart';

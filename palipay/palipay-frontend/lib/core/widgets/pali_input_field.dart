@@ -9,14 +9,10 @@ class PaliInputField extends StatelessWidget {
   final bool isPassword;
   final TextInputType? keyboardType; // 추가된 변수
   final int? maxLength; // 추가된 변수
-<<<<<<< HEAD
-  final ValueChanged<String>? onChanged; // 추가된 변수
-  final bool useShadow; // 그림자 사용 여부
-=======
   final String? Function(String?)? validator; // input 데이터 검증용
-  final void Function(String)? onChanged;
+  final ValueChanged<String>? onChanged;
   final Widget? suffixIcon;
->>>>>>> frontend/palipay
+  final bool useShadow; // 그림자 사용 여부
 
   const PaliInputField({
     super.key,
@@ -25,29 +21,15 @@ class PaliInputField extends StatelessWidget {
     this.isPassword = false,
     this.keyboardType, // 생성자에 추가
     this.maxLength, // 생성자에 추가
-<<<<<<< HEAD
-    this.onChanged, // 옵션
-    this.useShadow = false, // 기존 false
-=======
     this.validator,
     this.onChanged,
     this.suffixIcon,
->>>>>>> frontend/palipay
+    this.useShadow = false, // 기존 false
   });
 
    @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
-
-    final input = TextField(
-      controller: controller,
-      obscureText: isPassword,
-      keyboardType: keyboardType,
-      maxLength: maxLength,
-      onChanged: onChanged,
-      style: AppTextStyles.bodyMedium,
-=======
-    return TextFormField(
+    final input = TextFormField(
       controller: controller,
       obscureText: isPassword,
       keyboardType: keyboardType, // 실제 TextField에 전달
@@ -56,7 +38,6 @@ class PaliInputField extends StatelessWidget {
       onChanged: onChanged,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       style: AppTextStyles.bodyMedium, // 입력 시 16pt, Bold
->>>>>>> frontend/palipay
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: const TextStyle(
