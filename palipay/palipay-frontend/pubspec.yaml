@@ -40,6 +40,9 @@ dependencies:
   intl: ^0.20.2
   flutter_dotenv: ^6.0.0
 
+  camera: ^0.10.5+9
+  image_picker: ^1.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
