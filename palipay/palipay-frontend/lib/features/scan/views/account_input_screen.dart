@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_button.dart';
-import '../../../core/widgets/pali_input_field.dart';
 import '../../../core/widgets/pali_input_oneline_field.dart';
 import '../../../core/widgets/pali_nav_bars.dart';
+import '../providers/wallet_provider.dart';
 import 'amount_input_screen.dart';
 
 class AccountInputScreen extends StatefulWidget {
@@ -142,10 +143,12 @@ Future<void> _showBankSheet() async {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => AmountInputScreen(
-          bankName: _bankController.text.trim(),
-          accountNumber: _accountController.text.trim(),
-          walletBalance: 500000, // TODO: 실제 사용자 잔액 연결
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) => WalletProvider(),
+          child: AmountInputScreen(
+            bankName: _bankController.text.trim(),
+            accountNumber: _accountController.text.trim(),
+          ),
         ),
       ),
     );

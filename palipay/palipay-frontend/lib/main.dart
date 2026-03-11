@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'package:palipay_app/features/profile/views/profile_screen.dart';
 import 'package:palipay_app/features/scan/views/scan_screen.dart';
-import 'package:palipay_app/features/scan/views/account_input_screen.dart';
-import 'package:palipay_app/features/scan/views/amount_input_screen.dart';
 import 'package:palipay_app/features/user/views/sign_up_screen.dart';
 import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:provider/provider.dart';
 import 'features/home/views/home_screen.dart';
 import 'features/account/providers/account_provider.dart';
-
+import 'features/scan/providers/wallet_provider.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_text_styles.dart';
 
@@ -22,6 +20,7 @@ void main() {
         // 추후 생성할 Provider들을 여기에 등록하세요.
         ChangeNotifierProvider(create: (_) => AccountProvider()),
         ChangeNotifierProvider(create: (_) => HistoryProvider()),
+        ChangeNotifierProvider(create: (_) => WalletProvider()),
       ],
       child: const PaliPayApp(),
     ),
@@ -57,11 +56,7 @@ class PaliPayApp extends StatelessWidget {
         ),
       ),
       // 시작 화면을 분리된 HomeScreen으로 설정
-      // home: const HomeScreen(),
-      // home: const ProfileScreen(),
-      home: const ScanScreen(),
-      // home: const AccountInputScreen(),
-      // home: const AmountInputScreen(bankName: '농협', accountNumber: '123456')
+      home: const HomeScreen(),
     );
   }
 }

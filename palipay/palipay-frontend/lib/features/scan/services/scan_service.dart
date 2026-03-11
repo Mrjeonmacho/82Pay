@@ -51,7 +51,7 @@ class ScanService {
 
     return const ScanResultModel(
       success: true,
-      bankName: 'KB Bank',
+      bankName: 'KB 국민',
       accountNumber: '123-456-789012',
       rawText: 'KB 123456789012',
       message: 'Recognition success',

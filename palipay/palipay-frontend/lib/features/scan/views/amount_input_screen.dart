@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart'; 
 import '../../../core/utils/currency_input_formatter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_button.dart';
 import '../../../core/widgets/pali_input_oneline_field.dart';
 import '../../../core/widgets/pali_nav_bars.dart';
+import '../providers/wallet_provider.dart'; 
 
 class AmountInputScreen extends StatefulWidget {
   final String bankName;
   final String accountNumber;
-  final int walletBalance;
+  final int? walletBalance;
 
   const AmountInputScreen({
     super.key,
     required this.bankName,
     required this.accountNumber,
-    this.walletBalance = 0,
+    this.walletBalance,
   });
 
   @override
@@ -32,16 +34,51 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
     return int.tryParse(raw) ?? 0;
   }
 
+  int get _walletBalanceValue {
+    final providerBalance = context.watch<WalletProvider>().balance;
+    return providerBalance ?? widget.walletBalance ?? 0;
+  }
+
+  String get _formattedWalletBalance {
+    return CurrencyInputFormatter.format(_walletBalanceValue);
+  }
+
   bool get _isInsufficient =>
-      _enteredAmount > 0 && _enteredAmount > widget.walletBalance;
+      _enteredAmount > 0 && _enteredAmount > _walletBalanceValue;
 
   bool get _canProceed =>
-      _enteredAmount > 0 && _enteredAmount <= widget.walletBalance;
+      _enteredAmount > 0 && _enteredAmount <= _walletBalanceValue;
 
   void _onNext() {
     if (!_canProceed) return;
 
+    /// -----------------------------------------
+    /// 지금: 다음 화면 이동만 처리
+    /// -----------------------------------------
     // TODO: 다음 송금 확인 화면으로 이동
+
+    /// -----------------------------------------
+    /// 나중에 서버 연결 시 여기에서 실제 amount로 다시 검증 가능
+    /// 예:
+    /// context.read<WalletProvider>().loadWalletBalance(
+    ///   accessToken: '실제 토큰',
+    ///   walletId: 1,
+    ///   amount: _enteredAmount,
+    /// );
+    /// -----------------------------------------
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<WalletProvider>().loadWalletBalance(
+        accessToken: null, // 지금은 더미라 필요 없음
+        walletId: 1, // 지금은 더미 wallet id
+        amount: 0,   // 초기 진입 시 잔액만 조회
+      );
+    });
   }
 
   @override
@@ -52,6 +89,8 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final walletProvider = context.watch<WalletProvider>();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8FB),
       appBar: PaliTopBar(
@@ -79,7 +118,9 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Balance ₩ ${CurrencyInputFormatter.format(widget.walletBalance)}',
+                walletProvider.isLoading
+                    ? 'Balance loading...'
+                    : 'Balance ₩ $_formattedWalletBalance',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.exampleFont,
                   fontWeight: FontWeight.normal,
@@ -132,7 +173,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
               const SizedBox(height: 8),
               if (_isInsufficient)
                 Text(
-                  'Withdrawable amount is ₩ ${CurrencyInputFormatter.format(widget.walletBalance)}',
+                  'Withdrawable amount is ₩ $_formattedWalletBalance',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.warningRed,
                   ),
@@ -140,7 +181,9 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
               const Spacer(),
               PaliButton(
                 text: 'Next',
-                onPressed: _canProceed ? _onNext : null,
+                onPressed: _canProceed && !walletProvider.isLoading
+                    ? _onNext
+                    : null,
                 backgroundColor: AppColors.mainBlue,
               ),
             ],
