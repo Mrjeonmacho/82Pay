@@ -1,0 +1,2 @@
+"NSCameraUsageDescription" = "口座番号をスキャンするためにカメラへのアクセスが必要です。";
+"NSPhotoLibraryUsageDescription" = "スキャン用の画像を選択するために写真ライブラリへのアクセスが必要です。";
