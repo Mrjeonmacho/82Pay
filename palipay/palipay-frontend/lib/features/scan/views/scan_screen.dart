@@ -160,7 +160,7 @@ class _ScanScreenState extends State<ScanScreen> {
           return Scaffold(
             backgroundColor: Colors.black,
             appBar: PaliTopBar(
-              title: 'PaliPay Scan',
+              title: 'Scan',
               leading: IconButton(
                 icon: Icon(
                   Icons.arrow_back_ios_new_rounded,

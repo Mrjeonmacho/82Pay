@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:palipay_app/features/profile/views/profile_screen.dart';
 import 'package:palipay_app/features/scan/views/scan_screen.dart';
-import 'package:palipay_app/features/scan/views/transfer_input_screen.dart';
-import 'package:palipay_app/features/scan/views/transfer_result_screen.dart';
+import 'package:palipay_app/features/scan/views/account_input_screen.dart';
+import 'package:palipay_app/features/scan/views/amount_input_screen.dart';
 import 'package:provider/provider.dart';
 import 'features/home/views/home_screen.dart';
 import 'features/account/providers/account_provider.dart';
@@ -56,8 +56,8 @@ class PaliPayApp extends StatelessWidget {
       // home: const HomeScreen(),
       // home: const ProfileScreen(),
       home: const ScanScreen(),
-      // home: const TransferInputScreen(),
-      // home: const TransferResultScreen(bankName: '농협', accountNumber: '123456')
+      // home: const AccountInputScreen(),
+      // home: const AmountInputScreen(bankName: '농협', accountNumber: '123456')
     );
   }
 }
