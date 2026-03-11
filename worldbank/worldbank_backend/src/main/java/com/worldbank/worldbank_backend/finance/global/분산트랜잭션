@@ -1,0 +1,487 @@
+- **DB 4개 각각에 대한 repo를 전부 빈으로 등록**
+- 송금 요청이 들어오면 **출금 DB / 입금 DB 타입을 해석**
+- 그에 맞는 repo를 **라우팅 계층에서 선택**
+- 실제 송금은 **상위 서비스 1개**에서 처리
+- 그 서비스 메서드를 **JTA 글로벌 트랜잭션**으로 묶음
+
+Spring의 `JtaTransactionManager`는 여러 리소스에 걸친 분산 트랜잭션에 적합하고, MySQL XA는 여러 개의 분리된 트랜잭셔널 리소스가 하나의 글로벌 트랜잭션에 참여하도록 지원한다. ([Home](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/jta/JtaTransactionManager.html?utm_source=chatgpt.com))
+
+즉 네 요구사항은 충분히 구현 가능하다.
+
+오히려 `if-else`로 datasource를 바꾸는 것보다, **DB별 repo를 registry처럼 모아두고 선택**하는 구조가 가장 안전하다.
+
+---
+
+## 추천 구조
+
+```
+PaymentController
+  -> TransferService (@Transactional, JTA)
+      -> WalletRepositoryRouter
+          -> DB1WalletRepository
+          -> DB2WalletRepository
+          -> DB3WalletRepository
+          -> DB4WalletRepository
+      -> HistoryRepositoryRouter
+          -> DB1HistoryRepository
+          -> DB2HistoryRepository
+          -> DB3HistoryRepository
+          -> DB4HistoryRepository
+```
+
+핵심은 `Router`다.
+
+서비스는 “어느 DB를 쓸지”를 몰라도 되고,
+
+`DbType`만 넘기면 router가 맞는 repo를 꺼내주게 만든다.
+
+---
+
+## 왜 이 구조가 좋은가
+
+이유는 세 가지다.
+
+첫째, 서비스 로직이 안 지저분해진다.
+
+둘째, DB가 4개에서 5개, 6개로 늘어나도 확장 가능하다.
+
+셋째, 분산 트랜잭션 참여 리소스가 코드상 명확하다.
+
+반대로 비추천은 이런 식이다.
+
+```java
+if (fromDb == DB1) ...
+if (fromDb == DB2) ...
+if (toDb == DB3) ...
+```
+
+이렇게 가면 송금 케이스가 많아질수록 서비스가 깨진다.
+
+---
+
+## 설계 예시
+
+### 1. DB 타입 enum
+
+```java
+public enum DbType {
+    DB1, DB2, DB3, DB4
+}ㅌ
+```
+
+---
+
+### 2. 공통 도메인
+
+```java
+public class Wallet {
+    private final Long id;
+    private Long balance;
+
+    public Wallet(Long id, Long balance) {
+        this.id = id;
+        this.balance = balance;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Long getBalance() {
+        return balance;
+    }
+
+    public void decrease(Long amount) {
+        if (amount == null || amount <= 0) {
+            throw new IllegalArgumentException("amount must be positive");
+        }
+        if (balance < amount) {
+            throw new IllegalStateException("잔액 부족");
+        }
+        balance -= amount;
+    }
+
+    public void increase(Long amount) {
+        if (amount == null || amount <= 0) {
+            throw new IllegalArgumentException("amount must be positive");
+        }
+        balance += amount;
+    }
+}
+```
+
+---
+
+### 3. 공통 repo 인터페이스
+
+```java
+import java.util.Optional;
+
+public interface WalletRepositoryPort {
+    DbType supports();
+    Optional<Wallet> findById(Long walletId);
+    Wallet save(Wallet wallet);
+}
+```
+
+거래이력도 같은 방식으로 간다.
+
+```java
+public interface TransferHistoryRepositoryPort {
+    DbType supports();
+    void save(TransferHistory history);
+}
+```
+
+---
+
+### 4. DB별 repo 구현
+
+실제로는 JPA repository나 adapter로 감싼다.
+
+```java
+import org.springframework.stereotype.Repository;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+@Repository
+public class Db1WalletRepository implements WalletRepositoryPort {
+
+    private final Map<Long, Wallet> store = new HashMap<>();
+
+    @Override
+    public DbType supports() {
+        return DbType.DB1;
+    }
+
+    @Override
+    public Optional<Wallet> findById(Long walletId) {
+        return Optional.ofNullable(store.get(walletId));
+    }
+
+    @Override
+    public Wallet save(Wallet wallet) {
+        store.put(wallet.getId(), wallet);
+        return wallet;
+    }
+}
+```
+
+DB2, DB3, DB4도 동일하게 만든다.
+
+실무에서는 이 부분이 이렇게 바뀐다.
+
+```java
+@Repository
+public class Db1WalletRepositoryAdapter implements WalletRepositoryPort {
+
+    private final Db1JpaWalletRepository jpaRepository;
+
+    public Db1WalletRepositoryAdapter(Db1JpaWalletRepository jpaRepository) {
+        this.jpaRepository = jpaRepository;
+    }
+
+    @Override
+    public DbType supports() {
+        return DbType.DB1;
+    }
+
+    @Override
+    public Optional<Wallet> findById(Long walletId) {
+        return jpaRepository.findById(walletId).map(WalletEntity::toDomain);
+    }
+
+    @Override
+    public Wallet save(Wallet wallet) {
+        WalletEntity saved = jpaRepository.save(WalletEntity.from(wallet));
+        return saved.toDomain();
+    }
+}
+```
+
+---
+
+### 5. repo router
+
+이게 핵심이다.
+
+```java
+import org.springframework.stereotype.Component;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
+@Component
+public class WalletRepositoryRouter {
+
+    private final Map<DbType, WalletRepositoryPort> repositoryMap = new EnumMap<>(DbType.class);
+
+    public WalletRepositoryRouter(List<WalletRepositoryPort> repositories) {
+        for (WalletRepositoryPort repository : repositories) {
+            repositoryMap.put(repository.supports(), repository);
+        }
+    }
+
+    public WalletRepositoryPort route(DbType dbType) {
+        WalletRepositoryPort repository = repositoryMap.get(dbType);
+        if (repository == null) {
+            throw new IllegalArgumentException("지원하지 않는 DB 타입: " + dbType);
+        }
+        return repository;
+    }
+}
+```
+
+이력 repo도 동일하게 만든다.
+
+```java
+import org.springframework.stereotype.Component;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
+@Component
+public class TransferHistoryRepositoryRouter {
+
+    private final Map<DbType, TransferHistoryRepositoryPort> repositoryMap = new EnumMap<>(DbType.class);
+
+    public TransferHistoryRepositoryRouter(List<TransferHistoryRepositoryPort> repositories) {
+        for (TransferHistoryRepositoryPort repository : repositories) {
+            repositoryMap.put(repository.supports(), repository);
+        }
+    }
+
+    public TransferHistoryRepositoryPort route(DbType dbType) {
+        TransferHistoryRepositoryPort repository = repositoryMap.get(dbType);
+        if (repository == null) {
+            throw new IllegalArgumentException("지원하지 않는 DB 타입: " + dbType);
+        }
+        return repository;
+    }
+}
+```
+
+---
+
+## 송금 요청 DTO
+
+```java
+public class TransferRequest {
+    private DbType fromDb;
+    private DbType toDb;
+    private Long fromWalletId;
+    private Long toWalletId;
+    private Long amount;
+
+    public DbType getFromDb() {
+        return fromDb;
+    }
+
+    public DbType getToDb() {
+        return toDb;
+    }
+
+    public Long getFromWalletId() {
+        return fromWalletId;
+    }
+
+    public Long getToWalletId() {
+        return toWalletId;
+    }
+
+    public Long getAmount() {
+        return amount;
+    }
+}
+```
+
+---
+
+## 송금 서비스
+
+여기서 실제 분산 트랜잭션을 건다.
+
+```java
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
+
+@Service
+public class TransferService {
+
+    private final WalletRepositoryRouter walletRepositoryRouter;
+    private final TransferHistoryRepositoryRouter historyRepositoryRouter;
+
+    public TransferService(WalletRepositoryRouter walletRepositoryRouter,
+                           TransferHistoryRepositoryRouter historyRepositoryRouter) {
+        this.walletRepositoryRouter = walletRepositoryRouter;
+        this.historyRepositoryRouter = historyRepositoryRouter;
+    }
+
+    @Transactional
+    public void transfer(TransferRequest request) {
+        WalletRepositoryPort fromRepository = walletRepositoryRouter.route(request.getFromDb());
+        WalletRepositoryPort toRepository = walletRepositoryRouter.route(request.getToDb());
+
+        TransferHistoryRepositoryPort fromHistoryRepository =
+                historyRepositoryRouter.route(request.getFromDb());
+        TransferHistoryRepositoryPort toHistoryRepository =
+                historyRepositoryRouter.route(request.getToDb());
+
+        Wallet fromWallet = fromRepository.findById(request.getFromWalletId())
+                .orElseThrow(() -> new IllegalArgumentException("출금 지갑 없음"));
+
+        Wallet toWallet = toRepository.findById(request.getToWalletId())
+                .orElseThrow(() -> new IllegalArgumentException("입금 지갑 없음"));
+
+        fromWallet.decrease(request.getAmount());
+        toWallet.increase(request.getAmount());
+
+        fromRepository.save(fromWallet);
+        toRepository.save(toWallet);
+
+        fromHistoryRepository.save(
+                TransferHistory.withdraw(request.getFromWalletId(), request.getAmount(), request.getToDb().name())
+        );
+        toHistoryRepository.save(
+                TransferHistory.deposit(request.getToWalletId(), request.getAmount(), request.getFromDb().name())
+        );
+    }
+}
+```
+
+이 메서드는
+
+- DB1 → DB2
+- DB1 → DB4
+- DB3 → DB2
+- DB4 → DB1
+
+모든 케이스를 동일한 코드로 처리할 수 있다.
+
+---
+
+## 중요한 판단: 이게 실제로 분산 트랜잭션이 되려면
+
+위 서비스 코드만 있다고 끝나는 건 아니다.
+
+실제로 글로벌 트랜잭션이 되려면 아래가 있어야 한다.
+
+- 각 DB가 **XA 리소스**로 등록돼야 함
+- JTA transaction manager가 있어야 함
+- 각 DB 연결이 일반 datasource가 아니라 **XA datasource** 기반이어야 함
+
+Spring의 `JtaTransactionManager`는 다중 리소스용이고, MySQL은 XA SQL과 Connector/J를 통한 XA 지원을 제공한다. XA 트랜잭션은 START, END, PREPARE, COMMIT/ROLLBACK 상태 흐름을 가진다. ([Home](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/jta/JtaTransactionManager.html?utm_source=chatgpt.com))
+
+즉 네 구조는 가능하지만, **JTA 설정 없이 `@Transactional`만 붙이면 안 된다.**
+
+---
+
+## JTA 설정 방향
+
+구현체는 보통 Atomikos 같은 걸 쓴다. Atomikos 문서는 Spring 통합과 Boot 통합을 별도로 안내하고 있다. 다만 Atomikos 문서에는 예전 Boot starter 정보가 섞여 있으니, 네 프로젝트 버전에 맞춰 의존성 호환성은 꼭 다시 맞춰야 한다. ([Atomikos](https://www.atomikos.com/Documentation/SpringBootIntegration?utm_source=chatgpt.com))
+
+구성 개념은 이렇다.
+
+```
+Db1 XA DataSource
+Db2 XA DataSource
+Db3 XA DataSource
+Db4 XA DataSource
+   \   |   |   /
+   JTA Transaction Manager
+         |
+   TransferService @Transactional
+```
+
+---
+
+## config 예시 골격
+
+아래는 개념 골격이다.
+
+```java
+@Configuration
+public class XaDataSourceConfig {
+
+    @Bean(name = "db1DataSource")
+    public DataSource db1DataSource() {
+        MysqlXADataSource xaDataSource = new MysqlXADataSource();
+        xaDataSource.setUrl("jdbc:mysql://localhost:3306/db1");
+        xaDataSource.setUser("user");
+        xaDataSource.setPassword("password");
+        return xaDataSource;
+    }
+
+    @Bean(name = "db2DataSource")
+    public DataSource db2DataSource() {
+        MysqlXADataSource xaDataSource = new MysqlXADataSource();
+        xaDataSource.setUrl("jdbc:mysql://localhost:3306/db2");
+        xaDataSource.setUser("user");
+        xaDataSource.setPassword("password");
+        return xaDataSource;
+    }
+
+    @Bean(name = "db3DataSource")
+    public DataSource db3DataSource() {
+        MysqlXADataSource xaDataSource = new MysqlXADataSource();
+        xaDataSource.setUrl("jdbc:mysql://localhost:3306/db3");
+        xaDataSource.setUser("user");
+        xaDataSource.setPassword("password");
+        return xaDataSource;
+    }
+
+    @Bean(name = "db4DataSource")
+    public DataSource db4DataSource() {
+        MysqlXADataSource xaDataSource = new MysqlXADataSource();
+        xaDataSource.setUrl("jdbc:mysql://localhost:3306/db4");
+        xaDataSource.setUser("user");
+        xaDataSource.setPassword("password");
+        return xaDataSource;
+    }
+}
+```
+
+실전에서는 이 XA datasource를 JTA provider가 관리하도록 감싸고, 각 DB마다 `EntityManagerFactory`를 분리 등록한다.
+
+---
+
+## 구현 시 주의점
+
+첫째, **repo를 동적으로 새로 생성하면 안 된다.**
+
+반드시 빈으로 미리 등록해두고 선택만 해야 한다.
+
+둘째, **서비스는 싱글톤이어도 된다.**
+
+상태를 필드에 저장하지 않으면 문제 없다. 선택값은 모두 메서드 인자로 받으면 된다.
+
+셋째, **같은 DB 간 송금과 다른 DB 간 송금을 나눠도 된다.**
+
+예를 들어 `DB1 -> DB1`이면 로컬 트랜잭션으로도 충분하지만, 구현 단순화를 위해 전부 JTA로 태워도 된다. 다만 단일 리소스라면 JTA는 과한 선택일 수 있다. Spring도 단일 JDBC DataSource에는 `DataSourceTransactionManager`면 충분하다고 설명한다. ([Home](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/jta/JtaTransactionManager.html?utm_source=chatgpt.com))
+
+넷째, **락과 데드락을 고려해야 한다.**
+
+송금은 항상 출금 지갑을 먼저 잠그고, 그 다음 입금 지갑을 조회하는 등 순서를 고정하는 게 좋다.
+
+---
+
+- `DbType`으로 케이스 결정
+- `RepositoryRouter`로 DB별 repo 선택
+- `TransferService` 하나에서 송금 처리
+- JTA/XA로 글로벌 트랜잭션 묶기
+
+즉 서비스 코드는 거의 고정이고,
+
+실질적으로 바뀌는 건 `fromDb`, `toDb`에 따라 선택되는 repo뿐이다.
+
+**Spring Boot + JPA + DB4개 + JTA**
+
+- `application.yml`
+- `DB1~DB4 Config`
+- `EnableJpaRepositories`
+- `EntityManagerFactory`
+- `TransferService`
