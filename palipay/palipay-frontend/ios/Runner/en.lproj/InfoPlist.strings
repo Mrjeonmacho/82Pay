@@ -1,0 +1,2 @@
+"NSCameraUsageDescription" = "Camera access is required to scan account numbers.";
+"NSPhotoLibraryUsageDescription" = "Photo library access is required to select an image for scanning.";

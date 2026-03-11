@@ -1,0 +1,2 @@
+"NSCameraUsageDescription" = "需要访问相机以扫描账号。";
+"NSPhotoLibraryUsageDescription" = "需要访问照片图库以选择用于扫描的图片。";

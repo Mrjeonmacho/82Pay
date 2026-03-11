@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
@@ -10,6 +11,7 @@ class PaliInputOnelineField extends StatelessWidget {
   final int? maxLength;
   final ValueChanged<String>? onChanged; // PIN 자동 넘기기 등을 위해 추가
   final TextAlign textAlign;
+  final List<TextInputFormatter>? inputFormatters; // 금액 포맷팅: 3자리수마다 , 표시
 
   const PaliInputOnelineField({
     super.key,
@@ -20,6 +22,7 @@ class PaliInputOnelineField extends StatelessWidget {
     this.maxLength,
     this.onChanged,
     this.textAlign = TextAlign.start,
+    this.inputFormatters,
   });
 
   @override
@@ -31,6 +34,7 @@ class PaliInputOnelineField extends StatelessWidget {
       maxLength: maxLength,
       onChanged: onChanged,
       textAlign: textAlign,
+      inputFormatters: inputFormatters,
       style: AppTextStyles.bodyMedium, // 입력 시 스타일
       cursorColor: AppColors.mainBlue, // 커서 색상도 메인 블루로 통일
       decoration: InputDecoration(
