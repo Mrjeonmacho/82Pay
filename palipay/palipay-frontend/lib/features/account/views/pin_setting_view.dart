@@ -21,6 +21,19 @@ class _PinSettingViewState extends State<PinSettingView> {
   bool _isSuccess = false; // 5단계(성공) 화면 전환용
 
   @override
+  void initState() {
+    super.initState();
+    // 컨트롤러가 값이 바뀔 때마다 자동으로 _checkPinLength를 실행합니다.
+    _pinController.addListener(_checkPinLength);
+  }
+
+  void _checkPinLength() {
+    if (_pinController.text.length == 6) {
+      _handlePinComplete(_pinController.text);
+    }
+  }
+
+  @override
   void dispose() {
     _pinController.dispose();
     super.dispose();
@@ -80,37 +93,49 @@ class _PinSettingViewState extends State<PinSettingView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isSuccess) return _buildSuccessUI(); // 5번 화면
+    if (_isSuccess) return _buildSuccessUI();
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: PaliTopBar(title: _isConfirmStep ? 'Confirm PIN' : 'Set PIN'),
+      appBar: PaliTopBar(
+        title: _isConfirmStep ? 'Confirm PIN' : 'Set PIN',
+        // 뒤로가기 시 상태 초기화 로직 추가 가능
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             children: [
               const SizedBox(height: 40),
-              // 1 & 3단계 메시지
+              // 1. 단계별 가이드 메시지 세분화
               Text(
                 _isConfirmStep
-                    ? 'Please re-enter your PIN'
-                    : 'Create your 6-digit PIN',
-                style: AppTextStyles.bodySmall,
+                    ? 'Please re-enter your PIN to confirm'
+                    : 'Create your 6-digit payment PIN',
+                style: AppTextStyles.bodyMedium, // 가독성을 위해 스타일 조정
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
-              // 2 & 4단계 입력창
+
+              // 2. 입력창: 6자리가 되면 자동으로 _handlePinComplete 호출 [핵심 수정]
               PaliInputField(
                 controller: _pinController,
                 hintText: '● ● ● ● ● ●',
                 isPassword: true,
                 maxLength: 6,
                 keyboardType: TextInputType.number,
+                // onChanged: (value) {
+                //   if (value.length == 6) {
+                //     _handlePinComplete(value);
+                //   }
+                // },
               ),
+
               const Spacer(),
+              // 로딩 인디케이터: 서버 등록 중일 때만 표시
               if (context.watch<AccountProvider>().isLoading)
                 const CircularProgressIndicator(color: AppColors.mainBlue),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -118,9 +143,10 @@ class _PinSettingViewState extends State<PinSettingView> {
     );
   }
 
-  // 5단계: 성공 화면 위젯
+  // 3. 성공 화면: 여기서 'Next'를 누르면 진짜 '계좌 연동'으로 진입합니다.
   Widget _buildSuccessUI() {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -131,17 +157,19 @@ class _PinSettingViewState extends State<PinSettingView> {
               color: AppColors.mainBlue,
             ),
             const SizedBox(height: 24),
-            Text('PIN Set Successfully!', style: AppTextStyles.titleMedium),
+            Text('PIN Set Successfully!', style: AppTextStyles.bodySmall),
+            const SizedBox(height: 12),
+            const Text('Now you can link your bank account.'),
             const SizedBox(height: 48),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: PaliButton(
-                backgroundColor: AppColors.mainBlue,
-                text: 'Next',
+                text: 'Go to Link Account', // 다음 스텝(연동)을 명시
                 onPressed: () {
-                  // 다음 단계인 은행 선택 화면으로 이동
-                  Navigator.pushNamed(context, '/bank-selection');
+                  // 성공 후 바로 '은행 선택' 화면으로 브릿지
+                  Navigator.pushReplacementNamed(context, '/bank-selection');
                 },
+                backgroundColor: AppColors.mainBlue,
               ),
             ),
           ],
