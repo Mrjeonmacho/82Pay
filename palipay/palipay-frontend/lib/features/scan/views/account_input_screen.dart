@@ -38,89 +38,103 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
     super.dispose();
   }
 
-  Future<void> _showBankSheet() async {
-    final selected = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(28),
-        ),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 42,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: AppColors.disabledBackground,
-                    borderRadius: BorderRadius.circular(999),
+Future<void> _showBankSheet() async {
+  final selected = await showModalBottomSheet<String>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withOpacity(0.35),
+    builder: (context) {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 40),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.10),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Select a bank',
-                  style: AppTextStyles.headlineLarge.copyWith(
-                    color: AppColors.mainBlue,
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 42,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: AppColors.disabledBackground,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _banks.length,
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    mainAxisExtent: 64,
+                  const SizedBox(height: 12),
+                  Text(
+                    'Select a bank',
+                    style: AppTextStyles.headlineLarge.copyWith(
+                      color: AppColors.mainBlue,
+                    ),
                   ),
-                  itemBuilder: (context, index) {
-                    final bank = _banks[index];
+                  const SizedBox(height: 20),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _banks.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      mainAxisExtent: 64,
+                    ),
+                    itemBuilder: (context, index) {
+                      final bank = _banks[index];
 
-                    return InkWell(
-                      onTap: () => Navigator.pop(context, bank),
-                      borderRadius: BorderRadius.circular(18),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: AppColors.disabledBackground,
+                      return InkWell(
+                        onTap: () => Navigator.pop(context, bank),
+                        borderRadius: BorderRadius.circular(18),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: AppColors.disabledBackground,
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            bank,
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.abledFont,
-                              fontWeight: FontWeight.w600,
+                          child: Center(
+                            child: Text(
+                              bank,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.abledFont,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
-        );
-      },
-    );
+        ),
+      );
+    },
+  );
 
-    if (selected != null) {
-      _bankController.text = selected;
-      setState(() {});
-    }
+  if (selected != null) {
+    _bankController.text = selected;
+    setState(() {});
   }
+}
 
   void _onNext() {
     if (!_canProceed) return;
