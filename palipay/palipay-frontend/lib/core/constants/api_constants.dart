@@ -1,19 +1,20 @@
 // lib/core/constants/api_constants.dart
 
 class ApiConstants {
-  // 1. 버전 관리 (필요 시)
-  static const String _version = '/v1';
+  // 1. 버전 관리
+  // static const String _version = '/v1';
 
   // 2. 인증 관련 (Auth)
-  static const String login = '$_version/auth/login';
-  static const String signUp = '$_version/auth/signup';
+  static const String login = '/auth/login';
+  static const String signUp = '/auth/signup';
 
-  // 3. 계좌 관련 (Account)
-  static const String accountList = '$_version/accounts';
-  static const String balance = '$_version/accounts/balance';
+  // 3. 외부 계좌 관련 (Account)
+  static const String accountLink = '/users/accounts';
+  static const String accountDelete = '/users/accounts/{walletId}';
+  static const String pinSet = '/users/pin';
+  static const String accountBalance = '/finance/balance/check';
+  static String accountBalanceInsufficient(int amount) =>
+      '/finance/balance/check?amount=$amount';
 
-  // 4. 거래 내역 관련 (History)
-  static const String transactions = '$_version/finance/transactions';
-  static String transactionDetail(int id) =>
-      '$_version/finance/transactions/$id/currency';
+  // 등 필요한 API 엔드포인트를 여기에 추가
 }
