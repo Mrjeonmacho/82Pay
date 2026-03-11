@@ -1,3 +1,4 @@
+import 'dart:math' as Math;
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -11,9 +12,11 @@ class SignUpScreen extends StatefulWidget {
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _SignUpScreenState extends State<SignUpScreen>
+    with SingleTickerProviderStateMixin {
   // 페이지 이동을 제어하기 위한 컨트롤러
   final PageController _pageController = PageController();
+  final _formKey = GlobalKey<FormState>(); // Form의 상태를 관리하는 키
   int _currentIndex = 0;
 
   // 각 단계에서 입력받을 데이터를 저장할 변수들
@@ -25,9 +28,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
+  late AnimationController _shakeController;
+  late Animation<double> _shakeAnimation;
+
+  // --- 새로운 상태 변수 추가 ---
+  bool _isEmailValid = false; // 이메일 형식 유효성
+  bool _isCheckingEmail = false; // 서버 중복 확인 중 로딩 상태
+  bool _isEmailAvailable = false; // 사용 가능한 이메일 여부
+
+  @override
+  void initState() {
+    super.initState();
+    // 0.5초 동안 4번 좌우로 흔들리는 설정
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    _shakeAnimation = Tween<double>(begin: 0.0, end: 10.0)
+        .chain(CurveTween(curve: Curves.elasticIn)) // 흔들림 효과를 위한 커브
+        .animate(_shakeController);
+  }
+
   @override
   void dispose() {
     // 메모리 누수 방지를 위해 컨트롤러들을 해제합니다.
+    _shakeController.dispose();
     _pageController.dispose();
     _emailController.dispose();
     _authCodeController.dispose();
@@ -38,19 +64,46 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
+  // --- 가상 이메일 중복 확인 로직 추가 (서버 연동 대비) ---
+  Future<void> _checkEmailAvailability(String email) async {
+    if (!_isEmailValid) return;
+
+    setState(() {
+      _isCheckingEmail = true;
+      _isEmailAvailable = false;
+    });
+
+    // 서버 통신 시뮬레이션
+    await Future.delayed(const Duration(seconds: 1));
+
+    setState(() {
+      _isCheckingEmail = false;
+      // 'test@test.com'인 경우만 중복된 것으로 가정
+      _isEmailAvailable = (email != 'test@test.com');
+    });
+  }
+
   // 다음 단계로 이동하는 함수
   void _onNextPressed() {
-    if (_currentIndex < 3) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+    // 이메일 단계에서 중복 확인이 안 된 경우 예외 처리
+    if (_currentIndex == 0 && (!_isEmailAvailable || _isCheckingEmail)) {
+      _shakeController.forward(from: 0.0);
+      return;
+    }
+
+    if (_formKey.currentState!.validate()) {
+      if (_currentIndex < 3) {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const SignUpSuccessScreen()),
+        );
+      }
     } else {
-      // 1. 여기서 실제 가입 API를 호출하겠죠?
-      // 2. 가입 성공 시 아래 코드로 화면 전환
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const SignUpSuccessScreen()),
-      );
+      _shakeController.forward(from: 0.0);
     }
   }
 
@@ -72,70 +125,74 @@ class _SignUpScreenState extends State<SignUpScreen> {
             : null,
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // 상단 공통 로고 영역
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              child: Image.asset(
-                'assets/images/logos/palilogo1.png',
-                height: 100,
-              ), // 경로 확인 필요
-            ),
-
-            // ... Column 내부
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                children: [
-                  Text('Create Your Account', style: AppTextStyles.titleLarge),
-                  const SizedBox(height: 25), // 여백 확보
-                  // --- 커스텀 스텝 진행 바 시작 ---
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildStepItem(0, '이메일 입력'),
-                      _buildStepLine(0),
-                      _buildStepItem(1, '이메일 확인'),
-                      _buildStepLine(1),
-                      _buildStepItem(2, '프로필 설정'),
-                      _buildStepLine(2),
-                      _buildStepItem(3, '비밀번호'),
-                    ],
-                  ),
-                  // --- 커스텀 스텝 진행 바 끝 ---
-                ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              // 상단 공통 로고 영역
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                child: Image.asset(
+                  'assets/images/logos/palilogo1.png',
+                  height: 100,
+                ), // 경로 확인 필요
               ),
-            ),
-            const SizedBox(height: 30),
-
-            // 단계별 콘텐츠 영역 (PageView)
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(), // 스와이프 차단
-                onPageChanged: (index) {
-                  setState(() => _currentIndex = index);
-                },
-                children: [
-                  _buildEmailStep(), // Step 0
-                  _buildAuthStep(), // Step 1
-                  _buildProfileStep(), // Step 2
-                  _buildPasswordStep(), // Step 3
-                ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: Column(
+                  children: [
+                    Text(
+                      'Create Your Account',
+                      style: AppTextStyles.titleLarge,
+                    ),
+                    const SizedBox(height: 25), // 여백 확보
+                    // --- 커스텀 스텝 진행 바 시작 ---
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildStepItem(0, 'Email'),
+                        _buildStepLine(0),
+                        _buildStepItem(1, 'Confirm email'),
+                        _buildStepLine(1),
+                        _buildStepItem(2, 'Enter personal info'),
+                        _buildStepLine(2),
+                        _buildStepItem(3, 'Password'),
+                      ],
+                    ),
+                    // --- 커스텀 스텝 진행 바 끝 ---
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(height: 30),
 
-            // 하단 공통 버튼 영역
-            Padding(
-              padding: const EdgeInsets.all(30.0),
-              child: PaliButton(
-                text: _currentIndex == 3 ? 'Sign Up' : 'Next',
-                onPressed: _onNextPressed,
-                backgroundColor: AppColors.mainBlue,
+              // 단계별 콘텐츠 영역 (PageView)
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(), // 스와이프 차단
+                  onPageChanged: (index) {
+                    setState(() => _currentIndex = index);
+                  },
+                  children: [
+                    _buildEmailStep(), // Step 0
+                    _buildAuthStep(), // Step 1
+                    _buildProfileStep(), // Step 2
+                    _buildPasswordStep(), // Step 3
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              // 하단 공통 버튼 영역
+              Padding(
+                padding: const EdgeInsets.all(30.0),
+                child: PaliButton(
+                  text: _currentIndex == 3 ? 'Sign Up' : 'Next',
+                  onPressed: _onNextPressed,
+                  backgroundColor: AppColors.mainBlue,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -207,13 +264,45 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // 1. 이메일 입력
+  // 1. 이메일 입력 , 검증, 중복체크 추가
   Widget _buildEmailStep() {
     return _buildStepLayout(
       title: 'Email',
       child: PaliInputField(
         hintText: 'Enter your email',
         controller: _emailController,
+        onChanged: (value) {
+          final isValid = RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+          ).hasMatch(value);
+          setState(() => _isEmailValid = isValid);
+
+          if (isValid) {
+            _checkEmailAvailability(value);
+          }
+        },
+        suffixIcon: _isCheckingEmail
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: Padding(
+                  padding: EdgeInsets.all(5.0),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            : null, // 아이콘은 validator가 처리하는 에러 메시지와 중복될 수 있어 비워두거나 체크만 표시
+        validator: (value) {
+          if (value == null || value.isEmpty) return 'Enter your email';
+          if (!_isEmailValid) return 'Invalid email address.';
+
+          // --- 핵심: 서버 체크 결과 반영 ---
+          if (!_isCheckingEmail &&
+              !_isEmailAvailable &&
+              value == 'test@test.com') {
+            return 'This email is already taken.'; // 이 메시지가 반환되어야 빨간 테두리가 뜹니다!
+          }
+          return null;
+        },
       ),
     );
   }
@@ -257,9 +346,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Column(
       children: [
         _buildStepLayout(
-          title: 'Set Password',
+          title: 'Password',
           child: PaliInputField(
-            hintText: 'Password',
+            hintText: 'Set Password',
             controller: _passwordController,
             isPassword: true,
           ),
@@ -272,6 +361,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
             hintText: 'Confirm Password',
             controller: _confirmPasswordController,
             isPassword: true,
+            validator: (value) {
+              if (value != _passwordController.text) {
+                return 'Passwords do not match.';
+              }
+              return null;
+            },
           ),
         ),
       ],
@@ -292,7 +387,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          child,
+          // 입력창 부분만 AnimatedBuilder로 감쌉니다.
+          AnimatedBuilder(
+            animation: _shakeAnimation,
+            builder: (context, child) {
+              // elasticIn 커브와 Offset을 조합해 좌우로 흔듭니다.
+              double offset = 0.0;
+              if (_shakeController.isAnimating) {
+                // 사인 함수를 이용해 좌우 왕복 효과 (dart:math 임포트 필요)
+                offset = 8 * Math.sin(_shakeController.value * 4 * Math.pi);
+              }
+              return Transform.translate(
+                offset: Offset(offset, 0),
+                child: child,
+              );
+            },
+            child: child,
+          ),
         ],
       ),
     );

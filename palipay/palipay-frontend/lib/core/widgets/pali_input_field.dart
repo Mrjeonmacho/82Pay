@@ -9,6 +9,9 @@ class PaliInputField extends StatelessWidget {
   final bool isPassword;
   final TextInputType? keyboardType; // 추가된 변수
   final int? maxLength; // 추가된 변수
+  final String? Function(String?)? validator; // input 데이터 검증용
+  final void Function(String)? onChanged;
+  final Widget? suffixIcon;
 
   const PaliInputField({
     super.key,
@@ -17,15 +20,21 @@ class PaliInputField extends StatelessWidget {
     this.isPassword = false,
     this.keyboardType, // 생성자에 추가
     this.maxLength, // 생성자에 추가
+    this.validator,
+    this.onChanged,
+    this.suffixIcon,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       obscureText: isPassword,
       keyboardType: keyboardType, // 실제 TextField에 전달
       maxLength: maxLength, // 실제 TextField에 전달
+      validator: validator,
+      onChanged: onChanged,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       style: AppTextStyles.bodyMedium, // 입력 시 16pt, Bold
       decoration: InputDecoration(
         hintText: hintText,
@@ -34,6 +43,13 @@ class PaliInputField extends StatelessWidget {
           fontSize: 14,
           fontWeight: FontWeight.w500, // Body Medium 대응
         ),
+        errorStyle: const TextStyle(
+          color: AppColors.warningRed,
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          height: 1.0,
+        ),
+        suffixIcon: suffixIcon,
         filled: true,
         fillColor: AppColors.background,
         contentPadding: const EdgeInsets.symmetric(
@@ -51,6 +67,14 @@ class PaliInputField extends StatelessWidget {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.mainBlue, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.warningRed),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.warningRed, width: 2),
         ),
       ),
     );

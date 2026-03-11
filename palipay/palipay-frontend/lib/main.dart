@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:palipay_app/features/user/views/sign_up_screen.dart';
 import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:provider/provider.dart';
 import 'features/home/views/home_screen.dart';
