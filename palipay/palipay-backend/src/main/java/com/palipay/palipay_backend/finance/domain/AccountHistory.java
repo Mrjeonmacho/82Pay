@@ -15,10 +15,6 @@ import java.time.LocalDateTime;
 @ToString
 public class AccountHistory {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wallet_id")
-    private WalletPali wallet;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "history_id")
@@ -60,4 +56,32 @@ public class AccountHistory {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    //FIXME 주의 BankCode는 String으로 변환하고 있다
+    public static AccountHistory createAccountHistory(
+            Long userId,
+            WalletPali wallet,
+            Long workplaceId,
+            TransactionCategory category,
+            BigDecimal amount,
+            String description,
+            String otherAccountNumber,
+            String otherAccountName,
+            String otherBankCode
+    ){
+        return AccountHistory.builder()
+                .walletId(wallet.getWalletId())
+                .userId(userId)
+                .workplaceId(workplaceId)
+                .category(category)
+                .amount(amount)
+                .exchangeAfterAmount(wallet.getAmount())
+                .exchangeRate(null)
+                .otherAccountNumber(otherAccountNumber)
+                .otherAccountName(otherAccountName)
+                .otherBankCode(otherBankCode)
+                .description(description)
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
 }
