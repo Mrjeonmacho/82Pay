@@ -1,23 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_button.dart';
 import '../../../core/widgets/pali_input_oneline_field.dart';
 import '../../../core/widgets/pali_nav_bars.dart';
-import '../providers/wallet_provider.dart';
 import 'amount_input_screen.dart';
 
 class AccountInputScreen extends StatefulWidget {
-  const AccountInputScreen({super.key});
+  final String? initialBankName;
+  final String? initialAccountNumber;
+  final bool scanFailed;
+
+  const AccountInputScreen({
+    super.key,
+    this.initialBankName,
+    this.initialAccountNumber,
+    this.scanFailed = false,
+  });
 
   @override
   State<AccountInputScreen> createState() => _AccountInputScreenState();
 }
 
 class _AccountInputScreenState extends State<AccountInputScreen> {
-  final TextEditingController _accountController = TextEditingController();
-  final TextEditingController _bankController = TextEditingController();
+  late final TextEditingController _accountController;
+  late final TextEditingController _bankController;
 
   final List<String> _banks = const [
     'KB 국민',
@@ -33,109 +41,120 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
       _bankController.text.trim().isNotEmpty;
 
   @override
+  void initState() {
+    super.initState();
+    _accountController = TextEditingController(
+      text: widget.initialAccountNumber ?? '',
+    );
+    _bankController = TextEditingController(
+      text: widget.initialBankName ?? '',
+    );
+  }
+
+  @override
   void dispose() {
     _accountController.dispose();
     _bankController.dispose();
     super.dispose();
   }
 
-Future<void> _showBankSheet() async {
-  final selected = await showModalBottomSheet<String>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withOpacity(0.35),
-    builder: (context) {
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 40),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.10),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 42,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: AppColors.disabledBackground,
-                      borderRadius: BorderRadius.circular(999),
+  Future<void> _showBankSheet() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.35),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.10),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Select a bank',
-                    style: AppTextStyles.headlineLarge.copyWith(
-                      color: AppColors.mainBlue,
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: AppColors.disabledBackground,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _banks.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      mainAxisExtent: 64,
+                    const SizedBox(height: 12),
+                    Text(
+                      'Select a bank',
+                      style: AppTextStyles.headlineLarge.copyWith(
+                        color: AppColors.mainBlue,
+                      ),
                     ),
-                    itemBuilder: (context, index) {
-                      final bank = _banks[index];
+                    const SizedBox(height: 20),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _banks.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        mainAxisExtent: 64,
+                      ),
+                      itemBuilder: (context, index) {
+                        final bank = _banks[index];
 
-                      return InkWell(
-                        onTap: () => Navigator.pop(context, bank),
-                        borderRadius: BorderRadius.circular(18),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.background,
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: AppColors.disabledBackground,
+                        return InkWell(
+                          onTap: () => Navigator.pop(context, bank),
+                          borderRadius: BorderRadius.circular(18),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: AppColors.disabledBackground,
+                              ),
                             ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              bank,
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.abledFont,
-                                fontWeight: FontWeight.bold,
+                            child: Center(
+                              child: Text(
+                                bank,
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.abledFont,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      );
-    },
-  );
+        );
+      },
+    );
 
-  if (selected != null) {
-    _bankController.text = selected;
-    setState(() {});
+    if (selected != null) {
+      _bankController.text = selected;
+      setState(() {});
+    }
   }
-}
 
   void _onNext() {
     if (!_canProceed) return;
@@ -143,12 +162,9 @@ Future<void> _showBankSheet() async {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ChangeNotifierProvider(
-          create: (_) => WalletProvider(),
-          child: AmountInputScreen(
-            bankName: _bankController.text.trim(),
-            accountNumber: _accountController.text.trim(),
-          ),
+        builder: (_) => AmountInputScreen(
+          bankName: _bankController.text.trim(),
+          accountNumber: _accountController.text.trim(),
         ),
       ),
     );
@@ -174,11 +190,21 @@ Future<void> _showBankSheet() async {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (widget.scanFailed) ...[
+                Text(
+                  'Scan failed. Please enter account information manually.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.warningRed,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
               Text(
                 'Account Number',
                 style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.abledFont,
-                  fontWeight: FontWeight.bold
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 6),
@@ -195,7 +221,7 @@ Future<void> _showBankSheet() async {
                 'Bank',
                 style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.abledFont,
-                  fontWeight: FontWeight.bold
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 6),
