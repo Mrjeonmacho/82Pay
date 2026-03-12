@@ -10,14 +10,14 @@ import 'history_detail_view.dart';
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
+  static const Color bgLight = Color(0xFFF2F4F7);
+  static const Color cardHeaderBg = Color(0xFFF8FAFC);
 
   @override
   State<HistoryView> createState() => _HistoryViewState();
 }
 
 class _HistoryViewState extends State<HistoryView> {
-  String _selectedFilter = 'All';
-
   @override
   void initState() {
     super.initState();
@@ -29,41 +29,64 @@ class _HistoryViewState extends State<HistoryView> {
   Widget build(BuildContext context) {
     final provider = context.watch<HistoryProvider>();
 
+    // OUTPUT(지출) 총합 계산
+    final totalSpent = provider.items
+        .where((e) => e.category == 'OUTPUT')
+        .fold(0.0, (prev, e) => prev + e.amount);
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const PaliTopBar(title: 'History'),
+      appBar: PaliTopBar(
+        title: 'Transaction History',
+        actions: [
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(
+              Icons.calendar_month_outlined,
+              color: AppColors.mainBlue,
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
-          _buildSpendingSummary(provider),
-          _buildFilterChips(),
+          // 1. 상단 총 지출 요약 영역
+          // 1. 상단 총 지출 요약 영역 (Style Guide 적용)
+          _buildSpendingSummary(totalSpent),
+
+          // 2. 날짜별 그룹화 카드 리스트
           Expanded(
             child: provider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _buildTransactionList(provider.items),
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.mainBlue),
+                  )
+                : _buildGroupedCardList(provider.items),
           ),
         ],
       ),
     );
   }
 
-  // 상단 지출 요약 카드 (와이어프레임 반영)
-  Widget _buildSpendingSummary(HistoryProvider provider) {
+  // 상단 요약 영역 분리 및 스타일 적용
+  Widget _buildSpendingSummary(double totalSpent) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('My Spending', style: AppTextStyles.bodyMedium),
+          Text(
+            'Total Amount Spent',
+            style: AppTextStyles.headlineLarge.copyWith(
+              color: AppColors.mainBlue,
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
-            '₩ ${provider.items.where((e) => e.category == 'OUTPUT').fold(0.0, (prev, e) => prev + e.amount).toStringAsFixed(0)}',
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontWeight: FontWeight.bold,
+            '${NumberFormat('#,###').format(totalSpent)} ₩',
+            style: AppTextStyles.headlineLarge.copyWith(
+              fontSize: 28,
+              color: AppColors.mainBlue,
             ),
           ),
         ],
@@ -71,102 +94,113 @@ class _HistoryViewState extends State<HistoryView> {
     );
   }
 
-  // 필터 칩 영역 (프로토타입 반영)
-  Widget _buildFilterChips() {
-    final filters = ['All', 'Top-up', 'Payment'];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Row(
-        children: filters.map((filter) {
-          final isSelected = _selectedFilter == filter;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(filter),
-              selected: isSelected,
-              onSelected: (selected) {
-                setState(() => _selectedFilter = filter);
-                context.read<HistoryProvider>().fetchHistory(
-                  category: filter == 'All' ? null : filter,
-                );
-              },
-              selectedColor: AppColors.mainBlue,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.black,
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
+  // 데이터를 날짜별로 묶어서 카드로 렌더링
+  Widget _buildGroupedCardList(List<Transaction> items) {
+    // 날짜별 그룹화 로직
+    Map<String, List<Transaction>> groups = {};
+    for (var item in items) {
+      String dateKey = DateFormat('MMMM d\'th\' EEEE').format(item.createdAt);
+      groups.putIfAbsent(dateKey, () => []).add(item);
+    }
 
-  // 날짜별 그룹화 리스트
-  Widget _buildTransactionList(List<Transaction> items) {
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: items.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: groups.length,
       itemBuilder: (context, index) {
-        final item = items[index];
-        bool showHeader = false;
+        String date = groups.keys.elementAt(index);
+        List<Transaction> transactions = groups[date]!;
 
-        // 이전 아이템과 날짜가 다르면 헤더 표시
-        if (index == 0 ||
-            _isDifferentDay(items[index - 1].createdAt, item.createdAt)) {
-          showHeader = true;
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (showHeader) _buildDateHeader(item.createdAt),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                item.otherAccountName ?? 'Unknown',
-                style: AppTextStyles.bodyLarge,
+        return Container(
+          margin: const EdgeInsets.only(bottom: 24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-              subtitle: Text(
-                DateFormat('HH:mm').format(item.createdAt),
-                style: AppTextStyles.bodySmall,
-              ),
-              trailing: Text(
-                '${item.category == 'OUTPUT' ? '-' : '+'} ₩ ${item.amount.toInt()}',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: item.category == 'OUTPUT'
-                      ? Colors.black
-                      : AppColors.mainBlue,
-                  fontWeight: FontWeight.bold,
+            ],
+          ),
+          child: Column(
+            children: [
+              // 카드 상단 날짜 헤더
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 20,
+                ),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Text(
+                  date,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: AppColors.abledFont,
+                  ),
                 ),
               ),
-              onTap: () => _showDetail(context, item),
-            ),
-          ],
+              // 카드 내부 거래 내역 아이템들
+              ...transactions.map((tx) => _buildTransactionItem(tx)).toList(),
+            ],
+          ),
         );
       },
     );
   }
 
-  Widget _buildDateHeader(DateTime date) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Text(
-        DateFormat('d MMM (EEE)').format(date),
-        style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.bold),
+  Widget _buildTransactionItem(Transaction tx) {
+    final bool isOutput = tx.category == 'OUTPUT';
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => HistoryDetailView(transaction: tx)),
       ),
-    );
-  }
-
-  bool _isDifferentDay(DateTime d1, DateTime d2) {
-    return d1.year != d2.year || d1.month != d2.month || d1.day != d2.day;
-  }
-
-  void _showDetail(BuildContext context, Transaction item) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => HistoryDetailView(transaction: item),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tx.otherAccountName ?? 'Merchant',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.mainBlue,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  DateFormat('hh:mm').format(tx.createdAt),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            Text(
+              '${isOutput ? '-' : '+'} ${NumberFormat('#,###').format(tx.amount)} ₩',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isOutput ? AppColors.warningRed : AppColors.mainBlue,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
