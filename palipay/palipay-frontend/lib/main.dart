@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import 'package:palipay_app/features/profile/views/profile_screen.dart';
-import 'package:palipay_app/features/scan/views/scan_screen.dart';
-import 'package:palipay_app/features/user/views/sign_up_screen.dart';
 import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:provider/provider.dart';
 import 'features/home/views/home_screen.dart';
@@ -11,7 +9,17 @@ import 'features/scan/providers/wallet_provider.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_text_styles.dart';
 
-void main() {
+void main() async {
+  // 1. Flutter 바인딩 초기화 (비동기 main 함수 필수 단계)
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. .env 파일 로드
+  try {
+    await dotenv.load(fileName: ".env");
+    debugPrint("✅ .env 로드 성공: ${dotenv.env['BASE_URL']}"); // 로드 확인용
+  } catch (e) {
+    debugPrint("❌ .env 로드 실패: $e");
+  }
   runApp(
     // const PaliPayApp(),
     // 3인 협업을 위한 전역 상태 관리 세팅

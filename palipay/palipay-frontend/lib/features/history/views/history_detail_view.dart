@@ -17,84 +17,203 @@ class HistoryDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isOutput = transaction.category == 'OUTPUT';
+    const Color statusColor = AppColors.mainBlue;
+    final Color statusBgColor = statusColor.withOpacity(0.08);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: const PaliTopBar(title: 'History Detail'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const Icon(Icons.check_circle, size: 64, color: Color(0xFF4CAF50)),
-            const SizedBox(height: 16),
-            Text(
-              transaction.otherAccountName ?? 'Merchant',
-              style: AppTextStyles.bodySmall,
-            ),
-            Text(
-              '- ${transaction.amount.toInt()} ₩',
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.bold,
+            const SizedBox(height: 48),
+
+            // 1. 상태 아이콘 (일관된 메인 블루 적용)
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: statusBgColor,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  size: 56,
+                  color: statusColor,
+                ),
               ),
             ),
+
+            const SizedBox(height: 24),
+
+            // 2. 상태 배지 (TRANSFER SUCCESSFUL)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: statusBgColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'TRANSACTION SUCCESSFUL',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: statusColor,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // 3. 금액 및 대상
+            Text(
+              '${isOutput ? '-' : '+'} ₩ ${NumberFormat('#,###').format(transaction.amount)}',
+              style: AppTextStyles.headlineLarge.copyWith(
+                color: AppColors.mainBlue,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Sent to ${transaction.otherAccountName ?? 'Unknown'}',
+              style: AppTextStyles.titleMedium.copyWith(
+                color: const Color(0xFF64748B),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+
             const SizedBox(height: 32),
 
-            // 환산 정보 로드 (FINANCE_HISTORY_002)
-            FutureBuilder(
-              future: context.read<HistoryProvider>().fetchCurrencyDetail(
-                transaction.id,
+            // 4. 영수증 상세 카드 (RECEIPT DETAILS)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white, // 매우 연한 회색/네이비 톤 배경
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'RECEIPT DETAILS',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: const Color(0xFF94A3B8),
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildReceiptRow(
+                      'Transaction Type',
+                      isOutput ? 'Withdrawal' : 'Deposit',
+                    ),
+                    _buildReceiptRow(
+                      'Transaction ID',
+                      'TRX-${transaction.id.toString().padLeft(8, '0')}',
+                    ),
+                    _buildReceiptRow(
+                      'Date',
+                      DateFormat('MMM d, yyyy').format(transaction.createdAt),
+                    ),
+                    _buildReceiptRow(
+                      'Time',
+                      DateFormat('HH:mm a').format(transaction.createdAt),
+                    ),
+
+                    // 환율 정보가 있을 경우 추가 표시 (기존 002 API 로직 유지)
+                    FutureBuilder(
+                      future: context
+                          .read<HistoryProvider>()
+                          .fetchCurrencyDetail(transaction.id),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data != null) {
+                          final detail = snapshot.data!;
+                          return Column(
+                            children: [
+                              _buildReceiptRow(
+                                'USD Amount',
+                                '\$ ${detail.exchangedAmount.toStringAsFixed(2)}',
+                              ),
+                              _buildReceiptRow(
+                                'Exchange Rate',
+                                '1 ₩ = ${detail.exchangeRate}',
+                              ),
+                            ],
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+
+                    const Divider(height: 32, color: Color(0xFFE2E8F0)),
+                    _buildReceiptRow(
+                      'Payment Method',
+                      'PaliPay Wallet',
+                      icon: Icons.account_balance_wallet_outlined,
+                    ),
+
+                    _buildReceiptRow(
+                      'Payment Method',
+                      'Visa •••• 4242',
+                      icon: Icons.credit_card,
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                }
-                final detail = snapshot.data;
-                return _buildReceiptTable(detail);
-              },
             ),
 
             const SizedBox(height: 40),
-            PaliButton(
-              backgroundColor: AppColors.mainBlue,
-              text: 'Back to Home',
-              onPressed: () => Navigator.pop(context),
+
+            // 5. 하단 홈 버튼
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: PaliButton(
+                text: 'Back',
+                backgroundColor: AppColors.mainBlue,
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildReceiptTable(TransactionCurrencyDetail? detail) {
-    return Column(
-      children: [
-        _buildReceiptRow(
-          'Date of use',
-          DateFormat('yyyy-MM-dd HH:mm:ss').format(transaction.createdAt),
-        ),
-        _buildReceiptRow('Usage Amount', '${transaction.amount.toInt()} ₩'),
-        if (detail != null) ...[
-          _buildReceiptRow(
-            'USD Amount',
-            '\$ ${detail.exchangedAmount.toStringAsFixed(2)}',
-          ),
-          _buildReceiptRow('Exchange Rate', '1 ₩ = ${detail.exchangeRate}'),
-        ],
-        _buildReceiptRow('Description', transaction.description ?? '-'),
-      ],
-    );
-  }
-
-  Widget _buildReceiptRow(String label, String value) {
+  // 영수증 카드 내부의 한 줄(Row)을 구성하는 위젯
+  Widget _buildReceiptRow(String label, String value, {IconData? icon}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
-            style: AppTextStyles.bodyMedium.copyWith(color: Colors.grey),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: const Color(0xFF94A3B8),
+            ),
           ),
-          Text(value, style: AppTextStyles.bodyMedium),
+          Row(
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 16, color: AppColors.mainBlue),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                value,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.mainBlue,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
