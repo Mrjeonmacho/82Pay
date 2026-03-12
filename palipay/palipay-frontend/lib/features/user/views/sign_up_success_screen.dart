@@ -3,6 +3,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
 
+import 'login_screen.dart';
+
 class SignUpSuccessScreen extends StatelessWidget {
   const SignUpSuccessScreen({super.key});
 
@@ -43,9 +45,10 @@ class SignUpSuccessScreen extends StatelessWidget {
                 text: 'Sign In',
                 onPressed: () {
                   // 홈 화면으로 이동 (스택을 모두 비우고 이동하는 것이 좋음)
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    '/home',
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
                     (route) => false,
                   );
                 },

@@ -90,4 +90,4 @@ flutter:
     # --- 환경 변수 파일 ---
     - .env
     # --- Service Logos ---
-    - assets/images/logos/palilogo1.png
+    - assets/images/logos/
