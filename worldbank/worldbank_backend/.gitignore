@@ -40,4 +40,4 @@ application-secret.yml
 *~
 
 # Finance Global Package
-src/main/java/com/worldbank/worldbank_backend/finance/global/
+src/main/java/com/worldbank/worldbank_backend/finance/guide/

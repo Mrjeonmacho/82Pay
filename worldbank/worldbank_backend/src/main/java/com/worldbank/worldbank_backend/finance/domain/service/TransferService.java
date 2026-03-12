@@ -14,7 +14,7 @@ public class TransferService {
 
     private final BankRouter bankRouter;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public TransferResponseDto transfer(TransferRequestDto request) {
 
         BankStrategy senderBank = bankRouter.route(request.getSenderBankcode());
@@ -26,12 +26,21 @@ public class TransferService {
         // 입금
         targetBank.deposit(request);
 
+        // 3. 여기서 강제로 터뜨림!!
+//        if (true) throw new RuntimeException("분산 트랜잭션 롤백  테스트");
+
         return TransferResponseDto.builder()
                 .message("이체가 정상적으로 완료되었습니다.")
                 .senderAccountNumber(request.getSenderAccountNumber())
-                .targetAccountNumber(request.getTargetAccountNumber())
+                .senderAccountName(request.getSenderAccountName())
+                .senderBankcode(request.getSenderBankcode())
                 .senderAmount(request.getSenderAmount())
+                .senderCurrency(request.getSenderCurrency())
+                .targetAccountNumber(request.getTargetAccountNumber())
+                .targetAccountName(request.getTargetAccountName())
+                .targetBankcode(request.getTargetBankcode())
                 .targetAmount(request.getTargetAmount())
+                .targetCurrency(request.getTargetCurrency())
                 .build();
     }
 }
