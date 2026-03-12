@@ -1,10 +1,10 @@
 package com.worldbank.worldbank_backend.finance.domain.strategy;
 
 import com.worldbank.worldbank_backend.finance.domain.dto.TransferRequestDto;
-import com.worldbank.worldbank_backend.finance.domain.entity.AccountHistoryJP;
-import com.worldbank.worldbank_backend.finance.domain.entity.BankJP;
-import com.worldbank.worldbank_backend.finance.domain.repository.AccountHistoryJPRepository;
-import com.worldbank.worldbank_backend.finance.domain.repository.BankJPRepository;
+import com.worldbank.worldbank_backend.finance.domain.entity.jp.AccountHistoryJP;
+import com.worldbank.worldbank_backend.finance.domain.entity.jp.BankJP;
+import com.worldbank.worldbank_backend.finance.domain.repository.jp.AccountHistoryJPRepository;
+import com.worldbank.worldbank_backend.finance.domain.repository.jp.BankJPRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -55,10 +55,10 @@ public class BankJPStrategy implements BankStrategy {
                 .bankId(account.getBankId())
                 .userId(account.getUserId())
                 .category(AccountHistoryJP.Category.INPUT)
-                .amount(request.getSenderAmount())
-                .otherAccountNumber(request.getTargetAccountNumber())
-                .otherAccountName(request.getTargetAccountName())
-                .otherBankCode(request.getTargetBankcode())
+                .amount(request.getTargetAmount())
+                .otherAccountNumber(request.getSenderAccountNumber())
+                .otherAccountName(request.getSenderAccountName())
+                .otherBankCode(request.getSenderBankcode())
                 .build();
 
         historyRepository.save(history);
