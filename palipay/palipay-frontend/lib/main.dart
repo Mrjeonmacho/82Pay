@@ -6,7 +6,7 @@ import 'package:palipay_app/features/user/provider/sign_up_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:palipay_app/main_screen.dart';
 import 'features/account/providers/account_provider.dart';
-import 'features/scan/providers/wallet_provider.dart';
+import 'features/wallet/providers/wallet_provider.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_text_styles.dart';
 

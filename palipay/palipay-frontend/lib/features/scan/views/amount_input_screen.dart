@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart'; 
+import 'package:provider/provider.dart';
 import '../../../core/utils/currency_input_formatter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_button.dart';
 import '../../../core/widgets/pali_input_oneline_field.dart';
 import '../../../core/widgets/pali_nav_bars.dart';
-import '../providers/wallet_provider.dart'; 
+import '../../wallet/providers/wallet_provider.dart';
 
 class AmountInputScreen extends StatefulWidget {
   final String bankName;
@@ -76,7 +76,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
       context.read<WalletProvider>().loadWalletBalance(
         accessToken: null, // 지금은 더미라 필요 없음
         walletId: 1, // 지금은 더미 wallet id
-        amount: 0,   // 초기 진입 시 잔액만 조회
+        amount: 0, // 초기 진입 시 잔액만 조회
       );
     });
   }
@@ -113,7 +113,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
                 'From My Wallet',
                 style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.abledFont,
-                  fontWeight: FontWeight.bold
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
@@ -131,7 +131,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
                 'To ${widget.bankName}',
                 style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.abledFont,
-                  fontWeight: FontWeight.bold
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
@@ -161,7 +161,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
                 inputFormatters: <TextInputFormatter>[
                   FilteringTextInputFormatter.digitsOnly,
                   CurrencyInputFormatter(),
-                ]
+                ],
               ),
               const SizedBox(height: 8),
               Text(
