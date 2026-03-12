@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
+import '../../../core/config/env_config.dart';
+import '../../../core/constants/api_constants.dart';
 import '../models/wallet_balance_model.dart';
 
 class WalletService {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://your-server-url.com',
+      baseUrl: EnvConfig.baseUrl, // [수정] .env에서 읽어옴
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 20),
       headers: {
@@ -47,7 +49,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/api/finance/balance/check',
+        ApiConstants.accountBalance, // [수정] 상수 사용
         options: Options(
           headers: {
             'accesstoken': accessToken,
@@ -79,13 +81,13 @@ class WalletService {
         requiredAmount: (data?['requiredAmount'] as num?)?.toInt(),
         shortageAmount: (data?['shortageAmount'] as num?)?.toInt(),
       );
-    } catch (e) {
-      return const WalletBalanceModel(
+    } on DioException catch (e) {
+      return WalletBalanceModel(
         currentBalance: null,
         isSufficient: null,
         requiredAmount: null,
         shortageAmount: null,
-        message: 'failed to load wallet balance',
+        message: e.response?.data?['message'] ?? 'Network error occurred',
       );
     }
   }
