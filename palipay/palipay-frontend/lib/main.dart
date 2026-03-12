@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:palipay_app/features/history/providers/history_provider.dart';
-import 'package:palipay_app/features/scan/views/scan_screen.dart';
 import 'package:palipay_app/features/user/provider/sign_up_provider.dart';
 import 'package:provider/provider.dart';
-import 'features/home/views/home_screen.dart';
+import 'package:palipay_app/main_screen.dart';
 import 'features/account/providers/account_provider.dart';
 import 'features/scan/providers/wallet_provider.dart';
 import 'core/theme/app_colors.dart';
@@ -66,9 +65,8 @@ class PaliPayApp extends StatelessWidget {
           foregroundColor: Colors.white,
         ),
       ),
-      // 시작 화면을 분리된 HomeScreen으로 설정
-      // home: const HomeScreen(),
-      home: const ScanScreen(),
+      // 시작 화면을 분리된 MainScreen으로 설정
+      home: const MainScreen(),
     );
   }
 }
