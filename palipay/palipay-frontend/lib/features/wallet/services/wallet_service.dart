@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../../core/config/env_config.dart';
 import '../../../core/constants/api_constants.dart';
-import '../models/wallet_balance_model.dart';
+import '../models/wallet_model.dart';
 
 class WalletService {
   final Dio _dio = Dio(
@@ -9,9 +9,7 @@ class WalletService {
       baseUrl: EnvConfig.baseUrl, // [수정] .env에서 읽어옴
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 20),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
     ),
   );
 
@@ -28,7 +26,9 @@ class WalletService {
     const currentBalance = 500000;
 
     final isSufficient = amount <= currentBalance;
-    final shortageAmount = isSufficient ? null : (amount - currentBalance).toInt();
+    final shortageAmount = isSufficient
+        ? null
+        : (amount - currentBalance).toInt();
 
     return WalletBalanceModel(
       currentBalance: currentBalance,
@@ -50,15 +50,8 @@ class WalletService {
     try {
       final response = await _dio.post(
         ApiConstants.accountBalance, // [수정] 상수 사용
-        options: Options(
-          headers: {
-            'accesstoken': accessToken,
-          },
-        ),
-        data: {
-          'walletId': walletId,
-          'amount': amount,
-        },
+        options: Options(headers: {'accesstoken': accessToken}),
+        data: {'walletId': walletId, 'amount': amount},
       );
 
       if (response.data is! Map<String, dynamic>) {
