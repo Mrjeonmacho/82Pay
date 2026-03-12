@@ -1,5 +1,6 @@
 package com.palipay.palipay_backend.finance.domain;
 
+import ch.qos.logback.core.util.Loader;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -46,4 +47,44 @@ public class WalletPali {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void debit(BigDecimal amount){
+        validateAmount(amount);
+
+        //TODO 예외 처리
+        //감소할 amount가 현재 amount보다 큰 경우
+        //출금 불가 상황
+        if(this.amount.compareTo(amount) < 0){
+            throw new IllegalArgumentException("출금 불가 상황");
+        }
+
+        this.amount = this.amount.subtract(amount);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void credit(BigDecimal amount){
+        validateAmount(amount);
+
+        this.amount = this.amount.add(amount);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void validateAmount(BigDecimal amount){
+        //TODO 예외 처리
+        //amount value가 null, 음수 인 경우
+        if(amount == null || amount.compareTo(BigDecimal.ZERO) <= 0){
+            throw new IllegalArgumentException("amount value가 null, 음수 인 경우");
+        }
+        if(this.amount == null){
+            this.amount = BigDecimal.ZERO;
+        }
+    }
+
+    public boolean isOwnedBy(Long userId){
+        return this.userId.equals(userId);
+    }
+
+    public boolean matchesPin(String pinNumber){
+        return this.pinNumber != null && this.pinNumber.equals(pinNumber);
+    }
 }
