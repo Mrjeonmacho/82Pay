@@ -62,7 +62,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
     /// 예:
     /// context.read<WalletProvider>().loadWalletBalance(
     ///   accessToken: '실제 토큰',
-    ///   walletId: 1,
+    ///   walletId: 1,  //실제 아이디
     ///   amount: _enteredAmount,
     /// );
     /// -----------------------------------------

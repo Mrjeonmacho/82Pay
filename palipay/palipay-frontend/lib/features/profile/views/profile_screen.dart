@@ -84,10 +84,6 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: PaliBottomNavigationBar(
-        currentIndex: 1,
-        onTap: (index) {},
-      ),
     );
   }
 }

@@ -10,7 +10,6 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_nav_bars.dart';
 import '../providers/scan_provider.dart';
 import 'account_input_screen.dart';
-import 'amount_input_screen.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -111,10 +110,10 @@ class _ScanScreenState extends State<ScanScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => AmountInputScreen(
-            bankName: result.bankName ?? '',
-            accountNumber: result.accountNumber ?? '',
-            walletBalance: 0, // 나중에 실제 사용자 잔액 연결
+          builder: (_) => AccountInputScreen(
+            initialBankName: result.bankName,
+            initialAccountNumber: result.accountNumber,
+            scanFailed: false,
           ),
         ),
       );
@@ -122,7 +121,9 @@ class _ScanScreenState extends State<ScanScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => const AccountInputScreen(),
+          builder: (_) => const AccountInputScreen(
+            scanFailed: true,
+          ),
         ),
       );
     }
