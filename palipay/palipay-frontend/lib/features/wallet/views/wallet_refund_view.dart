@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:palipay_app/features/pin/views/pin_screen.dart';
+import 'package:palipay_app/features/wallet/views/wallet_result_view.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/widgets.dart';
@@ -85,8 +87,29 @@ class _ExchangeViewState extends State<ExchangeView> {
                 text: 'Refund Now',
                 onPressed:
                     provider.errorMessage == null && provider.krwAmount > 0
-                    ? () {
-                        // TODO: PIN 인증 화면 이동
+                    ? () async {
+                        final bool? isAuthenticated =
+                            await Navigator.push<bool>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const PinScreen(mode: PinMode.auth),
+                              ),
+                            );
+                        // 2. 인증 성공 시 환급 로직 실행
+                        if (isAuthenticated == true && mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => WalletResultView(
+                                isRecharge: false,
+                                // 기획서 3번 반영: 외화 기준으로 환불 금액 표시
+                                amount:
+                                    '\$ ${provider.foreignAmount.toStringAsFixed(2)}',
+                              ),
+                            ),
+                          );
+                        }
                       }
                     : null,
               ),

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:palipay_app/features/account/models/pin_request.dart'; // 혹은 http 패키지
+import 'package:palipay_app/features/pin/models/pin_request_dto.dart'; // 혹은 http 패키지
 
 class AccountService {
   // mock 서버 등록
