@@ -1,5 +1,6 @@
-package com.worldbank.worldbank_backend.finance.domain.entity;
+package com.worldbank.worldbank_backend.finance.domain.entity.jp;
 
+import com.worldbank.worldbank_backend.finance.domain.entity.kr.AccountHistoryKR;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -17,22 +18,32 @@ public class AccountHistoryJP {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "history_id")
     private Long historyId;
 
+    @Column(name = "bank_id")
     private Long bankId;
+
+    @Column(name = "user_id")
     private Long userId;
 
     @Enumerated(EnumType.STRING)
-    private Category category;
+    @Column(name = "category")
+    private AccountHistoryJP.Category category;
 
+    @Column(name = "amount")
     private BigDecimal amount;
 
+    @Column(name = "other_account_number")
     private String otherAccountNumber;
 
+    @Column(name = "other_account_name")
     private String otherAccountName;
 
+    @Column(name = "other_bank_code")
     private String otherBankCode;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     public enum Category {

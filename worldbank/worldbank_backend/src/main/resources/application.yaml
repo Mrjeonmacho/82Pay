@@ -1,3 +1,24 @@
 spring:
-  application:
-    name: worldbank_backend
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+
+  datasource:
+
+    kr:
+      xa-data-source-class-name: com.mysql.cj.jdbc.MysqlXADataSource
+      unique-resource-name: kr-db
+      xa-properties:
+        user: root
+        password: root
+        url: jdbc:mysql://localhost:3306/kr_bank
+
+    jp:
+      xa-data-source-class-name: com.mysql.cj.jdbc.MysqlXADataSource
+      unique-resource-name: jp-db
+      xa-properties:
+        user: root
+        password: root
+        url: jdbc:mysql://localhost:3306/jp_bank
