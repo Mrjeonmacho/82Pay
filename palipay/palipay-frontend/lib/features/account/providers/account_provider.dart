@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:palipay_app/features/account/models/pin_request.dart';
+import 'package:palipay_app/features/pin/models/pin_request_dto.dart';
 import '../models/bank_account_model.dart';
 import '../services/account_service.dart';
 

@@ -16,6 +16,7 @@ class PaliButton extends StatelessWidget {
     required this.onPressed,
     this.type = PaliButtonType.primary,
     required Color backgroundColor,
+    Color? textColor,
   });
 
   @override

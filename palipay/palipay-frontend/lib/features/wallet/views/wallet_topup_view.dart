@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:palipay_app/features/pin/views/pin_screen.dart';
+import 'package:palipay_app/features/wallet/views/wallet_result_view.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/widgets.dart'; // PaliTopBar, PaliButton 등
@@ -129,8 +131,32 @@ class _TopupViewState extends State<TopupView> {
                 : AppColors.disabledBackground,
             text: 'Top-up Now',
             onPressed: provider.errorMessage == null && provider.krwAmount > 0
-                ? () {
-                    // TODO: PIN 인증 화면 이동
+                ? () async {
+                    // 1. PIN 인증 화면 호출 (PinMode.auth)
+                    final bool? isAuthenticated = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const PinScreen(mode: PinMode.auth),
+                      ),
+                    );
+
+                    // 2. 인증 성공 시 충전 로직 실행
+                    if (isAuthenticated == true && mounted) {
+                      // 로딩 표시 후 서버 통신 (예시)
+                      // await context.read<WalletProvider>().recharge();
+
+                      // 3. 결과 화면으로 이동 (스택 쌓이지 않게 pushReplacement)
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WalletResultView(
+                            isRecharge: true,
+                            amount: '₩ ${provider.krwAmount.toInt()}',
+                          ),
+                        ),
+                      );
+                    }
                   }
                 : null,
           ),
