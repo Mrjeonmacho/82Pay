@@ -27,7 +27,7 @@ class PaliInputField extends StatelessWidget {
     this.useShadow = false, // 기존 false
   });
 
-   @override
+  @override
   Widget build(BuildContext context) {
     final input = TextFormField(
       controller: controller,
@@ -68,10 +68,7 @@ class PaliInputField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppColors.mainBlue,
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: AppColors.mainBlue, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
