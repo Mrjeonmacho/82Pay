@@ -1,0 +1,251 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/widgets.dart';
+import '../../account/providers/account_provider.dart';
+import '../../account/views/bank_selection_view.dart';
+import 'unlink_pin_auth_screen.dart';
+
+class LinkedAccountsView extends StatefulWidget {
+  const LinkedAccountsView({super.key});
+
+  @override
+  State<LinkedAccountsView> createState() => _LinkedAccountsViewState();
+}
+
+class _LinkedAccountsViewState extends State<LinkedAccountsView> {
+  Future<void> _handleDelete() async {
+    final pinResult = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const UnlinkPinAuthView(),
+      ),
+    );
+
+    if (pinResult != true || !mounted) return;
+
+    const String tempToken = "USER_ACCESS_TOKEN";
+    final success =
+        await context.read<AccountProvider>().unlinkAccount(tempToken);
+
+    if (!mounted) return;
+
+    if (success) {
+      _showCenterMessage('Linked account has been removed.');
+    } else {
+      _showCenterMessage('Failed to remove linked account.');
+    }
+  }
+
+  void _showCenterMessage(String message) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'message',
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        Future.delayed(const Duration(milliseconds: 1200), () {
+          if (mounted && Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+        });
+
+        return SafeArea(
+          child: Stack(
+            children: [
+              Positioned(
+                left: 24,
+                right: 24,
+                top: MediaQuery.of(context).size.height * 0.37,
+                child: Material(
+                  color: AppColors.mainBlue,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.mainBlue,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: AppColors.buttonFont,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: child,
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<AccountProvider>();
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: const PaliTopBar(title: 'Linked Accounts'),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: provider.hasWallet
+              ? _LinkedAccountCard(
+                  accountNumber:
+                      provider.linkedAccount?.accountNumber ?? '000-0000-0000',
+                  onDelete: _handleDelete,
+                )
+              : const _EmptyLinkedAccountCard(),
+        ),
+      ),
+    );
+  }
+}
+
+class _LinkedAccountCard extends StatelessWidget {
+  final String accountNumber;
+  final VoidCallback onDelete;
+
+  const _LinkedAccountCard({
+    required this.accountNumber,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 170,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          colors: [AppColors.warningRed, AppColors.mainBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 6,
+            left: 0,
+            child: Text(
+              'My Account',
+              style: AppTextStyles.headlineLarge.copyWith(
+                color: AppColors.buttonFont,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            bottom: 22,
+            child: Text(
+              accountNumber,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.buttonFont,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: GestureDetector(
+              onTap: onDelete,
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.delete_outline,
+                  size: 20,
+                  color: AppColors.mainBlue,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyLinkedAccountCard extends StatelessWidget {
+  const _EmptyLinkedAccountCard();
+
+  void _handleLink(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const BankSelectionView(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => _handleLink(context),
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        width: double.infinity,
+        height: 170,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: AppColors.abledFont,
+            width: 2,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.add_circle_outline,
+              size: 48,
+              color: AppColors.mainBlue,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Link your bank account',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.abledFont,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
