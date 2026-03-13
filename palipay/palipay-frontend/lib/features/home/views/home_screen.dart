@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             // 2. 액션 버튼 섹션
-            _buildActionButtons(context),
+            // _buildActionButtons(context),
 
             // 3. 최근 거래 내역 섹션
             Padding(
@@ -63,40 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // --- 여기서부터는 build 메서드 밖입니다 ---
-  // --- 추가된 버튼 레이아웃 ---
-  Widget _buildActionButtons(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Row(
-        children: [
-          Expanded(
-            child: PaliButton(
-              backgroundColor: AppColors.mainBlue,
-              text: 'Top-up',
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const TopupView()),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: PaliButton(
-              backgroundColor: AppColors.exampleFont,
-              textColor: AppColors.abledFont,
-              text: 'Refund',
-              // 디자인 구분을 위해 아웃라인 스타일이 있다면 적용해도 좋습니다.
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ExchangeView()),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  // 1. 활성화된 지갑 카드 (그라데이션 디자인 반영)
   Widget _buildActiveWalletCard(
     BuildContext context,
     AccountProvider provider,
@@ -110,8 +77,134 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
-      child: PaliBalanceCard(
-        krwAmount: '₩ ${provider.linkedAccount?.amount ?? 0}',
+      child: Container(
+        width: double.infinity,
+        height: 200, // 시안의 비율에 맞춰 높이 조절
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          // 시안의 선명한 레드-블루 그라데이션 적용
+          gradient: const LinearGradient(
+            // 시안의 느낌을 더 살리기 위해 시작점을 약간 더 위쪽/왼쪽으로 이동
+            begin: Alignment(-0.8, -1.0),
+            end: Alignment(0.8, 1.0),
+            colors: [
+              AppColors.warningRed, // 시안의 레드/핑크 계열
+              AppColors.mainBlue, // 시안의 딥 블루 계열
+            ],
+            // 색상이 바뀌는 지점
+            stops: [0.2, 0.9],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.mainBlue.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // 상단 영역: 라벨 및 아이콘
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Main Wallet',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: Colors.white.withOpacity(0.8),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.account_balance_wallet,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ],
+            ),
+
+            // 중앙 영역: 잔액 표시
+            Text(
+              '₩ ${provider.linkedAccount?.amount ?? 0}',
+              style: AppTextStyles.titleMedium.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 32,
+              ),
+            ),
+
+            // 하단 영역: 홀더 이름 및 액션 버튼
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'CARD HOLDER',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 10,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'ALEX JOHNSON', // 실제 데이터 연결 시 provider 활용
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                  ],
+                ),
+                // ADD MONEY 버튼 (반투명 스타일)
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TopupView(),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'ADD MONEY',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
