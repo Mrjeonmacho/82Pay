@@ -70,7 +70,8 @@ class _UnlinkPinAuthViewState extends State<UnlinkPinAuthView> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 60),
+            const SizedBox(height: 16),
+
             Text(
               'Verify Your PIN',
               style: AppTextStyles.titleMedium.copyWith(
@@ -78,42 +79,58 @@ class _UnlinkPinAuthViewState extends State<UnlinkPinAuthView> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Enter your PIN to remove the linked account',
-              style: AppTextStyles.bodyMedium.copyWith(color: Colors.grey),
-              textAlign: TextAlign.center,
+            const SizedBox(height: 16),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'Enter your PIN to remove the linked account',
+                style: AppTextStyles.bodyMedium.copyWith(color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
             ),
-            const SizedBox(height: 60),
+
+            const SizedBox(height: 28),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(6, (index) => _buildDot(index)),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  _errorMessage!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.warningRed,
-                    fontWeight: FontWeight.bold,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: SizedBox(
+                height: 48,
+                child: Center(
+                  child: Text(
+                    _errorMessage ?? '',
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.warningRed,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
+            ),
 
-            if (_isLoading) ...[
-              const SizedBox(height: 20),
-              const CircularProgressIndicator(color: AppColors.mainBlue),
-            ],
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: CircularProgressIndicator(
+                  color: AppColors.mainBlue,
+                ),
+              ),
 
-            const Spacer(),
+            const SizedBox(height: 30),
+
             _buildKeypad(),
-            const SizedBox(height: 40),
+
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -140,13 +157,13 @@ class _UnlinkPinAuthViewState extends State<UnlinkPinAuthView> {
 
   Widget _buildKeypad() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
+      padding: const EdgeInsets.symmetric(horizontal: 36),
       child: GridView.count(
         shrinkWrap: true,
         crossAxisCount: 3,
-        mainAxisSpacing: 20,
+        mainAxisSpacing: 16,
         crossAxisSpacing: 20,
-        childAspectRatio: 1.5,
+        childAspectRatio: 1.6,
         physics: const NeverScrollableScrollPhysics(),
         children: [
           ...['1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -177,7 +194,10 @@ class _UnlinkPinAuthViewState extends State<UnlinkPinAuthView> {
   Widget _backspaceButton() {
     return IconButton(
       onPressed: _onBackspace,
-      icon: const Icon(Icons.backspace_outlined, size: 28),
+      icon: const Icon(
+        Icons.backspace_outlined,
+        size: 28,
+      ),
     );
   }
 }

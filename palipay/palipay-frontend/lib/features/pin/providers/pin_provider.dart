@@ -45,27 +45,32 @@ class PinProvider extends ChangeNotifier {
   }
 
   /// 4. PIN 검증 요청 (결제/송금 시)
-  Future<bool> verifyPin(int walletId) async {
-    if (!isFull) return false;
+  Future<bool> verifyPin(int walletId, {String? pinNumber}) async {
+    final targetPin = pinNumber ?? _inputPin;
+
+    if (targetPin.length != 6) return false;
 
     _status = PinStatus.loading;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      final isSuccess = await _service.verifyPin(walletId, _inputPin);
+      final isSuccess = await _service.verifyPin(walletId, targetPin);
 
       if (isSuccess) {
         _status = PinStatus.success;
       } else {
         _status = PinStatus.failure;
-        _errorMessage = "PIN 번호가 일치하지 않습니다.";
-        _inputPin = ""; // 실패 시 입력값 초기화 (기획적 선택)
+        _errorMessage = "PIN number does not match.";
+        if (pinNumber == null) {
+          _inputPin = "";
+        }
       }
       notifyListeners();
       return isSuccess;
     } catch (e) {
       _status = PinStatus.failure;
-      _errorMessage = "서버 통신 중 오류가 발생했습니다.";
+      _errorMessage = "An error occurred while communicating with the server.";
       notifyListeners();
       return false;
     }
@@ -84,5 +89,41 @@ class PinProvider extends ChangeNotifier {
 
     notifyListeners();
     return isSuccess;
+  }
+
+  // 6. PIN 수정 요청
+  Future<bool> updatePin({
+    required int walletId,
+    required String oldPinNumber,
+    required String newPinNumber,
+  }) async {
+    _status = PinStatus.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final request = PinUpdateRequest(
+        walletId: walletId,
+        oldPinNumber: oldPinNumber,
+        newPinNumber: newPinNumber,
+      );
+
+      final isSuccess = await _service.updatePin(request);
+
+      if (isSuccess) {
+        _status = PinStatus.success;
+      } else {
+        _status = PinStatus.failure;
+        _errorMessage = "Failed to change PIN.";
+      }
+
+      notifyListeners();
+      return isSuccess;
+    } catch (e) {
+      _status = PinStatus.failure;
+      _errorMessage = "An error occurred while communicating with the server.";
+      notifyListeners();
+      return false;
+    }
   }
 }
