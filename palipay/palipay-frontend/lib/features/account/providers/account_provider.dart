@@ -6,7 +6,18 @@ import '../services/account_service.dart';
 class AccountProvider extends ChangeNotifier {
   final AccountService _service = AccountService();
 
-  BankAccount? _linkedAccount; // 계좌 데이터
+  // BankAccount? _linkedAccount; // 계좌 데이터
+  // 테스트용 더미
+  BankAccount? _linkedAccount = BankAccount(
+    walletId: '1004',
+    bankCode: '088',
+    bankName: 'World',
+    accountNumber: '110-482-039201',
+    accountUsername: 'Ssafy Kim',
+    moneyCode: 'USD',
+    amount: 120000,
+  );
+
   bool _isLoading = false;
   // _linkedAccount가 null이 아니면 true를 반환합니다.
   bool get hasWallet => _linkedAccount != null;
@@ -68,10 +79,20 @@ class AccountProvider extends ChangeNotifier {
   Future<bool> unlinkAccount(String token) async {
     // walletId를 int로 변환하여 전송 (명세서 bigint 대응)
     if (_linkedAccount == null) return false;
-    final int targetId = int.parse(_linkedAccount!.walletId);
-
     _setLoading(true);
+
     try {
+      // TODO:
+      // 서버 완전 연결 전 UI 테스트용 더미 처리
+      await Future.delayed(const Duration(milliseconds: 250));
+
+      _linkedAccount = null;
+      notifyListeners();
+      return true;
+
+      // 실제 서버 붙으면 아래 로직으로 교체
+      /*
+      final int targetId = int.parse(_linkedAccount!.walletId);
       final response = await _service.unlinkAccount(targetId, token);
 
       if (response.statusCode == 200) {
@@ -80,6 +101,7 @@ class AccountProvider extends ChangeNotifier {
         return true;
       }
       return false;
+      */
     } catch (e) {
       debugPrint('Error unlinking account: $e');
       return false;
@@ -146,6 +168,20 @@ class AccountProvider extends ChangeNotifier {
       return false;
     } finally {
       _setLoading(false);
+    }
+
+     // 테스트 다시 하고 싶을 때 더미 계좌 복구용
+    void restoreDummyAccount() {
+      _linkedAccount = BankAccount(
+        walletId: '1004',
+        bankCode: '088',
+        bankName: 'World',
+        accountNumber: '110-482-039201',
+        accountUsername: 'Ssafy Kim',
+        moneyCode: 'USD',
+        amount: 120000,
+      );
+      notifyListeners();
     }
   }
 }

@@ -8,6 +8,7 @@ import '../widgets/menu_tile.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/section_card.dart';
 import '../views/change_passowrd_screen.dart';
+import '../views/linked_accounts_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -45,9 +46,17 @@ class ProfileScreen extends StatelessWidget {
               SectionCard(
                 title: 'Service',
                 children: [
-                  const MenuTile(
+                  MenuTile(
                     icon: Icons.account_balance_outlined,
                     title: 'Linked Accounts',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const LinkedAccountsView(),
+                        )
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
                   MenuTile(
