@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:palipay_app/features/user/provider/sign_up_provider.dart';
+import 'package:palipay_app/features/profile/providers/profile_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:palipay_app/main_screen.dart';
 import 'features/account/providers/account_provider.dart';
@@ -31,6 +32,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => HistoryProvider()),
         ChangeNotifierProvider(create: (_) => WalletProvider()),
         ChangeNotifierProvider(create: (_) => SignUpProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ],
       child: const PaliPayApp(),
     ),

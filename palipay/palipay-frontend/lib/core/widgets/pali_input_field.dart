@@ -13,6 +13,8 @@ class PaliInputField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final Widget? suffixIcon;
   final bool useShadow; // 그림자 사용 여부
+  final String? errorText;
+  final bool useExternalErrorText;
 
   const PaliInputField({
     super.key,
@@ -25,6 +27,8 @@ class PaliInputField extends StatelessWidget {
     this.onChanged,
     this.suffixIcon,
     this.useShadow = false, // 기존 false
+    this.errorText,
+    this.useExternalErrorText = false,
   });
 
   @override
@@ -45,12 +49,24 @@ class PaliInputField extends StatelessWidget {
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
-        errorStyle: const TextStyle(
-          color: AppColors.warningRed,
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          height: 1.0,
-        ),
+        errorText: useExternalErrorText
+            ? (errorText != null ? ' ' : null)
+            : errorText,
+
+        errorMaxLines: 2,
+
+        errorStyle: useExternalErrorText
+            ? const TextStyle(
+                fontSize: 0,
+                height: 0,
+                color: Colors.transparent,
+              )
+            : const TextStyle(
+                color: AppColors.warningRed,
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                height: 1.2,
+              ),
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: AppColors.buttonFont,
