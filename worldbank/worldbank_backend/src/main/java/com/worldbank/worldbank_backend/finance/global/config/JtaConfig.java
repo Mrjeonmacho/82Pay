@@ -26,7 +26,7 @@ public class JtaConfig {
     @Bean
     public UserTransaction atomikosUserTransaction() throws SystemException {
         UserTransactionImp ut = new UserTransactionImp();
-        ut.setTransactionTimeout(300);
+        ut.setTransactionTimeout(1000);
         CustomAtomikosJtaPlatform.setUserTransaction(ut);
         return (UserTransaction) ut;
     }

@@ -1,4 +1,15 @@
 package com.worldbank.worldbank_backend.finance.domain.repository.us;
 
-public class BankUSRepository {
+import com.worldbank.worldbank_backend.finance.domain.entity.us.BankUS;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+
+import java.util.Optional;
+
+public interface BankUSRepository
+        extends JpaRepository<BankUS, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE) //비관적 락
+    Optional<BankUS> findByAccountNumber(String accountNumber);
 }
