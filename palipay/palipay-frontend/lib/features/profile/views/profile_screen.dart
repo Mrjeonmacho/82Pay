@@ -9,6 +9,7 @@ import '../widgets/profile_card.dart';
 import '../widgets/section_card.dart';
 import '../views/change_passowrd_screen.dart';
 import '../views/linked_accounts_screen.dart';
+import '../../pin/views/change_pin_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -117,6 +118,17 @@ class ProfileScreen extends StatelessWidget {
                   MenuTile(
                     icon: Icons.lock_outline,
                     title: 'Change PIN',
+                    onTap: () async {
+                      final result = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ChangePinScreen(
+                            walletId: 12345, // TODO: 나중에 실제 walletId로 교체
+                          ),
+                        ),
+                      );
+
+                    },
                   ),
                   SizedBox(height: 12),
                   MenuTile(
