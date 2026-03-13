@@ -17,4 +17,10 @@ class ApiConstants {
       '/finance/balance/check?amount=$amount';
 
   // 등 필요한 API 엔드포인트를 여기에 추가
+  // 4. Profile - 추후 API 확정되면 맞게 수정
+  static const String profile = '/users/profile';
+  static const String language = '/users/language';
+  static const String logout = '/auth/logout';
+  static const String deleteUser = '/users';
+  static const String changePassword = '/users/password';
 }

@@ -12,6 +12,9 @@ class ProfileProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isChangingPassword = false;
+  bool get isChangingPassword => _isChangingPassword;
+
   /// 프로필 조회
   Future<void> fetchProfile() async {
     _isLoading = true;
@@ -61,6 +64,29 @@ class ProfileProvider extends ChangeNotifier {
       await _service.deleteAccount();
     } catch (e) {
       debugPrint(e.toString());
+    }
+  }
+
+   /// 비밀번호 변경
+  Future<bool> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    _isChangingPassword = true;
+    notifyListeners();
+
+    try {
+      await _service.changePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+      return true;
+    } catch (e) {
+      debugPrint(e.toString());
+      return false;
+    } finally {
+      _isChangingPassword = false;
+      notifyListeners();
     }
   }
 }

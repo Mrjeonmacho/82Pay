@@ -7,6 +7,7 @@ import '../widgets/language_trailing.dart';
 import '../widgets/menu_tile.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/section_card.dart';
+import '../views/change_passowrd_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -61,12 +62,47 @@ class ProfileScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              const SectionCard(
+              SectionCard(
                 title: 'Account',
                 children: [
                   MenuTile(
                     icon: Icons.key_outlined,
                     title: 'Change Password',
+                    onTap: () async {
+                      final result = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ChangePasswordScreen(),
+                        ),
+                      );
+
+                      if (result == true && context.mounted) {
+                        final messenger = ScaffoldMessenger.of(context);
+
+                        messenger
+                          ..hideCurrentMaterialBanner()
+                          ..showMaterialBanner(
+                            MaterialBanner(
+                              backgroundColor: AppColors.mainBlue,
+                              content: const Text(
+                                'Your password has been changed successfully.',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    messenger.hideCurrentMaterialBanner();
+                                  },
+                                  child: const Text(
+                                    'OK',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                      }
+                    },
                   ),
                   SizedBox(height: 12),
                   MenuTile(
