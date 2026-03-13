@@ -39,9 +39,8 @@ class _TransactionsSectionState extends State<TransactionsSection> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text('Recent Transactions', style: AppTextStyles.bodySmall),
           GestureDetector(
             onTap: () => Navigator.push(
               context,
@@ -50,7 +49,7 @@ class _TransactionsSectionState extends State<TransactionsSection> {
             child: Text(
               'See all',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.abledFont,
+                color: AppColors.mainBlue,
               ),
             ),
           ),
