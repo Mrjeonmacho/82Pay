@@ -169,19 +169,19 @@ class AccountProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
 
-     // 테스트 다시 하고 싶을 때 더미 계좌 복구용
-    void restoreDummyAccount() {
-      _linkedAccount = BankAccount(
-        walletId: '1004',
-        bankCode: '088',
-        bankName: 'World',
-        accountNumber: '110-482-039201',
-        accountUsername: 'Ssafy Kim',
-        moneyCode: 'USD',
-        amount: 120000,
-      );
-      notifyListeners();
-    }
+  // 테스트 다시 하고 싶을 때 더미 계좌 복구용
+  void restoreDummyAccount() {
+    _linkedAccount = BankAccount(
+      walletId: '1004',
+      bankCode: '088',
+      bankName: 'World',
+      accountNumber: '110-482-039201',
+      accountUsername: 'Ssafy Kim',
+      moneyCode: 'USD',
+      amount: 120000,
+    );
+    notifyListeners();
   }
 }
