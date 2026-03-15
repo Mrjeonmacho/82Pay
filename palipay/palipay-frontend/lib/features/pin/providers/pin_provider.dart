@@ -46,7 +46,7 @@ class PinProvider extends ChangeNotifier {
 
   /// 4. PIN 검증 요청 (결제/송금 시)
   Future<bool> verifyPin(int walletId, {String? pinNumber}) async {
-    final targetPin = pinNumber ?? _inputPin;
+    final targetPin = (pinNumber ?? _inputPin).trim();
 
     if (targetPin.length != 6) return false;
 
