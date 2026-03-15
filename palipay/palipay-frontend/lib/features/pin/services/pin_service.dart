@@ -28,30 +28,44 @@ class PinService {
 
   /// 2. 핀 번호 변경 (USER_ACCOUNT_004)
   Future<bool> updatePin(PinUpdateRequest request) async {
-    try {
-      final response = await _dio.put(
-        '$_baseUrl/update',
-        data: request.toJson(),
-      );
-      return response.statusCode == 200;
-    } on DioException catch (e) {
-      print('PIN Update Error: ${e.response?.data}');
-      return false;
+    // 서버 연결 전 화면 테스트용
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (request.oldPinNumber == '123456') {
+      return true;
     }
+    return false;
+
+    // 서버 연결 후 아래 사용
+    // try {
+    //   final response = await _dio.put(
+    //     '$_baseUrl/update',
+    //     data: request.toJson(),
+    //   );
+    //   return response.statusCode == 200;
+    // } on DioException catch (e) {
+    //   print('PIN Update Error: ${e.response?.data}');
+    //   return false;
+    // }
   }
 
   /// 3. 핀 번호 검증 (송금/결제 전 확인용)
   Future<bool> verifyPin(int walletId, String pinNumber) async {
-    try {
-      final response = await _dio.post(
-        '$_baseUrl/verify',
-        data: {'walletId': walletId, 'pinNumber': pinNumber},
-      );
-      return response.statusCode == 200;
-    } on DioException catch (e) {
-      // 핀 번호가 틀렸을 때 (401 등)의 처리
-      print('PIN Verify Error: ${e.response?.data}');
-      return false;
-    }
+    // TODO: 화면 보기 위한 더미
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (pinNumber == '123456') return true;
+
+    return false;
+
+    // try {
+    //   final response = await _dio.post(
+    //     '$_baseUrl/verify',
+    //     data: {'walletId': walletId, 'pinNumber': pinNumber},
+    //   );
+    //   return response.statusCode == 200;
+    // } on DioException catch (e) {
+    //   print('PIN Verify Error: ${e.response?.data}');
+    //   return false;
+    // }
   }
 }
