@@ -23,7 +23,7 @@ class _ScanScreenState extends State<ScanScreen> {
   final ImagePicker _picker = ImagePicker();
 
   bool _isCameraReady = false;
-  bool _isRearCamera = true;
+  final bool _isRearCamera = true;
 
   @override
   void initState() {
@@ -121,9 +121,7 @@ class _ScanScreenState extends State<ScanScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => const AccountInputScreen(
-            scanFailed: true,
-          ),
+          builder: (_) => const AccountInputScreen(scanFailed: true),
         ),
       );
     }
@@ -134,8 +132,7 @@ class _ScanScreenState extends State<ScanScreen> {
   Future<void> _toggleFlash() async {
     final provider = context.read<ScanProvider>();
 
-    if (_cameraController == null ||
-        !_cameraController!.value.isInitialized) {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
       return;
     }
 
@@ -163,7 +160,7 @@ class _ScanScreenState extends State<ScanScreen> {
             appBar: PaliTopBar(
               title: 'Scan',
               leading: IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.arrow_back_ios_new_rounded,
                   color: AppColors.mainBlue,
                 ),
@@ -181,7 +178,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       ),
                     );
                   },
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.edit_outlined,
                     color: AppColors.mainBlue,
                   ),
@@ -299,9 +296,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
                 if (provider.isBusy)
                   Positioned.fill(
-                    child: Container(
-                      color: Colors.black.withOpacity(0.18),
-                    ),
+                    child: Container(color: Colors.black.withOpacity(0.18)),
                   ),
               ],
             ),
@@ -339,10 +334,7 @@ class _ScanOverlay extends StatelessWidget {
             Positioned(
               left: left,
               top: top,
-              child: _GuideFrame(
-                width: guideWidth,
-                height: guideHeight,
-              ),
+              child: _GuideFrame(width: guideWidth, height: guideHeight),
             ),
           ],
         );
@@ -381,10 +373,7 @@ class _GuideFrame extends StatelessWidget {
   final double width;
   final double height;
 
-  const _GuideFrame({
-    required this.width,
-    required this.height,
-  });
+  const _GuideFrame({required this.width, required this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +388,12 @@ class _GuideFrame extends StatelessWidget {
           _corner(top: true, left: true, corner: corner, thickness: thickness),
           _corner(top: true, left: false, corner: corner, thickness: thickness),
           _corner(top: false, left: true, corner: corner, thickness: thickness),
-          _corner(top: false, left: false, corner: corner, thickness: thickness),
+          _corner(
+            top: false,
+            left: false,
+            corner: corner,
+            thickness: thickness,
+          ),
         ],
       ),
     );
@@ -438,7 +432,9 @@ class _GuideFrame extends StatelessWidget {
             topLeft: top && left ? const Radius.circular(18) : Radius.zero,
             topRight: top && !left ? const Radius.circular(18) : Radius.zero,
             bottomLeft: !top && left ? const Radius.circular(18) : Radius.zero,
-            bottomRight: !top && !left ? const Radius.circular(18) : Radius.zero,
+            bottomRight: !top && !left
+                ? const Radius.circular(18)
+                : Radius.zero,
           ),
         ),
       ),
@@ -450,10 +446,7 @@ class _RoundActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
 
-  const _RoundActionButton({
-    required this.icon,
-    required this.onTap,
-  });
+  const _RoundActionButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -466,9 +459,7 @@ class _RoundActionButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.34),
           shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.white.withOpacity(0.18),
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.18)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.18),
@@ -514,7 +505,7 @@ class _CaptureButton extends StatelessWidget {
               shape: BoxShape.circle,
               color: Colors.white,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.camera_alt_outlined,
               color: AppColors.logo,
               size: 28,

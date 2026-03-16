@@ -19,7 +19,7 @@ class EmptyWalletCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(24),
       child: CustomPaint(
         painter: DashedRectPainter(color: AppColors.exampleFont),
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
           height: 200,
           child: Column(

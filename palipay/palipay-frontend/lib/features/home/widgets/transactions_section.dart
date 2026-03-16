@@ -116,11 +116,12 @@ class _TransactionsSectionState extends State<TransactionsSection> {
 
   // 실제 리스트 뷰
   Widget _buildList(HistoryProvider provider) {
-    if (provider.isLoading)
+    if (provider.isLoading) {
       return const Padding(
         padding: EdgeInsets.all(40),
         child: CircularProgressIndicator(),
       );
+    }
 
     return ListView.builder(
       shrinkWrap: true,

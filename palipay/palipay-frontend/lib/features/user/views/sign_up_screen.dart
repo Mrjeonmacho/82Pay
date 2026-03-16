@@ -112,7 +112,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: Column(
                   children: [
-                    Text(
+                    const Text(
                       'Create Your Account',
                       style: AppTextStyles.titleLarge,
                     ),

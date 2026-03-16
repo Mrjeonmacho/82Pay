@@ -46,9 +46,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
     _accountController = TextEditingController(
       text: widget.initialAccountNumber ?? '',
     );
-    _bankController = TextEditingController(
-      text: widget.initialBankName ?? '',
-    );
+    _bankController = TextEditingController(text: widget.initialBankName ?? '');
   }
 
   @override
@@ -108,11 +106,11 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
                       itemCount: _banks.length,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        mainAxisExtent: 64,
-                      ),
+                            crossAxisCount: 3,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            mainAxisExtent: 64,
+                          ),
                       itemBuilder: (context, index) {
                         final bank = _banks[index];
 
@@ -177,7 +175,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
       appBar: PaliTopBar(
         title: 'Transfer',
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
             color: AppColors.mainBlue,
           ),

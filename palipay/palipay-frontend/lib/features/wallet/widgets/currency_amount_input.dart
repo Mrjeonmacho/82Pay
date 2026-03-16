@@ -90,7 +90,7 @@ class CurrencyAmountInput extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.sync, size: 16, color: AppColors.abledFont),
+              const Icon(Icons.sync, size: 16, color: AppColors.abledFont),
               const SizedBox(width: 8),
               Text(
                 '≈ \$${provider.foreignAmount.toStringAsFixed(2)} USD',

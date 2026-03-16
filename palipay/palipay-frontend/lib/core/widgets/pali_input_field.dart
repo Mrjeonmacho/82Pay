@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // FilteringTextInputFormatter 사용을 위해 필요
+// FilteringTextInputFormatter 사용을 위해 필요
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
@@ -56,11 +56,7 @@ class PaliInputField extends StatelessWidget {
         errorMaxLines: 2,
 
         errorStyle: useExternalErrorText
-            ? const TextStyle(
-                fontSize: 0,
-                height: 0,
-                color: Colors.transparent,
-              )
+            ? const TextStyle(fontSize: 0, height: 0, color: Colors.transparent)
             : const TextStyle(
                 color: AppColors.warningRed,
                 fontSize: 12,

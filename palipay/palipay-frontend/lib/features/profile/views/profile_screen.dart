@@ -24,10 +24,7 @@ class ProfileScreen extends StatelessWidget {
         title: 'Profile',
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.logout,
-              color: AppColors.mainBlue,
-            ),
+            icon: const Icon(Icons.logout, color: AppColors.mainBlue),
             onPressed: () {},
           ),
         ],
@@ -38,10 +35,7 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ProfileCard(
-                name: user.name,
-                email: user.email,
-              ),
+              ProfileCard(name: user.name, email: user.email),
               const SizedBox(height: 24),
 
               SectionCard(
@@ -55,7 +49,7 @@ class ProfileScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const LinkedAccountsView(),
-                        )
+                        ),
                       );
                     },
                   ),
@@ -63,9 +57,7 @@ class ProfileScreen extends StatelessWidget {
                   MenuTile(
                     icon: Icons.language,
                     title: 'Language',
-                    trailing: LanguageTrailing(
-                      language: user.language,
-                    ),
+                    trailing: LanguageTrailing(language: user.language),
                   ),
                 ],
               ),
@@ -114,7 +106,7 @@ class ProfileScreen extends StatelessWidget {
                       }
                     },
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   MenuTile(
                     icon: Icons.lock_outline,
                     title: 'Change PIN',
@@ -127,11 +119,10 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
                       );
-
                     },
                   ),
-                  SizedBox(height: 12),
-                  MenuTile(
+                  const SizedBox(height: 12),
+                  const MenuTile(
                     icon: Icons.no_accounts,
                     title: 'Delete Account',
                   ),

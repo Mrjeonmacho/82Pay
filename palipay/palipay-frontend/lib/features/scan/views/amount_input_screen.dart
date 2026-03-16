@@ -96,7 +96,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
       appBar: PaliTopBar(
         title: 'Transfer',
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
             color: AppColors.mainBlue,
           ),

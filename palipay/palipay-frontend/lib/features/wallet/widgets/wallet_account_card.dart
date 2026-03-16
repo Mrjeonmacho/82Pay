@@ -67,7 +67,7 @@ class WalletAccountCard extends StatelessWidget {
             ),
           ),
           // 우측 아이콘 (상황에 따라 유동적)
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );

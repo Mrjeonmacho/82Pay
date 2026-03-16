@@ -46,8 +46,9 @@ class PasswordStep extends StatelessWidget {
             isPassword: true,
             onChanged: (_) => provider.checkPasswordLogic(), // ✅ 입력할 때마다 로직 실행
             validator: (value) {
-              if (value == null || value.isEmpty)
+              if (value == null || value.isEmpty) {
                 return 'Confirm your password';
+              }
               // 비밀번호 일치 여부 확인
               if (!provider.isPasswordMatch) {
                 return 'Passwords do not match.';
