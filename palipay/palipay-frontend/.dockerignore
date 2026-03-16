@@ -1,0 +1,16 @@
+# Git 관련
+.git/
+.gitignore
+
+# Flutter & Dart 빌드 결과물 및 캐시 (가장 중요 ⭐)
+build/
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+
+# IDE 및 OS 설정 파일
+.idea/
+.vscode/
+*.iml
+.DS_Store
