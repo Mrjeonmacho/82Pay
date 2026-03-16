@@ -1,12 +1,11 @@
 package com.worldbank.worldbank_backend.finance;
 
-import com.worldbank.worldbank_backend.finance.domain.dto.TransferRequestDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.entity.jp.BankJP;
 import com.worldbank.worldbank_backend.finance.domain.entity.kr.BankKR;
 import com.worldbank.worldbank_backend.finance.domain.repository.jp.BankJPRepository;
 import com.worldbank.worldbank_backend.finance.domain.repository.kr.BankKRRepository;
 import com.worldbank.worldbank_backend.finance.domain.service.TransferService;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

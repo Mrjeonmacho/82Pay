@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bank_kr")
@@ -24,7 +25,7 @@ public class BankKR {
     @Column(name = "user_name")
     private String userName;
 
-    @Column(name = "account_number")
+    @Column(name = "account_number", unique = true, nullable = false)
     private String accountNumber;
 
     @Column(name = "amount")
@@ -32,6 +33,19 @@ public class BankKR {
 
     @Column(name = "bank_code")
     private String bankCode;
+
+    @Column(name = "bank_name")
+    private String bankName;
+
+    @Column(name = "account_password")
+    private String accountPassword;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
 
     public void withdraw(BigDecimal money) {
         if (amount.compareTo(money) < 0) {

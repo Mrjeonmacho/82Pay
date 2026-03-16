@@ -1,4 +1,4 @@
-package com.worldbank.worldbank_backend.finance.domain.dto;
+package com.worldbank.worldbank_backend.finance.domain.dto.Transfer;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -7,7 +7,9 @@ import java.math.BigDecimal;
 
 @Getter
 @Builder
-public class TransferRequestDto {
+public class TransferResponseDto {
+
+    private String message;
 
     private String senderAccountNumber;
     private String senderAccountName;
@@ -22,5 +24,6 @@ public class TransferRequestDto {
 
     private String senderCurrency;
     private String targetCurrency;
+
 
 }

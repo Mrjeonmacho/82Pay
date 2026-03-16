@@ -1,6 +1,6 @@
 package com.worldbank.worldbank_backend.finance.domain.strategy;
 
-import com.worldbank.worldbank_backend.finance.domain.dto.TransferRequestDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.entity.ch.AccountHistoryCH;
 import com.worldbank.worldbank_backend.finance.domain.entity.ch.BankCH;
 import com.worldbank.worldbank_backend.finance.domain.repository.ch.AccountHistoryCHRepository;

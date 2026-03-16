@@ -1,7 +1,6 @@
 package com.worldbank.worldbank_backend.finance.domain.router;
 
 import com.worldbank.worldbank_backend.finance.domain.strategy.BankStrategy;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

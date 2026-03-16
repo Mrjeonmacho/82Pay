@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bank_us")
@@ -33,6 +34,19 @@ public class BankUS {
     @Column(name = "bank_code")
     private String bankCode;
 
+    @Column(name = "bank_name")
+    private String bankName;
+
+    @Column(name = "account_password")
+    private String accountPassword;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+
     public void withdraw(BigDecimal money) {
         if (amount.compareTo(money) < 0) {
             throw new RuntimeException("잔액 부족");
@@ -42,5 +56,12 @@ public class BankUS {
 
     public void deposit(BigDecimal money) {
         amount = amount.add(money);
+    }
+
+    // 엔티티가 처음 저장될 때 시간 자동 설정 (Auditing을 사용하지 않을 경우)
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }
