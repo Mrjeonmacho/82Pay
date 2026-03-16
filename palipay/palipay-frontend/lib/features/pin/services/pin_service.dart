@@ -52,6 +52,7 @@ class PinService {
   /// 3. 핀 번호 검증 (송금/결제 전 확인용)
   Future<bool> verifyPin(int walletId, String pinNumber) async {
     // TODO: 화면 보기 위한 더미
+    print("검증 요청 들어옴 -> ID: $walletId, PIN: '$pinNumber'");
     await Future.delayed(const Duration(milliseconds: 300));
     if (pinNumber == '123456') return true;
 
