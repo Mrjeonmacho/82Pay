@@ -22,9 +22,48 @@ class PinScreen extends StatefulWidget {
   State<PinScreen> createState() => _PinScreenState();
 }
 
-class _PinScreenState extends State<PinScreen> {
+class _PinScreenState extends State<PinScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _shakeController;
+  late Animation<double> _shakeAnimation;
   String _inputPin = "";
   String? _errorMessage;
+  int _attemptCount = 0; // 틀린 횟수 추적
+
+  @override
+  void initState() {
+    super.initState();
+    // 1. 흔들기 애니메이션 설정 (0.5초 동안 4번 흔들림)
+    _shakeController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 10.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 10.0, end: -10.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -10.0, end: 10.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 10.0, end: 0.0), weight: 1),
+    ]).animate(_shakeController);
+  }
+
+  void _handleError({String? message}) {
+    setState(() {
+      _attemptCount++;
+      // 메시지가 인자로 들어오면 그걸 쓰고, 없으면 기본 메시지를 씁니다.
+      _errorMessage =
+          message ?? "Incorrect PIN. Please try again ($_attemptCount/5)";
+      _inputPin = ""; // 입력값 초기화
+    });
+
+    // 흔들기 애니메이션 실행!
+    _shakeController.forward(from: 0.0);
+
+    // 2초 뒤에 에러 메시지만 슬쩍 지워주기
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _errorMessage = null);
+    });
+  }
 
   /// 숫자 키패드 탭 시 로직
   void _onKeyTap(String value) {
@@ -79,10 +118,7 @@ class _PinScreenState extends State<PinScreen> {
           // }
         } else {
           // 불일치 시 에러 메시지 표시 및 입력값 초기화
-          setState(() {
-            _errorMessage = 'PINs do not match. Please try again.';
-            _inputPin = "";
-          });
+          _handleError(message: 'PINs do not match. Please try again.');
         }
         break;
       case PinMode.auth:
@@ -95,6 +131,19 @@ class _PinScreenState extends State<PinScreen> {
         //   _showError("Invalid PIN. Please check again.");
         //   setState(() => _inputPin = "");
         // }
+        // break;
+        // [수정] 가짜 검증 로직 연결 (123456만 통과하게 설정했다면)
+
+        final isValid = await pinProvider.verifyPin(
+          walletId,
+          pinNumber: _inputPin,
+        );
+
+        if (mounted && isValid) {
+          Navigator.pop(context, true);
+        } else {
+          _handleError();
+        }
         break;
     }
   }
@@ -154,10 +203,19 @@ class _PinScreenState extends State<PinScreen> {
             ),
             const SizedBox(height: 60),
 
-            // 6자리 핀 도트 지시자
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(6, (index) => _buildDot(index)),
+            // [수정] 핀 도트가 흔들리도록 AnimatedBuilder로 감싸기
+            AnimatedBuilder(
+              animation: _shakeAnimation,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(_shakeAnimation.value, 0), // X축으로만 흔들림
+                  child: child,
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(6, (index) => _buildDot(index)),
+              ),
             ),
 
             // 에러 메시지 영역
@@ -251,7 +309,10 @@ class _PinScreenState extends State<PinScreen> {
   /// 하단 왼쪽의 +82 로고 버튼 위젯
   Widget _logoButton() {
     return Center(
-      child: Image.asset('assets/images/palilogo1.png', width: 40), // +82 로고 부분
+      child: Image.asset(
+        'assets/images/logos/palilogo1.png',
+        width: 40,
+      ), // +82 로고 부분
     );
   }
 

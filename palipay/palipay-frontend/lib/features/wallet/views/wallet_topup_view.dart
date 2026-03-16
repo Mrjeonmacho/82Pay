@@ -45,12 +45,16 @@ class _TopupViewState extends State<TopupView> {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    // Source: 외부 계좌
-                    const WalletAccountCard(
-                      title: 'WELS FARGO',
-                      subtitle: 'US Account •••• 1234',
+                    // TODO 1. Source: 외부 계좌 (나중에 accountProvider에서 데이터를 가져오도록 수정 대상)
+                    WalletAccountCard(
+                      title:
+                          provider.selectedBankName ??
+                          'WELS FARGO', // 목데이터 -> 프로바이더 변수 예시
+                      subtitle:
+                          provider.selectedBankAccount ??
+                          'US Account •••• 1234',
                       icon: Icons.account_balance,
-                      trailing: Icon(
+                      trailing: const Icon(
                         Icons.keyboard_arrow_down,
                         color: AppColors.abledFont,
                       ),
@@ -66,7 +70,7 @@ class _TopupViewState extends State<TopupView> {
                     WalletAccountCard(
                       title: '+82Pay Wallet',
                       subtitle:
-                          'Current Balance: ₩ ${provider.currentBalance ?? 0}',
+                          'Current Balance: ₩ ${CurrencyInputFormatter.format(provider.currentBalance ?? 0)}',
                       icon: Icons.wallet,
                       trailing: const Icon(
                         Icons.check_circle,

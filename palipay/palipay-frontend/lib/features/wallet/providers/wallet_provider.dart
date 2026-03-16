@@ -11,6 +11,9 @@ class WalletProvider extends ChangeNotifier {
   WalletBalanceModel wallet = WalletBalanceModel.empty();
 
   // --- 추가된 상태 값들 (기획서 반영) ---
+  // 초기값은 시안에 있던 데이터를 기본으로 세팅해두었습니다.
+  String _selectedBankName = "WELS FARGO";
+  String _selectedBankAccount = "US Account •••• 1234";
   double _krwAmount = 0; // 입력된 원화 금액
   double _foreignAmount = 0; // 환산된 외화 금액
   double _exchangeRate = 1472.70; // 실시간 환율 (임시)
@@ -20,12 +23,22 @@ class WalletProvider extends ChangeNotifier {
   String? _errorMessage; // "금액이 부족합니다" 등의 메시지
 
   // Getters
+  String get selectedBankName => _selectedBankName;
+  String get selectedBankAccount => _selectedBankAccount;
   int? get currentBalance => wallet.currentBalance;
   double get krwAmount => _krwAmount;
   double get foreignAmount => _foreignAmount;
   double get exchangeRate => _exchangeRate;
   String? get errorMessage => _errorMessage;
   bool get isLoading => status == WalletStatus.loading;
+
+  // --- 0. 계좌 선택 정보 업데이트 ---
+  // 사용자가 리스트에서 다른 은행을 선택하면 이 함수를 호출합니다.
+  void updateSelectedAccount(String bankName, String accountNumber) {
+    _selectedBankName = bankName;
+    _selectedBankAccount = accountNumber;
+    notifyListeners(); // UI에 즉시 반영 (TopupView의 카드 글자가 바뀜)
+  }
 
   // 1. 원화 기준 금액 업데이트 (퀵 버튼 누르거나 원화 입력 시)
   void updateKrwAmount(double amount) {
