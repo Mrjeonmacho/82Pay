@@ -35,7 +35,6 @@ public class TransferCommonPersistenceService {
         BigDecimal amount = BigDecimal.ZERO;
         BigDecimal exchangeRate = BigDecimal.ONE;
 
-        /// /////////
         TransactionCategory category = financeCommandDto.transactionCategory();
 
         if (category == TransactionCategory.INPUT) {
@@ -46,7 +45,8 @@ public class TransferCommonPersistenceService {
             //FIXME 원화여야 하니까 액수는 target이 맞을거 같음
             amount = financeCommandDto.targetAmount();
             walletPali = walletService.credit(walletId, amount);
-        } else if (category == TransactionCategory.OUTPUT) {
+        }
+        else if (category == TransactionCategory.OUTPUT) {
             accountNumber = financeCommandDto.targetAccountNumber();
             accountName = financeCommandDto.targetAccountName();
             bankCode = financeCommandDto.targetBankCode();
@@ -62,8 +62,6 @@ public class TransferCommonPersistenceService {
             throw new IllegalArgumentException("은행 코드가 설정되지 않았습니다.");
         }
 
-
-        /// ////
 
         AccountHistory savedHistory = accountHistoryService.createHistory(
                 userId,

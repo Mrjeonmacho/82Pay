@@ -1,6 +1,7 @@
 package com.palipay.palipay_backend.finance.dto.response;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public record FinanceTransferResponse(
         String message,
@@ -11,7 +12,7 @@ public record FinanceTransferResponse(
             Long transactionId,
             String status,
             BigDecimal currentBalance,
-            String createdAt
+            LocalDateTime createdAt
     ) {
     }
 
@@ -19,7 +20,7 @@ public record FinanceTransferResponse(
             String transferId,
             Long transactionId,
             BigDecimal currentBalance,
-            String createdAt
+            LocalDateTime createdAt
     ) {
         return new FinanceTransferResponse(
                 "이체가 완료되었습니다.",

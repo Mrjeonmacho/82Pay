@@ -17,7 +17,8 @@ public record FinanceChargeRequest(
         @NotBlank
         String accountCurrency,
 
-        @NotBlank
+        @NotNull
+        @DecimalMin(value = "0.0001")
         BigDecimal convertedAmount,     //보통 krw
 
         @NotNull
