@@ -1,10 +1,11 @@
 package com.palipay.palipay_backend.finance.controller;
 
-import com.palipay.palipay_backend.finance.dto.request.FinanceChargeRequest;
+import com.palipay.palipay_backend.finance.dto.request.FinanceAdjustmentRequest;
 import com.palipay.palipay_backend.finance.dto.request.FinanceTransferRequest;
-import com.palipay.palipay_backend.finance.dto.response.FinanceChargeResponse;
+import com.palipay.palipay_backend.finance.dto.response.FinanceAdjustmentResponse;
 import com.palipay.palipay_backend.finance.dto.response.FinanceTransferResponse;
 import com.palipay.palipay_backend.finance.service.FinanceChargeService;
+import com.palipay.palipay_backend.finance.service.FinanceRefundService;
 import com.palipay.palipay_backend.finance.service.FinanceTransferService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class FinanceController {
     private final FinanceTransferService financeTransferService;
     private final FinanceChargeService financeChargeService;
+    private final FinanceRefundService financeRefundService;
 
     @PostMapping("/transfers")
     public ResponseEntity<FinanceTransferResponse> transfer(
@@ -36,13 +38,28 @@ public class FinanceController {
     }
 
     @PostMapping("/charges")
-    public ResponseEntity<FinanceChargeResponse> charge(
+    public ResponseEntity<FinanceAdjustmentResponse> charge(
             @RequestHeader(value = "accesstoken", required = false) String accessToken,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
-            @Valid @RequestBody FinanceChargeRequest request
+            @Valid @RequestBody FinanceAdjustmentRequest request
     ){
         Long userId = 1L;
-        FinanceChargeResponse response = financeChargeService.charge(
+        FinanceAdjustmentResponse response = financeChargeService.charge(
+                userId,
+                idempotencyKey,
+                request
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refunds")
+    public ResponseEntity<FinanceAdjustmentResponse> refund(
+            @RequestHeader(value = "accesstoken", required = false) String accessToken,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @Valid @RequestBody FinanceAdjustmentRequest request
+    ){
+        Long userId = 1L;
+        FinanceAdjustmentResponse response = financeRefundService.refund(
                 userId,
                 idempotencyKey,
                 request
