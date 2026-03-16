@@ -6,10 +6,7 @@ import '../../../core/widgets/pali_input_field.dart';
 class LoginScreen extends StatefulWidget {
   final bool showPasswordChangedMessage;
 
-  const LoginScreen({
-    super.key,
-    this.showPasswordChangedMessage = false,
-  });
+  const LoginScreen({super.key, this.showPasswordChangedMessage = false});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -88,11 +85,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 32),
 
                 // 구분선 섹션
-                Row(
+                const Row(
                   children: [
                     Expanded(child: Divider(color: AppColors.mainBlue)),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Text('Or', style: AppTextStyles.bodySmall),
                     ),
                     Expanded(child: Divider(color: AppColors.mainBlue)),
@@ -106,7 +103,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {},
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: BorderSide(color: AppColors.mainBlue), // 앱 기본 선 색상
+                    side: const BorderSide(
+                      color: AppColors.mainBlue,
+                    ), // 앱 기본 선 색상
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),

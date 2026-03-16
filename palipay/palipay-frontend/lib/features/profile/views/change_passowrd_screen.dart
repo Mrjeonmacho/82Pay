@@ -3,8 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/pali_button.dart';
-import '../../../core/widgets/pali_input_field.dart';
 import '../../../core/widgets/widgets.dart';
 import '../providers/profile_provider.dart';
 import '../../user/views/login_screen.dart';
@@ -94,9 +92,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (_) => const LoginScreen(
-            showPasswordChangedMessage: true,
-          ),
+          builder: (_) => const LoginScreen(showPasswordChangedMessage: true),
         ),
         (route) => false,
       );
@@ -146,19 +142,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FA),
-      appBar: const PaliTopBar(
-        title: 'Change Password',
-      ),
+      appBar: const PaliTopBar(title: 'Change Password'),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Current Password',
-                style: AppTextStyles.bodyMedium,
-              ),
+              const Text('Current Password', style: AppTextStyles.bodyMedium),
               const SizedBox(height: 10),
               PaliInputField(
                 hintText: 'Enter your current password',
@@ -180,10 +171,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 20),
 
-              Text(
-                'New Password',
-                style: AppTextStyles.bodyMedium,
-              ),
+              const Text('New Password', style: AppTextStyles.bodyMedium),
               const SizedBox(height: 10),
               PaliInputField(
                 hintText: 'Enter your new password',
@@ -205,7 +193,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 20),
 
-              Text(
+              const Text(
                 'Confirm New Password',
                 style: AppTextStyles.bodyMedium,
               ),

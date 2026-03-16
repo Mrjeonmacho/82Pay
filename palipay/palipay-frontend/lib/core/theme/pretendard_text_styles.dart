@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-class AppTextStyles {
-  static const String fontFamily = 'SUIT';
+class PreTextStyles {
+  static const String fontFamily = 'Pretendard';
   // Title Large - 완료 화면 큰 글씨
   static const TextStyle titleLarge = TextStyle(
     fontFamily: fontFamily,
@@ -49,7 +49,7 @@ class AppTextStyles {
   static const TextStyle bodyMedium = TextStyle(
     fontFamily: fontFamily,
     fontSize: 14,
-    fontWeight: FontWeight.w800, // ExtraBold
+    fontWeight: FontWeight.w800,
     color: AppColors.abledFont,
   );
 

@@ -4,7 +4,6 @@ import 'package:palipay_app/features/wallet/views/wallet_result_view.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/widgets.dart';
-import '../../../core/utils/currency_input_formatter.dart';
 import '../providers/wallet_provider.dart';
 import '../widgets/wallet_account_card.dart';
 import '../widgets/currency_amount_input.dart';

@@ -144,7 +144,7 @@ class _HistoryViewState extends State<HistoryView> {
                 ),
               ),
               // 카드 내부 거래 내역 아이템들
-              ...transactions.map((tx) => _buildTransactionItem(tx)).toList(),
+              ...transactions.map((tx) => _buildTransactionItem(tx)),
             ],
           ),
         );

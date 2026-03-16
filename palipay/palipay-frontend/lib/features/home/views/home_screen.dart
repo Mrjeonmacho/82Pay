@@ -5,7 +5,8 @@ import 'package:palipay_app/features/home/widgets/wallet_card.dart';
 import 'package:provider/provider.dart';
 import 'package:palipay_app/features/account/providers/account_provider.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
+// import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/pretendard_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -46,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Text(
                 'Recent Transactions',
-                style: AppTextStyles.bodyLarge.copyWith(
+                style: PreTextStyles.bodyLarge.copyWith(
                   color: AppColors.abledFont,
                 ),
               ),

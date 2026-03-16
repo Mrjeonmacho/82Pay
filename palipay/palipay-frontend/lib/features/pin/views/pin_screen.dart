@@ -3,7 +3,7 @@ import 'package:palipay_app/features/pin/providers/pin_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/widgets.dart'; // PaliTopBar, PaliButton 등 활용
+// PaliTopBar, PaliButton 등 활용
 
 /// PIN 화면의 모드를 정의합니다.
 enum PinMode {

@@ -16,8 +16,8 @@ class WalletProvider extends ChangeNotifier {
   String _selectedBankAccount = "US Account •••• 1234";
   double _krwAmount = 0; // 입력된 원화 금액
   double _foreignAmount = 0; // 환산된 외화 금액
-  double _exchangeRate = 1472.70; // 실시간 환율 (임시)
-  String _targetCurrency = "USD"; // 대상 통화
+  final double _exchangeRate = 1472.70; // 실시간 환율 (임시)
+  final String _targetCurrency = "USD"; // 대상 통화
 
   int? get balance => wallet.currentBalance;
   String? _errorMessage; // "금액이 부족합니다" 등의 메시지
