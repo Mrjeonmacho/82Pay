@@ -67,7 +67,8 @@ public class AccountHistory {
             String description,
             String otherAccountNumber,
             String otherAccountName,
-            String otherBankCode
+            String otherBankCode,
+            BigDecimal exchangeRate
     ){
         return AccountHistory.builder()
                 .walletId(wallet.getWalletId())
@@ -76,7 +77,7 @@ public class AccountHistory {
                 .category(category)
                 .amount(amount)
                 .exchangeAfterAmount(wallet.getAmount())
-                .exchangeRate(null)
+                .exchangeRate(exchangeRate)
                 .otherAccountNumber(otherAccountNumber)
                 .otherAccountName(otherAccountName)
                 .otherBankCode(otherBankCode)

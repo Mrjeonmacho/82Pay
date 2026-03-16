@@ -25,4 +25,14 @@ public class WalletDebitService {
         walletPali.debit(amount);
         return walletPali;
     }
+
+    public WalletPali getWalletPali(Long walletId){
+        return walletPaliRepository.findById(walletId)
+                .orElseThrow(() -> new IllegalArgumentException("지갑 미존재 예외처리 추가"));
+    }
+
+    public WalletPali getWalletPaliUserId(Long userId){
+        return walletPaliRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("지갑 미존재 예외처리 추가"));
+    }
 }

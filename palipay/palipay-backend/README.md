@@ -79,3 +79,5 @@ Refactor: 회원 서비스 중복 코드 제거
 - `release/*`
 
 ---
+# ERD
+![PaliPayERD.png](PaliPayERD.png)
