@@ -7,6 +7,19 @@ class QuickAmountRow extends StatelessWidget {
 
   const QuickAmountRow({super.key, required this.onAmountSelected});
 
+  String _formatWon(int amount) {
+    final text = amount.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < text.length; i++) {
+      final reverseIndex = text.length - i - 1;
+      buffer.write(text[i]);
+      if (reverseIndex % 3 == 0 && i != text.length - 1) {
+        buffer.write(',');
+      }
+    }
+    return '${buffer.toString()}₩';
+  }
+
   @override
   Widget build(BuildContext context) {
     // 와이어프레임 기준 금액 단위
@@ -15,25 +28,25 @@ class QuickAmountRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: amounts.map((amount) {
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: InkWell(
-              onTap: () => onAmountSelected(amount.toDouble()),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: AppColors.abledFont),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '+${amount ~/ 10000}만',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.mainBlue,
-                  ),
+        return Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: InkWell(
+            onTap: () => onAmountSelected(amount.toDouble()),
+            borderRadius: BorderRadius.circular(999),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE2E8F0), // light gray pill
+                borderRadius: BorderRadius.circular(999),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '+${_formatWon(amount)}',
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.abledFont,
+                  fontSize: 12,
                 ),
               ),
             ),

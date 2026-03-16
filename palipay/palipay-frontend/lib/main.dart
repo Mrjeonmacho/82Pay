@@ -10,7 +10,7 @@ import 'package:palipay_app/main_screen.dart';
 import 'features/account/providers/account_provider.dart';
 import 'features/wallet/providers/wallet_provider.dart';
 import 'core/theme/app_colors.dart';
-import 'core/theme/pretendard_text_styles.dart';
+import 'core/theme/app_text_styles.dart';
 
 void main() async {
   // 1. Flutter 바인딩 초기화 (비동기 main 함수 필수 단계)
@@ -59,7 +59,7 @@ class PaliPayApp extends StatelessWidget {
           backgroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
-          titleTextStyle: PreTextStyles.headlineLarge,
+          titleTextStyle: AppTextStyles.headlineLarge,
           iconTheme: IconThemeData(color: AppColors.abledFont),
         ),
 
