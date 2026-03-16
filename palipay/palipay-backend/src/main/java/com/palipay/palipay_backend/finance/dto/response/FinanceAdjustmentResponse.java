@@ -3,7 +3,7 @@ package com.palipay.palipay_backend.finance.dto.response;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record FinanceChargeResponse(
+public record FinanceAdjustmentResponse(
 
         String message,
         FinanceChargeData data
@@ -12,7 +12,7 @@ public record FinanceChargeResponse(
     public record FinanceChargeData(
 
             Long transactionId,
-            BigDecimal chargedAmount,
+            BigDecimal afterAmount,
             BigDecimal exchangeRate,
             BigDecimal currentBalance,
             LocalDateTime createdAt
@@ -20,18 +20,18 @@ public record FinanceChargeResponse(
     ) {
     }
 
-    public static FinanceChargeResponse success(
+    public static FinanceAdjustmentResponse success(
             Long transactionId,
-            BigDecimal chargeAmount,
+            BigDecimal afterAmount,
             BigDecimal exchangeRate,
             BigDecimal currentBalance,
             LocalDateTime createdAt
     ){
-        return new FinanceChargeResponse(
-                "충전이 완료되었습니다.",
+        return new FinanceAdjustmentResponse(
+                "거래가 완료되었습니다.",
                 new FinanceChargeData(
                         transactionId,
-                        chargeAmount,
+                        afterAmount,
                         exchangeRate,
                         currentBalance,
                         createdAt

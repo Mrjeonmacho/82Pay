@@ -16,43 +16,45 @@ import java.math.RoundingMode;
 
 @Service
 @RequiredArgsConstructor
-public class FinanceChargeService {
+public class FinanceRefundService {
     private final WalletService walletService;
     private final FinanceCommonService financeCommonService;
 
     //FIXME 전역 provider로 정보 받고 있는 중
     private final PalipayAccountProvider palipayAccountProvider;
 
-    public FinanceAdjustmentResponse charge(
+    public FinanceAdjustmentResponse refund(
             Long userId,
             String idempotencyKey,
             FinanceAdjustmentRequest request
     ){
         /*
-        * TODO 충전의 경우
-        *  source가 외국 계좌 - source currency는 wallet 내부에 있음
-        *  target은 palipay 계좌 - KRW
+        * TODO 환불의 경우
+        *  source가 palipay - KRW
+        *  target이 외국 계좌
         * */
         WalletPali walletPali = walletService.getWalletPali(request.walletId());
+
 
         //FIXME wallet에 bank는 string이라 직접 변환 필요
         //FIXME bankCode
         FinanceCommonDto financeCommonDto = new FinanceCommonDto(
+                palipayAccountProvider.getPalipayAccountInfo().accountNumber(),
+                palipayAccountProvider.getPalipayAccountInfo().accountName(),
+                palipayAccountProvider.getPalipayAccountInfo().bankCode(),
+                request.convertedAmount(),
+                palipayAccountProvider.getPalipayAccountInfo().currency(),
+
                 walletPali.getAccountNumber(),
                 walletPali.getAccountUsername(),
                 BankCode.valueOf(walletPali.getBankCode()),
                 request.amount(),
                 walletPali.getMoneyCode(),
 
-                palipayAccountProvider.getPalipayAccountInfo().accountNumber(),
-                palipayAccountProvider.getPalipayAccountInfo().accountName(),
-                palipayAccountProvider.getPalipayAccountInfo().bankCode(),
-
-                request.convertedAmount(),
-                palipayAccountProvider.getPalipayAccountInfo().currency(),
                 null,
-                TransactionCategory.INPUT
+                TransactionCategory.OUTPUT
         );
+
 
         FinanceTransferResponse commonResponse = financeCommonService.transfer(
                 userId,
@@ -64,7 +66,7 @@ public class FinanceChargeService {
         );
 
         //FIXME exchangeRate 직접 계산 중
-        BigDecimal exchangeRate = request.convertedAmount().divide(request.amount(), 6, RoundingMode.HALF_UP);
+        BigDecimal exchangeRate = request.amount().divide(request.convertedAmount(), 6, RoundingMode.HALF_UP);
 
         //FIXME null 대체
         return FinanceAdjustmentResponse.success(
