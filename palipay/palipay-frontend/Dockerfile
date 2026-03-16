@@ -20,7 +20,7 @@ RUN flutter build web --release
 FROM nginx:alpine
 
 # 유저가 작성한 Nginx 설정 파일 덮어쓰기
-COPY default.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # 1단계(builder)에서 완성된 웹 결과물만 Nginx 서빙 폴더로 복사
 COPY --from=builder /app/build/web /usr/share/nginx/html
