@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTextStyles {
-  static const String fontFamily = 'SUIT';
+  static const String fontFamily = 'Pretendard';
+
   // Title Large - 완료 화면 큰 글씨
   static const TextStyle titleLarge = TextStyle(
     fontFamily: fontFamily,
@@ -25,7 +26,7 @@ class AppTextStyles {
   static const TextStyle titleMedium = TextStyle(
     fontFamily: fontFamily,
     fontSize: 18,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.w500,
     color: AppColors.abledFont,
   );
 
@@ -41,15 +42,15 @@ class AppTextStyles {
   static const TextStyle bodyLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 16,
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.w700,
     color: AppColors.abledFont,
   );
 
-  // Body Large - 메인 글씨 2
+  // Body Medium - 메인 글씨 2
   static const TextStyle bodyMedium = TextStyle(
     fontFamily: fontFamily,
     fontSize: 14,
-    fontWeight: FontWeight.w800, // ExtraBold
+    fontWeight: FontWeight.w500,
     color: AppColors.abledFont,
   );
 
@@ -57,7 +58,7 @@ class AppTextStyles {
   static const TextStyle bodySmall = TextStyle(
     fontFamily: fontFamily,
     fontSize: 12,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.w400,
     color: AppColors.exampleFont,
   );
 }

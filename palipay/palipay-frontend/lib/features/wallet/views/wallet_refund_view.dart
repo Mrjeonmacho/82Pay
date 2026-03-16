@@ -3,7 +3,9 @@ import 'package:palipay_app/features/pin/views/pin_screen.dart';
 import 'package:palipay_app/features/wallet/views/wallet_result_view.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../../core/utils/currency_input_formatter.dart';
 import '../providers/wallet_provider.dart';
 import '../widgets/wallet_account_card.dart';
 import '../widgets/currency_amount_input.dart';
@@ -63,6 +65,18 @@ class _ExchangeViewState extends State<ExchangeView> {
                       controller: _controller,
                       onChanged: (val) => provider.updateKrwAmountFromText(val),
                     ),
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: _RefundMaxButton(
+                        onTap: () {
+                          final balance = provider.currentBalance ?? 0;
+                          provider.updateKrwAmount(balance.toDouble());
+                          _controller.text =
+                              CurrencyInputFormatter.format(balance);
+                        },
+                      ),
+                    ),
                     if (provider.errorMessage != null)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -82,7 +96,10 @@ class _ExchangeViewState extends State<ExchangeView> {
             Padding(
               padding: const EdgeInsets.all(24),
               child: PaliButton(
-                backgroundColor: AppColors.mainBlue,
+                backgroundColor:
+                    provider.errorMessage == null && provider.krwAmount > 0
+                    ? AppColors.mainBlue
+                    : AppColors.disabledBackground,
                 text: 'Refund Now',
                 onPressed:
                     provider.errorMessage == null && provider.krwAmount > 0
@@ -114,6 +131,36 @@ class _ExchangeViewState extends State<ExchangeView> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RefundMaxButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _RefundMaxButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Text(
+          'Max',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.mainBlue,
+            fontWeight: FontWeight.bold,
+            fontSize: 11,
+          ),
         ),
       ),
     );
