@@ -22,5 +22,18 @@ public enum BankCode {
     BOTKJPJT,   // MUFG Bank
     SMBCJPJT,   // Sumitomo Mitsui Banking Corporation
     MHCBJPJT,   // Mizuho Bank
-    DIWAJPJT    // Resona Bank
+    DIWAJPJT,    // Resona Bank
+
+    // KR
+    KDB,        // Korea Development Bank (산업은행)
+    IBK,        // Industrial Bank of Korea (기업은행)
+    KB,         // KB Kookmin Bank (국민은행)
+    SHINHAN,    // Shinhan Bank (신한은행)
+    HANA,       // Hana Bank (하나은행)
+    WOORI,      // Woori Bank (우리은행)
+    NH,         // NH Bank (농협은행)
+    SC,         // Standard Chartered Korea (SC제일은행)
+    CITI_KR,    // Citibank Korea (씨티은행)
+    KAKAO,      // KakaoBank (카카오뱅크)
+    TOSS        // Toss Bank (토스뱅크)
 }

@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+
+//모든 거래 서비스 통합 서비스
 @Service
 @RequiredArgsConstructor
 public class FinanceCommonService {
@@ -106,7 +108,7 @@ public class FinanceCommonService {
                     persistResultDto.transactionId(),
                     "SUCCESS",
                     persistResultDto.currentBalance(),
-                    persistResultDto.createdAt().toString()
+                    persistResultDto.createdAt()
             );
 
             //TODO redis save result

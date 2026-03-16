@@ -2,17 +2,12 @@ package com.palipay.palipay_backend.finance.service;
 
 import com.palipay.palipay_backend.finance.domain.TransactionCategory;
 import com.palipay.palipay_backend.finance.domain.WalletPali;
-import com.palipay.palipay_backend.finance.dto.ExternalTransferResultDto;
 import com.palipay.palipay_backend.finance.dto.FinanceCommonDto;
-import com.palipay.palipay_backend.finance.dto.TransferPersistResultDto;
-import com.palipay.palipay_backend.finance.dto.TransferResultCacheDto;
 import com.palipay.palipay_backend.finance.dto.request.FinanceTransferRequest;
 import com.palipay.palipay_backend.finance.dto.response.FinanceTransferResponse;
 import com.palipay.palipay_backend.global.bank.BankCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 //모든 거래 서비스 통합 서비스
 @Service
@@ -60,6 +55,4 @@ public class FinanceTransferService {
                 request.workplaceId()
         );
     }
-
-
 }
