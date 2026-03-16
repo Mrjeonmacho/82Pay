@@ -1,13 +1,12 @@
 package com.worldbank.worldbank_backend.finance;
 
-import com.worldbank.worldbank_backend.finance.domain.dto.TransferRequestDto;
-import com.worldbank.worldbank_backend.finance.domain.dto.TransferResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.service.TransferService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 

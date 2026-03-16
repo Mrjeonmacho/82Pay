@@ -1,7 +1,7 @@
 package com.worldbank.worldbank_backend.finance.domain.service;
 
-import com.worldbank.worldbank_backend.finance.domain.dto.TransferRequestDto;
-import com.worldbank.worldbank_backend.finance.domain.dto.TransferResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.router.BankRouter;
 import com.worldbank.worldbank_backend.finance.domain.strategy.BankStrategy;
 import lombok.RequiredArgsConstructor;

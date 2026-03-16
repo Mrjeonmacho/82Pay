@@ -1,6 +1,6 @@
 package com.worldbank.worldbank_backend.finance.domain.strategy;
 
-import com.worldbank.worldbank_backend.finance.domain.dto.TransferRequestDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
 
 public interface BankStrategy {
 
