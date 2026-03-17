@@ -3,7 +3,7 @@ spring:
     name: palipay-backend
 
   datasource:
-    url: jdbc:mysql://43.202.40.75:23305/palipay?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://127.0.0.1:23305/palipay?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
     password: 1q2w3e4r!@
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -39,3 +39,15 @@ spring:
   sql:
     init:
       mode: never
+  
+    mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${PALIPAY_ADMIN_EMAIL}
+    password: ${PALIPAY_ADMIN_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true

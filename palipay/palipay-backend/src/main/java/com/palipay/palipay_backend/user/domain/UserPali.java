@@ -5,7 +5,12 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "user_pali")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -18,11 +23,17 @@ public class UserPali {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "email", length = 255)
+    @Column(nullable = false, unique = true, name = "email", length = 255)
     private String email;
 
     @Column(name = "password", length = 255)
     private String password;
+
+    @Column(name = "name", length = 255)
+    private String name;
+
+    @Column(name = "phone_number", length = 255)
+    private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -31,9 +42,11 @@ public class UserPali {
     @Column(name = "country_code", length = 10)
     private String countryCode;
 
-    @Column(name = "created_at")
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
