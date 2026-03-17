@@ -14,13 +14,25 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
+  // [수정] ScanScreen을 탭 페이지 목록에서 제거
+  // -> 카메라 화면은 navbar 내부 탭이 아니라 별도 화면으로 push
   final List<Widget> _pages = const [
     HomeScreen(),     // index 0
     ProfileScreen(),  // index 1
-    ScanScreen(),     // index 2
   ];
 
-  void _handleNavTap(int index) {
+  Future<void> _handleNavTap(int index) async {
+    // [수정] scan 버튼(index 2)을 누르면 탭 전환이 아니라 새 화면 push
+    if (index == 2) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const ScanScreen(),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _currentIndex = index;
     });
