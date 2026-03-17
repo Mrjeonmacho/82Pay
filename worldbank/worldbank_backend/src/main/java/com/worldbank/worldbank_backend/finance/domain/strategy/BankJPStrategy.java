@@ -17,7 +17,7 @@ public class BankJPStrategy implements BankStrategy {
 
     @Override
     public String getBankCode() {
-        return "JP";
+        return "JPY";
     }
 
     @Override

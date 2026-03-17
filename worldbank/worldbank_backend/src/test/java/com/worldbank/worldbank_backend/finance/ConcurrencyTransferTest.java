@@ -49,8 +49,10 @@ public class ConcurrencyTransferTest {
                     TransferRequestDto request = TransferRequestDto.builder()
                             .senderAccountNumber("KR-1001-0001")
                             .senderBankcode("KR")
+                            .senderCurrency("KRW")
                             .targetAccountNumber("JP-2001-0001") // 타겟은 모두 동일한 JP 계좌
                             .targetBankcode("JP")
+                            .targetCurrency("JPY")
                             .senderAmount(transferAmount)
                             .targetAmount(transferAmount)
                             .build();

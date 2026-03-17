@@ -40,8 +40,10 @@ void xaDistributedTransactionRollbackTest() {
     TransferRequestDto request = TransferRequestDto.builder()
             .senderAccountNumber("KR-1001-0001")
             .senderBankcode("KR")
+            .senderCurrency("KRW")
             .targetAccountNumber("INVALID-ACCOUNT") // 에러 유발
             .targetBankcode("JP")
+            .targetCurrency("JPY")
             .senderAmount(new BigDecimal("1000.00"))
             .targetAmount(new BigDecimal("10.00"))
             .build();

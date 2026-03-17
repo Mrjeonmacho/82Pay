@@ -17,7 +17,7 @@ public class BankKRStrategy implements BankStrategy{
 
     @Override
     public String getBankCode() {
-        return "KR";
+        return "KRW";
     }
 
     @Override

@@ -17,7 +17,7 @@ public class BankCHStrategy implements BankStrategy {
 
     @Override
     public String getBankCode() {
-        return "CH";
+        return "CNY";
     }
 
     @Override
