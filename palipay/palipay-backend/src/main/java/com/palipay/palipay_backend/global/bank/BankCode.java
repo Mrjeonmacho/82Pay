@@ -35,5 +35,10 @@ public enum BankCode {
     SC,         // Standard Chartered Korea (SC제일은행)
     CITI_KR,    // Citibank Korea (씨티은행)
     KAKAO,      // KakaoBank (카카오뱅크)
-    TOSS        // Toss Bank (토스뱅크)
+    TOSS,        // Toss Bank (토스뱅크)
+
+    KR,
+    JP,
+    CH,
+    US
 }
