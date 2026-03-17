@@ -4,7 +4,7 @@ import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferReque
 
 public interface BankStrategy {
 
-    String getBankCode();
+    String getBankCurrency();
 
 
     void withdraw(TransferRequestDto request);

@@ -16,7 +16,7 @@ public class BankCHStrategy implements BankStrategy {
     private final AccountHistoryCHRepository historyRepository;
 
     @Override
-    public String getBankCode() {
+    public String getBankCurrency() {
         return "CNY";
     }
 

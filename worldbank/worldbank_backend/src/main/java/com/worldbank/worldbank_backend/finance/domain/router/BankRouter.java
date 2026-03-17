@@ -15,14 +15,14 @@ public class BankRouter {
 
         strategyMap = strategies.stream()
                 .collect(Collectors.toMap(
-                        BankStrategy::getBankCode,
+                        BankStrategy::getBankCurrency,
                         s -> s
                 ));
     }
 
-    public BankStrategy route(String bankCode) {
+    public BankStrategy route(String bankCurrency) {
 
-        BankStrategy strategy = strategyMap.get(bankCode);
+        BankStrategy strategy = strategyMap.get(bankCurrency);
 
         if(strategy == null){
             throw new RuntimeException("지원하지 않는 은행");

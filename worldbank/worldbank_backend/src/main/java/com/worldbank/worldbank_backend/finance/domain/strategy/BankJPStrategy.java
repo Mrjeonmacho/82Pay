@@ -16,7 +16,7 @@ public class BankJPStrategy implements BankStrategy {
     private final AccountHistoryJPRepository historyRepository;
 
     @Override
-    public String getBankCode() {
+    public String getBankCurrency() {
         return "JPY";
     }
 
