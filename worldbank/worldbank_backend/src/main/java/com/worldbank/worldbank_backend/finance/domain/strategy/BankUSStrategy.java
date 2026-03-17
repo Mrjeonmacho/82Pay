@@ -16,8 +16,8 @@ public class BankUSStrategy implements BankStrategy {
     private final AccountHistoryUSRepository historyRepository;
 
     @Override
-    public String getBankCode() {
-        return "US";
+    public String getBankCurrency() {
+        return "USD";
     }
 
     @Override

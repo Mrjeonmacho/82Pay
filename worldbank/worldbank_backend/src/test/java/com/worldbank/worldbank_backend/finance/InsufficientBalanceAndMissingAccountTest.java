@@ -38,8 +38,10 @@ public class InsufficientBalanceAndMissingAccountTest {
         TransferRequestDto request = TransferRequestDto.builder()
                 .senderAccountNumber("KR-1001-0001")
                 .senderBankcode("KR")
+                .senderCurrency("KRW")
                 .targetAccountNumber("JP-2001-0001")
                 .targetBankcode("JP")
+                .targetCurrency("JPY")
                 .senderAmount(new BigDecimal("500000000.00")) // 5억
                 .targetAmount(new BigDecimal("50000.00"))
                 .build();
@@ -67,8 +69,10 @@ public class InsufficientBalanceAndMissingAccountTest {
         TransferRequestDto request = TransferRequestDto.builder()
                 .senderAccountNumber("KR-1001-0001")
                 .senderBankcode("KR")
+                .senderCurrency("KRW")
                 .targetAccountNumber("NON-EXISTENT-ACCOUNT-999") // 존재하지 않는 계좌
                 .targetBankcode("JP")
+                .targetCurrency("JPY")
                 .senderAmount(new BigDecimal("1000.00"))
                 .targetAmount(new BigDecimal("10.00"))
                 .build();

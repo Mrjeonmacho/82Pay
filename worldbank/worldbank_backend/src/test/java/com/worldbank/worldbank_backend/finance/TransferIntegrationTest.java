@@ -51,8 +51,10 @@ public class TransferIntegrationTest {
         TransferRequestDto request = TransferRequestDto.builder()
                 .senderAccountNumber("KR-1001-0001")
                 .senderBankcode("KR")
+                .senderCurrency("KRW")
                 .targetAccountNumber("KR-1001-9999") // 가상의 다른 한국 계좌
                 .targetBankcode("KR")
+                .targetCurrency("KRW")
                 .senderAmount(new BigDecimal("5000.00"))
                 .targetAmount(new BigDecimal("5000.00"))
                 .build();

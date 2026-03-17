@@ -16,8 +16,8 @@ public class BankKRStrategy implements BankStrategy{
     private final AccountHistoryKRRepository historyRepository;
 
     @Override
-    public String getBankCode() {
-        return "KR";
+    public String getBankCurrency() {
+        return "KRW";
     }
 
     @Override
