@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:palipay_app/main_screen.dart';
 import 'features/account/providers/account_provider.dart';
 import 'features/wallet/providers/wallet_provider.dart';
+import 'features/scan/providers/scan_provider.dart'; // [수정] 추가
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_text_styles.dart';
 
@@ -35,6 +36,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => SignUpProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => PinProvider()),
+        ChangeNotifierProvider(create: (_) => ScanProvider()),
       ],
       child: const PaliPayApp(),
     ),
