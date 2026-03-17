@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 public class PalipayAccountProvider {
     public PalipayAccountInfo getPalipayAccountInfo() {
         return new PalipayAccountInfo(
-                "123-456-7890",
-                "PaliPay",
+                "123456789012",
+                "Palipay",
                 "KRW",
-                BankCode.ABOCCNBJ
+                BankCode.KR
         );
     }
 }
