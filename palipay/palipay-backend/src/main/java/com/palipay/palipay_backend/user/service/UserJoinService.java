@@ -10,7 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.palipay.palipay_backend.user.infrastructure.redis.RedisService;
+import com.palipay.palipay_backend.global.redis.RedisService;
 import com.palipay.palipay_backend.user.domain.UserPali;
 import com.palipay.palipay_backend.user.dto.request.JoinRequest;
 import com.palipay.palipay_backend.user.infrastructure.mail.EmailSender;
