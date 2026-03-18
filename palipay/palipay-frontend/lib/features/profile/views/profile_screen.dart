@@ -9,6 +9,7 @@ import '../widgets/profile_card.dart';
 import '../widgets/section_card.dart';
 import '../views/change_passowrd_screen.dart';
 import '../views/linked_accounts_screen.dart';
+import '../../account/views/account_management_view.dart';
 import '../../pin/views/change_pin_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -48,7 +49,7 @@ class ProfileScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const LinkedAccountsView(),
+                          builder: (_) => const AccountManagementView(),
                         ),
                       );
                     },

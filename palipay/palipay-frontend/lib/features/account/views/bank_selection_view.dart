@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
+import 'account_link_view.dart';
 
 class BankSelectionView extends StatelessWidget {
   const BankSelectionView({super.key});
@@ -64,11 +65,15 @@ class BankSelectionView extends StatelessWidget {
   Widget _buildBankItem(BuildContext context, Map<String, String> bank) {
     return InkWell(
       onTap: () {
-        // 7번 화면인 AccountLinkView로 선택한 데이터 전달
-        Navigator.pushNamed(
+        Navigator.push(
           context,
-          '/account-link',
-          arguments: {'bankName': bank['name'], 'bankCode': bank['code']},
+          MaterialPageRoute(
+            builder: (context) => AccountLinkView(
+              // 요 이름표(bankName:)가 어제 AccountLinkView 생성자에 만든 그 이름표입니다!
+              bankName: bank['name']!, // 선택한 은행의 'name' 전달
+              bankCode: bank['code']!, // 선택한 은행의 'code' 전달
+            ),
+          ),
         );
       },
       borderRadius: BorderRadius.circular(12),
