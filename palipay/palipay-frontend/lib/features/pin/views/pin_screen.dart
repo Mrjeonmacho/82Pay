@@ -3,13 +3,15 @@ import 'package:palipay_app/features/pin/providers/pin_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../account/views/account_management_view.dart';
 // PaliTopBar, PaliButton 등 활용
+import '../../../core/widgets/widgets.dart';
 
 /// PIN 화면의 모드를 정의합니다.
 enum PinMode {
   create, // 처음 PIN 생성
   confirm, // PIN 다시 입력 (재확인)
-  auth, // 결제 전 PIN 인증 (Verify)
+  auth, // 결제 전 PIN 인증 (palipay)
 }
 
 class PinScreen extends StatefulWidget {
@@ -91,11 +93,10 @@ class _PinScreenState extends State<PinScreen>
   /// PIN 입력 완료 시 모드별 처리 로직
   void _handleComplete() async {
     final pinProvider = context.read<PinProvider>();
-    final walletId = 12345; // TODO: 실제로는 widget이나 다른 Provider에서 받아온 ID 사용
+    final walletId = 12345;
 
     switch (widget.mode) {
       case PinMode.create:
-        // 다음 단계인 Confirm 모드 화면으로 이동 (입력한 PIN 전달)
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -104,42 +105,39 @@ class _PinScreenState extends State<PinScreen>
           ),
         );
         break;
+
       case PinMode.confirm:
-        // 첫 번째 입력값과 비교
+        // 1. 첫 번째 입력값과 일치하는지 확인
         if (widget.firstPin == _inputPin) {
-          // TODO: 서버에 PIN 등록 API 호출 로직 (아래 registerPin 호출)
-          // final success = await pinProvider.createPin(walletId);
-          // await _registerPin(_inputPin);
-          // if (mounted && success) {
-          //   // 성공 시 결과 화면으로 이동
-          //   _navigateToResult(isSuccess: true);
-          // } else {
-          //   _showError("PIN registration failed. Please try again.");
-          // }
+          // [수정] Provider를 통해 실제로 PIN을 생성/등록합니다.
+          final success = await pinProvider.createPin(walletId);
+
+          if (mounted && success) {
+            // [기획 반영] 생성 성공 시 바로 계좌 관리 화면으로!
+            // pushAndRemoveUntil을 써서 이전 PIN 입력 스택을 모두 비워줍니다.
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AccountManagementView(),
+              ),
+              (route) => route.isFirst, // 홈 화면만 남기고 다 지움
+            );
+          } else {
+            _handleError(message: "PIN registration failed. Please try again.");
+          }
         } else {
-          // 불일치 시 에러 메시지 표시 및 입력값 초기화
           _handleError(message: 'PINs do not match. Please try again.');
         }
         break;
-      case PinMode.auth:
-        // TODO: 서버에 PIN 검증 API 호출 로직 (Verify API)
-        // final isValid = await pinProvider.verifyPin(walletId);
-        // if (mounted && isValid) {
-        //   // 인증 성공 시 다음 단계(송금 실행 등)로 이동
-        //   Navigator.pop(context, true);
-        // } else {
-        //   _showError("Invalid PIN. Please check again.");
-        //   setState(() => _inputPin = "");
-        // }
-        // break;
-        // [수정] 가짜 검증 로직 연결 (123456만 통과하게 설정했다면)
 
+      case PinMode.auth:
         final isValid = await pinProvider.verifyPin(
           walletId,
           pinNumber: _inputPin,
         );
 
         if (mounted && isValid) {
+          // [수정] 이동하지 말고, 결과값 true만 가지고 돌아갑니다.
           Navigator.pop(context, true);
         } else {
           _handleError();
@@ -232,9 +230,18 @@ class _PinScreenState extends State<PinScreen>
               ),
 
             const Spacer(),
-
+            PaliKeypad(
+              onNumberTap: _onKeyTap, // 숫자 누르면 실행할 함수 연결
+              onBackspace: _onBackspace, // 지우기 누르면 실행할 함수 연결
+              leftButton: Center(
+                // 하단 왼쪽 로고 배치
+                child: Image.asset(
+                  'assets/images/logos/palilogo1.png',
+                  width: 40,
+                ),
+              ),
+            ),
             // 커스텀 숫자 키패드
-            _buildKeypad(),
             const SizedBox(height: 40),
           ],
         ),
@@ -258,69 +265,6 @@ class _PinScreenState extends State<PinScreen>
           width: 2,
         ),
       ),
-    );
-  }
-
-  /// 3x4 그리드 형태의 커스텀 키패드를 생성하는 위젯
-  Widget _buildKeypad() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
-      child: GridView.count(
-        shrinkWrap: true,
-        crossAxisCount: 3,
-        mainAxisSpacing: 20,
-        crossAxisSpacing: 20,
-        childAspectRatio: 1.5,
-        physics: const NeverScrollableScrollPhysics(), // 스크롤 방지
-        children: [
-          ...[
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7",
-            "8",
-            "9",
-          ].map((val) => _keyButton(val)),
-          // 하단 특수키들 배치
-          _logoButton(), // 하단 왼쪽 로고
-          _keyButton("0"),
-          _backspaceButton(), // 하단 오른쪽 백스페이스
-        ],
-      ),
-    );
-  }
-
-  /// 일반 숫자 버튼 위젯
-  Widget _keyButton(String val) {
-    return InkWell(
-      onTap: () => _onKeyTap(val),
-      child: Center(
-        child: Text(
-          val,
-          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w500),
-        ),
-      ),
-    );
-  }
-
-  /// 하단 왼쪽의 +82 로고 버튼 위젯
-  Widget _logoButton() {
-    return Center(
-      child: Image.asset(
-        'assets/images/logos/palilogo1.png',
-        width: 40,
-      ), // +82 로고 부분
-    );
-  }
-
-  /// 하단 오른쪽의 백스페이스 버튼 위젯
-  Widget _backspaceButton() {
-    return IconButton(
-      onPressed: _onBackspace,
-      icon: const Icon(Icons.backspace_outlined, size: 28),
     );
   }
 }
