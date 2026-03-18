@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../providers/scan_provider.dart';
-import 'account_input_screen.dart';
+import '../../transfer/views/account_input_screen.dart';
 
 class ScanLoadingScreen extends StatefulWidget {
   final File imageFile;

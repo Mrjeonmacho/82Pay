@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:palipay_app/features/transfer/views/transfer_confirm_view.dart';
 import 'package:provider/provider.dart';
 import '../../../core/utils/currency_input_formatter.dart';
 import '../../../core/theme/app_colors.dart';
@@ -12,12 +13,14 @@ import '../../wallet/providers/wallet_provider.dart';
 class AmountInputScreen extends StatefulWidget {
   final String bankName;
   final String accountNumber;
+  final String recipientName; // 추가
   final int? walletBalance;
 
   const AmountInputScreen({
     super.key,
     required this.bankName,
     required this.accountNumber,
+    this.recipientName = "Unknown", // 추가
     this.walletBalance,
   });
 
@@ -34,23 +37,23 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
     return int.tryParse(raw) ?? 0;
   }
 
-  int get _walletBalanceValue {
-    final providerBalance = context.watch<WalletProvider>().balance;
-    return providerBalance ?? widget.walletBalance ?? 0;
+  int _getWalletBalanceValue(WalletProvider provider) {
+    return provider.balance ?? widget.walletBalance ?? 0;
   }
 
-  String get _formattedWalletBalance {
-    return CurrencyInputFormatter.format(_walletBalanceValue);
+  String _getFormattedWalletBalance(WalletProvider provider) {
+    return CurrencyInputFormatter.format(_getWalletBalanceValue(provider));
   }
 
-  bool get _isInsufficient =>
-      _enteredAmount > 0 && _enteredAmount > _walletBalanceValue;
+  bool _getIsInsufficient(WalletProvider provider) =>
+      _enteredAmount > 0 && _enteredAmount > _getWalletBalanceValue(provider);
 
-  bool get _canProceed =>
-      _enteredAmount > 0 && _enteredAmount <= _walletBalanceValue;
+  bool _getCanProceed(WalletProvider provider) =>
+      _enteredAmount > 0 && _enteredAmount <= _getWalletBalanceValue(provider);
 
   void _onNext() {
-    if (!_canProceed) return;
+    final provider = context.read<WalletProvider>();
+    if (!_getCanProceed(provider)) return;
 
     /// -----------------------------------------
     /// 지금: 다음 화면 이동만 처리
@@ -66,6 +69,19 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
     ///   amount: _enteredAmount,
     /// );
     /// -----------------------------------------
+    ///
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TransferConfirmView(
+          bankName: widget.bankName,
+          accountNumber: widget.accountNumber,
+          // recipientName: widget.recipientName,
+          recipientName: "홍길동",
+          amount: _enteredAmount, // int 타입 금액
+        ),
+      ),
+    );
   }
 
   @override
@@ -90,6 +106,10 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
   @override
   Widget build(BuildContext context) {
     final walletProvider = context.watch<WalletProvider>();
+    // 이 한 줄이 범인을 잡아줄 겁니다!
+    print(
+      "입력액: $_enteredAmount, 잔액: ${_getWalletBalanceValue(walletProvider)}, 로딩중: ${walletProvider.isLoading}, 진행가능: ${_getCanProceed(walletProvider)}",
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8FB),
@@ -120,7 +140,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
               Text(
                 walletProvider.isLoading
                     ? 'Balance loading...'
-                    : 'Balance ₩ $_formattedWalletBalance',
+                    : 'Balance ₩ ${_getFormattedWalletBalance(walletProvider)}',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.exampleFont,
                   fontWeight: FontWeight.normal,
@@ -171,9 +191,9 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              if (_isInsufficient)
+              if (_getIsInsufficient(walletProvider))
                 Text(
-                  'Withdrawable amount is ₩ $_formattedWalletBalance',
+                  'Withdrawable amount is ₩ ${_getFormattedWalletBalance(walletProvider)}',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.warningRed,
                   ),
@@ -181,7 +201,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
               const Spacer(),
               PaliButton(
                 text: 'Next',
-                onPressed: _canProceed && !walletProvider.isLoading
+                onPressed: _getCanProceed(walletProvider) && !walletProvider.isLoading
                     ? _onNext
                     : null,
                 backgroundColor: AppColors.mainBlue,

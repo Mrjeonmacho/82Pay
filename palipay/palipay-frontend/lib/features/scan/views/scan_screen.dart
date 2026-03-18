@@ -9,7 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_nav_bars.dart';
 import '../providers/scan_provider.dart';
-import 'account_input_screen.dart';
+import '../../transfer/views/account_input_screen.dart';
 import 'scan_loading_screen.dart';
 
 class ScanScreen extends StatefulWidget {
