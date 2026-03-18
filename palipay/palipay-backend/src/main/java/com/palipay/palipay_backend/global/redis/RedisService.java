@@ -1,4 +1,4 @@
-package com.palipay.palipay_backend.user.infrastructure.redis;
+package com.palipay.palipay_backend.global.redis;
 
 import java.time.Duration;
 

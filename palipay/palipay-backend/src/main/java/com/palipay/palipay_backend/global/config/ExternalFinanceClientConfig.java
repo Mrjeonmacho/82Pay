@@ -10,7 +10,7 @@ public class ExternalFinanceClientConfig {
 
     @Bean
     public RestClient externalFinanceRestClient(
-            @Value("${external.finance.base-url}") String baseUrl
+            @Value("${external.finance.base-url:http://localhost}") String baseUrl
     ) {
         return RestClient.builder()
                 .baseUrl(baseUrl)
