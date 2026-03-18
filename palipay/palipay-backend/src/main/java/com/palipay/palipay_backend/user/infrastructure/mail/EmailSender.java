@@ -14,7 +14,7 @@ public class EmailSender {
 
     private final JavaMailSender javaMailSender;
 
-    @Value("${PALIPAY_ADMIN_EMAIL}")
+    @Value("${spring.mail.username}")
     private String fromEmail;
 
     public void sendEmail(String to, String authCode) {
