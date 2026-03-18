@@ -40,7 +40,7 @@ spring:
     init:
       mode: never
   
-    mail:
+  mail:
     host: smtp.gmail.com
     port: 587
     username: ${PALIPAY_ADMIN_EMAIL}

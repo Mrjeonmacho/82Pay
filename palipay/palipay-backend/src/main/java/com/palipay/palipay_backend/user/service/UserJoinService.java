@@ -1,6 +1,7 @@
 package com.palipay.palipay_backend.user.service;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
 import com.palipay.palipay_backend.user.domain.UserStatus;
 import org.springframework.http.HttpStatus;
@@ -83,13 +84,16 @@ public class UserJoinService {
                 .phoneNumber(request.phoneNumber())
                 .countryCode(request.countryCode())
                 .status(UserStatus.ACTIVE) // 가입 즉시 활성화 상태로 설정
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         // 4. DB 저장
         userPaliRepository.save(newUser);
 
-        // 5. 성공 시 200 OK와 함께 ID 반환
-        return ResponseEntity.ok(newUser.getUserId());
+        // 5. 성공 시 201 Created와 함께 ID 반환
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(newUser.getUserId());
     }
 
     // 6자리 인증 코드 생성
