@@ -1,7 +1,9 @@
 package com.palipay.palipay_backend.external.service;
 
+import com.palipay.palipay_backend.external.dto.request.ExternalCheckRequest;
 import com.palipay.palipay_backend.external.dto.request.ExternalRealRequest;
 import com.palipay.palipay_backend.external.dto.request.ExternalTransferRequest;
+import com.palipay.palipay_backend.external.dto.response.ExternalCheckResponse;
 import com.palipay.palipay_backend.external.dto.response.ExternalRealResponse;
 import com.palipay.palipay_backend.external.dto.response.ExternalTransferResponse;
 import lombok.RequiredArgsConstructor;
@@ -46,41 +48,34 @@ public class ExternalBankClient {
         }
     }
 
-    public ExternalTransferResponse transferCommonTest(ExternalTransferRequest req) {
-        //TEST 입력에 1_000_000 이상 금액을 입력하면 에러 처리 강제 발생 설정
-        if (req.senderAmount().compareTo(BigDecimal.valueOf(1_000_000)) > 0) {
-            return ExternalTransferResponse.fail(
-                    "이체에 실패했습니다.",
-                    "INSUFFICIENT_BALANCE",
-                    "잔액이 부족하여 거래를 완료할 수 없습니다."
+    //TODO 추후 DTO 수정
+    public ExternalCheckResponse checkValue(ExternalCheckRequest req){
+        /*TODO 외부 은행 잔액 확인 요청*/
+        try {
+            ExternalCheckResponse response = externalFinanceRestClient.get()
+                    .uri("/api/finance/{accountId}", req.targetAccountNumber())
+                    .retrieve()
+                    .body(ExternalCheckResponse.class);
+
+            if (response == null) {
+                return new ExternalCheckResponse(
+                        "서버 응답 없음",
+                        null,
+                        null
+                );
+            }
+
+            return response;
+
+        } catch (RestClientException e) {
+
+            return new ExternalCheckResponse(
+                    "계좌 확인에 실패했습니다." + e.getMessage(),
+                    null,
+                    null
             );
         }
-
-        ExternalTransferResponse.TransferData data =
-                new ExternalTransferResponse.TransferData(
-                        req.senderAccountNumber(),
-                        req.senderAccountName(),
-                        req.senderBankCode().name(),
-                        req.senderAmount(),
-                        req.targetAccountNumber(),
-                        req.targetAccountName(),
-                        req.targetBankCode().name(),
-                        req.targetAmount(),
-                        req.targetCurrency(),
-                        req.senderCurrency()
-                );
-
-        return ExternalTransferResponse.success(
-                "이체가 정상적으로 완료되었습니다.",
-                data
-        );
     }
-
-//    public ExternalTransferResponse checkValue(ExternalCheckRequest req){
-//        /*TODO 외부 은행 잔액 확인 요청*/
-//
-//
-//    }
 
     private ExternalRealRequest toExternalRealRequest(ExternalTransferRequest req) {
         return ExternalRealRequest.builder()

@@ -3,7 +3,9 @@ package com.palipay.palipay_backend.finance.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.palipay.palipay_backend.external.dto.request.ExternalCheckRequest;
 import com.palipay.palipay_backend.external.dto.request.ExternalTransferRequest;
+import com.palipay.palipay_backend.external.dto.response.ExternalCheckResponse;
 import com.palipay.palipay_backend.external.dto.response.ExternalTransferResponse;
 import com.palipay.palipay_backend.external.service.ExternalBankClient;
 import com.palipay.palipay_backend.finance.dto.ExternalTransferResultDto;
@@ -17,6 +19,12 @@ public class ExternalCommonBankService {
 
     private final ExternalBankClient externalBankClient;
     private final ObjectMapper objectMapper;
+
+    public ExternalCheckResponse checkAccount(
+            ExternalCheckRequest request
+    ){
+        return externalBankClient.checkValue(request);
+    }
 
     public ExternalTransferResultDto transfer(
             FinanceCommonDto req,
