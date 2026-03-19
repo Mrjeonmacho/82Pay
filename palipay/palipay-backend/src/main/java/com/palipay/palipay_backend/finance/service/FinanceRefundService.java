@@ -38,6 +38,7 @@ public class FinanceRefundService {
 
         //FIXME wallet에 bank는 string이라 직접 변환 필요
         //FIXME bankCode
+        /*financeCommonService로 보내기 위한 request DTO 생성*/
         FinanceCommonDto financeCommonDto = new FinanceCommonDto(
                 palipayAccountProvider.getPalipayAccountInfo().accountNumber(),
                 palipayAccountProvider.getPalipayAccountInfo().accountName(),
@@ -56,6 +57,7 @@ public class FinanceRefundService {
         );
 
 
+        /*financeCommonService 결과 받고 response로 변환*/
         FinanceTransferResponse commonResponse = financeCommonService.transfer(
                 userId,
                 idempotencyKey,
@@ -66,9 +68,8 @@ public class FinanceRefundService {
         );
 
         //FIXME exchangeRate 직접 계산 중
-        BigDecimal exchangeRate = request.amount().divide(request.convertedAmount(), 6, RoundingMode.HALF_UP);
+        BigDecimal exchangeRate = request.convertedAmount().divide(request.amount(), 6, RoundingMode.HALF_UP);
 
-        //FIXME null 대체
         return FinanceAdjustmentResponse.success(
                 commonResponse.data().transactionId(),
                 request.convertedAmount(),
