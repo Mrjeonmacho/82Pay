@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="utf-8" />
+  <title>OCR 영역 선택 (선택 버튼 방식)</title>
+  <style>
+    body {
+      font-family: system-ui;
+      margin: 16px;
+    }
+
+    canvas {
+      border: 1px solid #ddd;
+      max-width: 100%;
+    }
+
+    pre {
+      background: #f7f7f7;
+      padding: 12px;
+    }
+
+    button {
+      margin-right: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>OCR 영역 선택</h2>
+
+  <input id="file" type="file" accept="image/*" />
+  <button id="selectMode">영역 선택 시작</button>
+
+  <label for="engineSelect">모델:</label>
+  <select id="engineSelect">
+    <option value="paddle">PaddleOCR</option>
+    <option value="easy">EasyOCR</option>
+  </select>
+
+  <button id="send">OCR 요청</button>
+
+  <br><br>
+  <canvas id="canvas"></canvas>
+
+  <h3>전체 텍스트</h3>
+  <pre id="fullText"></pre>
+
+  <h3>Raw JSON</h3>
+  <pre id="out"></pre>
+
+  <script>
+    const fileInput = document.getElementById("file");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const sendBtn = document.getElementById("send");
+    const selectBtn = document.getElementById("selectMode");
+    const out = document.getElementById("out");
+
+    let image = new Image();
+    let startX, startY, endX, endY;
+    let isDrawing = false;
+    let isSelecting = false; // ⭐ 선택 모드 상태
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        image.onload = () => {
+          canvas.width = image.width;
+          canvas.height = image.height;
+          ctx.drawImage(image, 0, 0);
+        };
+        image.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ⭐ 선택 모드 버튼
+    selectBtn.addEventListener("click", () => {
+      isSelecting = true;
+      out.textContent = "영역을 드래그하세요.";
+    });
+
+    // ⭐ 좌표 정확도 개선 (scale 고려)
+    function getMousePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+      };
+    }
+
+    canvas.addEventListener("mousedown", (e) => {
+      if (!isSelecting) return;
+
+      const pos = getMousePos(e);
+      startX = pos.x;
+      startY = pos.y;
+      isDrawing = true;
+    });
+
+    canvas.addEventListener("mousemove", (e) => {
+      if (!isDrawing || !isSelecting) return;
+
+      const pos = getMousePos(e);
+      endX = pos.x;
+      endY = pos.y;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(image, 0, 0);
+
+      ctx.strokeStyle = "red";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+    });
+
+    canvas.addEventListener("mouseup", () => {
+      if (!isSelecting) return;
+      isDrawing = false;
+      isSelecting = false; // ⭐ 선택 종료
+      out.textContent = "선택 완료. OCR 요청 버튼을 누르세요.";
+    });
+
+    sendBtn.addEventListener("click", async () => {
+      if (!startX || !endX) {
+        out.textContent = "먼저 영역을 선택하세요.";
+        return;
+      }
+
+      const width = endX - startX;
+      const height = endY - startY;
+
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = width;
+      tempCanvas.height = height;
+      const tempCtx = tempCanvas.getContext("2d");
+
+      tempCtx.drawImage(
+        image,
+        startX, startY, width, height,
+        0, 0, width, height
+      );
+
+      tempCanvas.toBlob(async (blob) => {
+        const form = new FormData();
+        form.append("file", blob, "cropped.png");
+
+        const engineSelect = document.getElementById("engineSelect");
+        const selectedEngine = engineSelect ? engineSelect.value : "paddle";
+
+        const res = await fetch(`http://localhost:8000/ocr?engine=${selectedEngine}`, {
+          method: "POST",
+          body: form,
+        });
+
+        const data = await res.json();
+
+        const fullTextEl = document.getElementById("fullText");
+        if (data.full_text) {
+          fullTextEl.textContent = data.full_text;
+        } else {
+          fullTextEl.textContent = "전체 텍스트 없음";
+        }
+
+        out.textContent = JSON.stringify(data, null, 2);
+      });
+    });
+  </script>
+
+</body>
+
+</html>
