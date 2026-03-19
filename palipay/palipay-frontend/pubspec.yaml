@@ -111,3 +111,7 @@ flutter:
     - .env
     # --- Service Logos ---
     - assets/images/logos/
+    - assets/images/banks/kr/
+    - assets/images/banks/us/
+    - assets/images/banks/jp/
+    - assets/images/banks/cn/

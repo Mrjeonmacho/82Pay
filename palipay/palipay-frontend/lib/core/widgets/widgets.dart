@@ -7,22 +7,4 @@ export 'pali_nav_bars.dart';
 export 'pali_scanner_frame.dart';
 export 'pali_transaction_list.dart';
 export 'pali_keypad.dart';
-
-// ============================================
-// 사용 방법
-// ============================================
-
-// import 'package:flutter/material.dart';
-// import '../../../core/widgets/widgets.dart'; // 공통 위젯 한 번에 불러오기
-
-// // ... 중략 ...
-// Column(
-//   children: [
-//     PaliInputField(hintText: '이메일을 입력해주세요'),
-//     const SizedBox(height: 16),
-//     PaliButton(
-//       text: '로그인',
-//       onPressed: () => print('로그인 시도'),
-//     ),
-//   ],
-// )
+export 'pali_bank_selection_sheet.dart';

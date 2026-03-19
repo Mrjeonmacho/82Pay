@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // Provider 임포트 추가
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/pali_bank_selection_sheet.dart';
 import '../../pin/views/pin_screen.dart';
 import '../../pin/providers/pin_provider.dart';
-import '../../account/views/bank_selection_view.dart';
 import 'dashed_rect_painter.dart';
 
 class EmptyWalletCard extends StatelessWidget {
@@ -35,14 +35,9 @@ class EmptyWalletCard extends StatelessWidget {
 
         // 3. PIN 인증/생성이 성공적으로 완료되었다면?
         if (isAuthenticated == true && context.mounted) {
-          // [기획 반영] 실제 은행 선택 및 계좌 연동 페이지로 이동합니다.
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              // 팀장님이 만드신 은행 선택 화면(예: BankSelectionView)으로 연결하세요!
-              builder: (context) => const BankSelectionView(), 
-            ),
-          );
+          // [기획 반영] 은행 선택 바텀시트를 바로 띄웁니다.
+          // TODO: 유저의 국가 정보를 받아오는 로직이 있다면 'KR' 대신 변수 사용
+          _openBankSelection(context, 'KR');
         }
       },
       borderRadius: BorderRadius.circular(24),
@@ -69,6 +64,21 @@ class EmptyWalletCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // 은행 선택 바텀시트
+  void _openBankSelection(BuildContext context, String userCountry) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => BankSelectionSheet(
+        countryCode: userCountry, // 'US'면 미국, 'KR'이면 한국
+        onSelect: (selectedBank) {
+          // 선택된 정보로 다음 화면 이동 또는 상태 업데이트
+          print("선택된 은행: ${selectedBank['name']}, 코드: ${selectedBank['bankCode']}");
+        },
       ),
     );
   }
