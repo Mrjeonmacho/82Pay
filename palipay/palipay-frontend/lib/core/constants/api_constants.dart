@@ -1,5 +1,3 @@
-// lib/core/constants/api_constants.dart
-
 class ApiConstants {
   // 1. 버전 관리
   // static const String _version = '/v1';

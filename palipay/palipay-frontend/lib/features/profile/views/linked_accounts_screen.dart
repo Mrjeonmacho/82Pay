@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../../core/widgets/pali_bank_selection_sheet.dart';
 import '../../account/providers/account_provider.dart';
-import '../../account/views/bank_selection_view.dart';
 import 'unlink_pin_auth_screen.dart';
 
 class LinkedAccountsView extends StatefulWidget {
@@ -204,12 +204,8 @@ class _EmptyLinkedAccountCard extends StatelessWidget {
   const _EmptyLinkedAccountCard();
 
   void _handleLink(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const BankSelectionView(),
-      ),
-    );
+    // TODO: 유저의 국가 정보를 받아오는 로직이 있다면 'KR' 등 치환
+    _openBankSelection(context, 'KR');
   }
 
   @override
@@ -245,6 +241,21 @@ class _EmptyLinkedAccountCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // 은행 선택 바텀시트
+  void _openBankSelection(BuildContext context, String userCountry) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => BankSelectionSheet(
+        countryCode: userCountry, // 'US'면 미국, 'KR'이면 한국
+        onSelect: (selectedBank) {
+          // 선택된 정보로 다음 화면 이동 또는 상태 업데이트
+          print("선택된 은행: ${selectedBank['name']}, 코드: ${selectedBank['bankCode']}");
+        },
       ),
     );
   }
