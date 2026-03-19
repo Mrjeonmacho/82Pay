@@ -51,3 +51,8 @@ spring:
           auth: true
           starttls:
             enable: true
+
+jwt:
+  secret: YXNmbmpsa2FzZGZ3aWtscWVoZmprbGFzZGhiZmprbGFzYmRmamthYnNma2RidWVoag==
+  access-token-expiration: 900000 # 15분
+  refresh-token-expiration: 2592000000 # 30일

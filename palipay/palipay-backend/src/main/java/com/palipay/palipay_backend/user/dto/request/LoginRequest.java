@@ -1,5 +1,6 @@
 package com.palipay.palipay_backend.user.dto.request;
 
-public class LoginRequest {
-
+public record LoginRequest(
+        String email,
+        String password) {
 }

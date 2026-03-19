@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.palipay.palipay_backend.user.dto.request.EmailCheckRequest;
 import com.palipay.palipay_backend.user.dto.request.EmailVerificationRequest;
 import com.palipay.palipay_backend.user.dto.request.JoinRequest;
+import com.palipay.palipay_backend.user.dto.request.LoginRequest;
+import com.palipay.palipay_backend.user.dto.response.TokenResponse;
+import com.palipay.palipay_backend.user.service.UserAuthService;
 import com.palipay.palipay_backend.user.service.UserJoinService;
 
 import jakarta.validation.Valid;
@@ -27,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 public class UserAuthController {
 
     private final UserJoinService userJoinService;
+    private final UserAuthService userAuthService;
 
     // 1. 이메일 중복 체크 (프론트 onChange/onBlur용)
     @GetMapping("/check")
@@ -64,6 +68,13 @@ public class UserAuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> join(@Valid @RequestBody JoinRequest request) {
         return userJoinService.join(request);
+    }
+
+    // 로그인
+    @PostMapping("/login")
+    public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+        TokenResponse response = userAuthService.login(request);
+        return ResponseEntity.ok(response);
     }
 
 }

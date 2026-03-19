@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.palipay.palipay_backend.global.redis.RedisService;
 import com.palipay.palipay_backend.user.domain.UserPali;
 import com.palipay.palipay_backend.user.dto.request.JoinRequest;
+import com.palipay.palipay_backend.user.exception.UserException;
 import com.palipay.palipay_backend.user.infrastructure.mail.EmailSender;
 import com.palipay.palipay_backend.user.repository.UserPaliRepository;
 
@@ -31,7 +32,7 @@ public class UserJoinService {
     public boolean isEmailAvailable(String type, String value) {
         return switch (type) {
             case "email" -> !userPaliRepository.existsByEmail(value);
-            default -> throw new IllegalArgumentException("지원하지 않는 체크 타입입니다: " + type);
+            default -> throw new UserException("지원하지 않는 인증 타입입니다.", HttpStatus.BAD_REQUEST);
         };
     }
 
@@ -53,8 +54,12 @@ public class UserJoinService {
         String savedCode = redisService.getData("AUTH_CODE:" + email);
 
         // 저장된 코드가 없거나(만료), 입력한 코드와 일치하지 않으면 false
-        if (savedCode == null || !savedCode.equals(userInputCode)) {
-            return false;
+        if (savedCode == null) {
+            throw new UserException("인증 시간이 만료되었습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        if (!savedCode.equals(userInputCode)) {
+            throw new UserException("인증번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
 
         // 인증 성공 시 redis에서 코드 삭제
@@ -69,8 +74,7 @@ public class UserJoinService {
     public ResponseEntity<?> join(JoinRequest request) {
         // 1. 최종 중복 검사 (인증 후 그 사이에 누군가 가입했을 수도 있음)
         if (userPaliRepository.existsByEmail(request.email())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT) // 409 에러 전송
-                    .body("이미 가입된 이메일입니다.");
+            throw new UserException("이미 가입된 이메일입니다.", HttpStatus.CONFLICT);
         }
 
         // 2. 비밀번호 암호화 (보안 상 평문 저장 금지)
