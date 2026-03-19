@@ -21,6 +21,7 @@ class ProfileScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FA),
+      
       appBar: PaliTopBar(
         title: 'Profile',
         actions: [
@@ -30,9 +31,11 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
+
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+          
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -66,7 +69,7 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               SectionCard(
-                title: 'Account',
+                title: 'Security',
                 children: [
                   MenuTile(
                     icon: Icons.key_outlined,
@@ -112,7 +115,7 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.lock_outline,
                     title: 'Change PIN',
                     onTap: () async {
-                      final result = await Navigator.push<bool>(
+                      await Navigator.push<bool>(
                         context,
                         MaterialPageRoute(
                           builder: (_) => const PinScreen(
@@ -123,10 +126,20 @@ class ProfileScreen extends StatelessWidget {
                       );
                     },
                   ),
-                  const SizedBox(height: 12),
-                  const MenuTile(
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // [추가] Delete Profile 전용 섹션 분리
+              SectionCard(
+                title: 'Profile Settings',
+                children: [
+                  MenuTile(
                     icon: Icons.no_accounts,
-                    title: 'Delete Account',
+                    title: 'Delete Profile',
+                    onTap: () {
+                      // TODO: 회원탈퇴 화면 또는 로직 연결
+                    },
                   ),
                 ],
               ),

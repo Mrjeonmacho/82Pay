@@ -16,6 +16,10 @@ class PaliTopBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       toolbarHeight: 64, //
       backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      elevation: 0,
       centerTitle: true,
       leading: leading,
       title: Text(
