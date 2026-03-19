@@ -10,7 +10,7 @@ import '../widgets/section_card.dart';
 import '../views/change_passowrd_screen.dart';
 import '../views/linked_accounts_screen.dart';
 import '../../account/views/account_management_view.dart';
-import '../../pin/views/change_pin_screen.dart';
+import '../../pin/views/pin_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -115,7 +115,8 @@ class ProfileScreen extends StatelessWidget {
                       final result = await Navigator.push<bool>(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const ChangePinScreen(
+                          builder: (_) => const PinScreen(
+                            mode: PinMode.change,
                             walletId: 12345, // TODO: 나중에 실제 walletId로 교체
                           ),
                         ),

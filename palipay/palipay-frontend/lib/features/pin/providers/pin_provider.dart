@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/pin_service.dart';
 import '../models/pin_request_dto.dart';
@@ -11,6 +12,14 @@ class PinProvider extends ChangeNotifier {
   PinStatus _status = PinStatus.idle;
   String? _errorMessage;
 
+  // ===== [추가] PIN 잠금 관련 상태 =====
+  static const int maxPinAttempts = 5;
+  static const int pinLockSeconds = 60;
+
+  int _attemptCount = 0;
+  DateTime? _lockedUntil;
+  Timer? _lockTimer;
+
   // Getters
   String get inputPin => _inputPin;
   int get pinLength => _inputPin.length;
@@ -18,6 +27,29 @@ class PinProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isFull => _inputPin.length == 6;
   bool get isLoading => _status == PinStatus.loading;
+
+  // [추가] 잠금 관련 getter
+  int get attemptCount => _attemptCount;
+  DateTime? get lockedUntil => _lockedUntil;
+
+  bool get isPinLocked {
+    if (_lockedUntil == null) return false;
+    return DateTime.now().isBefore(_lockedUntil!);
+  }
+
+  int get remainingLockSeconds {
+    if (_lockedUntil == null) return 0;
+    final diff = _lockedUntil!.difference(DateTime.now()).inSeconds;
+    return diff > 0 ? diff : 0;
+  }
+
+  String get formattedLockTime {
+    final seconds = remainingLockSeconds;
+    final minutes = (seconds ~/ 60).toString();
+    final remain = (seconds % 60).toString().padLeft(2, '0');
+    return "$minutes:$remain";
+  }
+
 
   /// 1. 숫자 입력 (키패드 연동)
   void addDigit(String digit) {
@@ -41,6 +73,43 @@ class PinProvider extends ChangeNotifier {
     _inputPin = "";
     _status = PinStatus.idle;
     _errorMessage = null;
+    notifyListeners();
+  }
+
+  void recordFailedAttempt() {
+    _attemptCount++;
+
+    if (_attemptCount >= maxPinAttempts) {
+      _startPinLock();
+    } else {
+      notifyListeners();
+    }
+  }
+
+  void resetPinLockState() {
+    _attemptCount = 0;
+    _lockedUntil = null;
+    _lockTimer?.cancel();
+    _lockTimer = null;
+    notifyListeners();
+  }
+
+  void _startPinLock() {
+    _lockedUntil = DateTime.now().add(
+      const Duration(seconds: pinLockSeconds),
+    );
+
+    _lockTimer?.cancel();
+    _lockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!isPinLocked) {
+        timer.cancel();
+        _attemptCount = 0;
+        _lockedUntil = null;
+        _lockTimer = null;
+      }
+      notifyListeners();
+    });
+
     notifyListeners();
   }
 
@@ -85,7 +154,7 @@ class PinProvider extends ChangeNotifier {
     final isSuccess = await _service.createPin(request);
 
     _status = isSuccess ? PinStatus.success : PinStatus.failure;
-    if (!isSuccess) _errorMessage = "PIN 설정에 실패했습니다.";
+    if (!isSuccess) _errorMessage = "Failed to create PIN.";
 
     notifyListeners();
     return isSuccess;
@@ -125,5 +194,11 @@ class PinProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+   @override
+  void dispose() {
+    _lockTimer?.cancel();
+    super.dispose();
   }
 }
