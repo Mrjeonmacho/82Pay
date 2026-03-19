@@ -1,12 +1,14 @@
 package com.palipay.palipay_backend.finance.controller;
 
-import com.palipay.palipay_backend.finance.dto.request.FinanceAdjustmentRequest;
-import com.palipay.palipay_backend.finance.dto.request.FinanceTransferRequest;
+import com.palipay.palipay_backend.finance.dto.request.*;
+import com.palipay.palipay_backend.finance.dto.response.BalanceCheckResponse;
 import com.palipay.palipay_backend.finance.dto.response.FinanceAdjustmentResponse;
 import com.palipay.palipay_backend.finance.dto.response.FinanceTransferResponse;
+import com.palipay.palipay_backend.finance.dto.response.PinValidateResponse;
 import com.palipay.palipay_backend.finance.service.FinanceChargeService;
 import com.palipay.palipay_backend.finance.service.FinanceRefundService;
 import com.palipay.palipay_backend.finance.service.FinanceTransferService;
+import com.palipay.palipay_backend.finance.service.FinanceValidationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,8 @@ public class FinanceController {
     private final FinanceTransferService financeTransferService;
     private final FinanceChargeService financeChargeService;
     private final FinanceRefundService financeRefundService;
+
+    private final FinanceValidationService financeValidationService;
 
     @PostMapping("/transfers")
     public ResponseEntity<FinanceTransferResponse> transfer(
@@ -65,5 +69,51 @@ public class FinanceController {
                 request
         );
         return ResponseEntity.ok(response);
+    }
+
+    /*지갑 잔액 체크*/
+    @PostMapping("/balance/check")
+    public ResponseEntity<BalanceCheckResponse> checkBalance(
+            @RequestHeader(value = "accesstoken", required = false) String accessToken,
+            @Valid @RequestBody BalanceCheckRequest request
+    ){
+
+        //FIXME userId 하드코딩
+        Long userId = 1L;
+
+        BalanceCheckResponse response = financeValidationService.checkBalance(
+                userId,
+                request
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    /*핀 정보 일치 체크*/
+    @PostMapping("/pin/validate")
+    public ResponseEntity<PinValidateResponse> checkPin(
+            @RequestHeader(value = "accesstoken", required = false) String accessToken,
+            @Valid @RequestBody PinValidateRequest request
+    ){
+
+        //FIXME userId 하드코딩
+        Long userId = 1L;
+        PinValidateResponse response = financeValidationService.checkPin(
+                userId,
+                request
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping(("/external-accounts/validate"))
+    public ResponseEntity checkExternAccount(
+            @RequestHeader(value = "accesstoken", required = false) String accessToken,
+            @Valid @RequestBody ExAccValidateRequest request
+    ){
+        /*TODO 외부 계좌 존재 여부 체크
+           worldbank와 연결*/
+
+        return ResponseEntity.ok().build();
     }
 }

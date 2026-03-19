@@ -8,7 +8,6 @@ public record ExternalCheckRequest (
         String targetAccountNumber,
         String targetAccountName,
         BankCode targetBankCode,
-        BigDecimal targetAmount,
         String targetCurrency
 ){
 }
