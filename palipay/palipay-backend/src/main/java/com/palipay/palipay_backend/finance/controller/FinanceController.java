@@ -1,14 +1,8 @@
 package com.palipay.palipay_backend.finance.controller;
 
 import com.palipay.palipay_backend.finance.dto.request.*;
-import com.palipay.palipay_backend.finance.dto.response.BalanceCheckResponse;
-import com.palipay.palipay_backend.finance.dto.response.FinanceAdjustmentResponse;
-import com.palipay.palipay_backend.finance.dto.response.FinanceTransferResponse;
-import com.palipay.palipay_backend.finance.dto.response.PinValidateResponse;
-import com.palipay.palipay_backend.finance.service.FinanceChargeService;
-import com.palipay.palipay_backend.finance.service.FinanceRefundService;
-import com.palipay.palipay_backend.finance.service.FinanceTransferService;
-import com.palipay.palipay_backend.finance.service.FinanceValidationService;
+import com.palipay.palipay_backend.finance.dto.response.*;
+import com.palipay.palipay_backend.finance.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +17,7 @@ public class FinanceController {
     private final FinanceRefundService financeRefundService;
 
     private final FinanceValidationService financeValidationService;
+    private final AccountHistoryService accountHistoryService;
 
     @PostMapping("/transfers")
     public ResponseEntity<FinanceTransferResponse> transfer(
@@ -68,6 +63,18 @@ public class FinanceController {
                 idempotencyKey,
                 request
         );
+        return ResponseEntity.ok(response);
+    }
+
+    /*거래내역 조회*/
+    @GetMapping("/transactions")
+    public ResponseEntity<FinanceHistoryResponse> getTransactions(
+            @RequestHeader(value = "accesstoken", required = false) String accessToken,
+            @ModelAttribute FinanceHistoryRequest request
+    ) {
+        Long userId = 1L;
+        FinanceHistoryResponse response
+                = accountHistoryService.getTransactionHistories(userId, request);
         return ResponseEntity.ok(response);
     }
 
