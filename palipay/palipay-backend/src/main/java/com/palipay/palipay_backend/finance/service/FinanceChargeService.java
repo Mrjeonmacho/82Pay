@@ -29,7 +29,7 @@ public class FinanceChargeService {
             FinanceAdjustmentRequest request
     ){
         /*
-        * TODO 충전의 경우
+        * 충전의 경우
         *  source가 외국 계좌 - source currency는 wallet 내부에 있음
         *  target은 palipay 계좌 - KRW
         * */
@@ -64,9 +64,9 @@ public class FinanceChargeService {
         );
 
         //FIXME exchangeRate 직접 계산 중
+        /*적용 결과 값으로 적용 환율 반환*/
         BigDecimal exchangeRate = request.convertedAmount().divide(request.amount(), 6, RoundingMode.HALF_UP);
 
-        //FIXME null 대체
         return FinanceAdjustmentResponse.success(
                 commonResponse.data().transactionId(),
                 request.convertedAmount(),
