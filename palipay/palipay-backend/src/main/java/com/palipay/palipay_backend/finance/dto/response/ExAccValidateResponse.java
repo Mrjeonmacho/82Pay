@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 public record ExAccValidateResponse(
         Boolean isValid,
-        BigDecimal maxAmount
+        BigDecimal maxAmount,
+        Long workplaceId,
+        String message
 ) {
 }

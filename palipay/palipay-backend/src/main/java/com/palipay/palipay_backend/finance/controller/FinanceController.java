@@ -113,13 +113,14 @@ public class FinanceController {
     }
 
     @PostMapping(("/external-accounts/validate"))
-    public ResponseEntity checkExternAccount(
+    public ResponseEntity<ExAccValidateResponse> checkExternAccount(
             @RequestHeader(value = "accesstoken", required = false) String accessToken,
             @Valid @RequestBody ExAccValidateRequest request
     ){
-        /*TODO 외부 계좌 존재 여부 체크
+        /*외부 계좌 존재 여부 체크
            worldbank와 연결*/
 
-        return ResponseEntity.ok().build();
+        ExAccValidateResponse response = financeValidationService.checkExternAccount(request);
+        return ResponseEntity.ok(response);
     }
 }

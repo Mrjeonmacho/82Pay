@@ -6,15 +6,16 @@ import com.palipay.palipay_backend.external.dto.request.ExternalTransferRequest;
 import com.palipay.palipay_backend.external.dto.response.ExternalCheckResponse;
 import com.palipay.palipay_backend.external.dto.response.ExternalRealResponse;
 import com.palipay.palipay_backend.external.dto.response.ExternalTransferResponse;
+import com.palipay.palipay_backend.external.dto.response.ExternalWorkplaceResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-import java.math.BigDecimal;
-
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ExternalBankClient {
 
     private final RestClient externalFinanceRestClient;
@@ -48,17 +49,34 @@ public class ExternalBankClient {
         }
     }
 
+    public ExternalWorkplaceResponse workplaceInfo(String accountNumber){
+
+        ExternalWorkplaceResponse response = externalFinanceRestClient.get()
+                .uri("/api/finance/corporation/{accountNumber}", accountNumber)
+                .retrieve()
+                .body(ExternalWorkplaceResponse.class);
+
+        return response;
+    }
+
     //TODO 추후 DTO 수정
     public ExternalCheckResponse checkValue(ExternalCheckRequest req){
         /*TODO 외부 은행 잔액 확인 요청*/
         try {
             ExternalCheckResponse response = externalFinanceRestClient.get()
-                    .uri("/api/finance/{accountId}", req.targetAccountNumber())
-                    .retrieve()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/finance/check")
+                            .queryParam("targetAccountNumber", req.targetAccountNumber())
+                            .queryParam("targetAccountName", req.targetAccountName())
+                            .queryParam("targetBankCode", req.targetBankCode())
+                            .queryParam("targetCurrency", req.targetCurrency())
+                            .build()
+                    ).retrieve()
                     .body(ExternalCheckResponse.class);
 
-            if (response == null) {
+            if (response == null || response.success() == null) {
                 return new ExternalCheckResponse(
+                        Boolean.FALSE,
                         "서버 응답 없음",
                         null,
                         null
@@ -68,9 +86,16 @@ public class ExternalBankClient {
             return response;
 
         } catch (RestClientException e) {
-
             return new ExternalCheckResponse(
+                    Boolean.FALSE,
                     "계좌 확인에 실패했습니다." + e.getMessage(),
+                    null,
+                    null
+            );
+        } catch (Exception e){
+            return new ExternalCheckResponse(
+                    Boolean.FALSE,
+                    "먼가 이상한 오류임" + e.getMessage(),
                     null,
                     null
             );

@@ -8,14 +8,15 @@ public record ExAccValidateRequest(
         @NotBlank
         String otherAccountNumber,
 
-        @NotBlank
+
         String otherAccountName,
 
-        @NotBlank
+
         String otherBankCode,
 
         BigDecimal amount,
 
+        @NotBlank
         String accountCurrency,
 
         String pinNumber
