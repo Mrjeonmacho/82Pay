@@ -1,5 +1,6 @@
 package com.worldbank.worldbank_backend.finance.domain.strategy;
 
+import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.entity.us.AccountHistoryUS;
 import com.worldbank.worldbank_backend.finance.domain.entity.us.BankUS;
@@ -18,6 +19,23 @@ public class BankUSStrategy implements BankStrategy {
     @Override
     public String getBankCurrency() {
         return "USD";
+    }
+
+    @Override
+    public CheckResponseDto checkAccount(String accountNumber) {
+        return bankRepository.findByAccountNumber(accountNumber)
+                .map(account -> CheckResponseDto.builder()
+                        .message("계좌 조회가 성공했습니다.")
+                        .amount(account.getAmount())
+                        .currency(getBankCurrency())
+                        .check(true)
+                        .build())
+                .orElse(CheckResponseDto.builder()
+                        .message("존재하지 않는 계좌입니다.")
+                        .amount(null)
+                        .currency(null)
+                        .check(false)
+                        .build());
     }
 
     @Override

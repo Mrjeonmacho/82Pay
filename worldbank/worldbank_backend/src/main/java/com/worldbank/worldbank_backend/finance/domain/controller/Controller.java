@@ -1,6 +1,7 @@
 package com.worldbank.worldbank_backend.finance.domain.controller;
 
 import com.worldbank.worldbank_backend.finance.domain.dto.Business.BusinessResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferResponseDto;
@@ -30,8 +31,8 @@ public class Controller {
         return businessService.getBusinessInfo(accountNumber);
     }
 
-    @GetMapping("/{accountNumber}")
-    public CheckResponseDto checkAccount(@PathVariable String accountNumber) {
-        return checkService.checkAccount(accountNumber);
+    @GetMapping("/check")
+    public CheckResponseDto checkAccount(@ModelAttribute CheckRequestDto request) {
+        return checkService.checkAccount(request);
     }
 }
