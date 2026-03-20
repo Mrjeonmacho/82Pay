@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/widgets.dart';
 import 'step_layout.dart';
@@ -59,8 +60,15 @@ class ProfileStep extends StatelessWidget {
                   hintText: 'Phone Number',
                   controller: provider.phoneController,
                   keyboardType: TextInputType.phone,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Enter phone number' : null,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ], // 숫자만 입력 가능
+                  validator: (value) {
+                    if (value == null || value.isEmpty)
+                      return 'Enter phone number';
+                    if (value.length < 7) return 'Phone number is too short';
+                    return null;
+                  },
                 ),
               ),
             ],

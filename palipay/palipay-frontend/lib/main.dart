@@ -4,8 +4,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:palipay_app/features/pin/providers/pin_provider.dart';
 import 'package:palipay_app/features/transfer/providers/transfer_provider.dart';
+import 'package:palipay_app/features/user/provider/login_provider.dart';
 import 'package:palipay_app/features/user/provider/sign_up_provider.dart';
 import 'package:palipay_app/features/profile/providers/profile_provider.dart';
+import 'package:palipay_app/features/user/views/login_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:palipay_app/main_screen.dart';
 import 'features/account/providers/account_provider.dart';
@@ -39,6 +41,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => PinProvider()),
         ChangeNotifierProvider(create: (_) => TransferProvider()),
         ChangeNotifierProvider(create: (_) => ScanProvider()),
+        ChangeNotifierProvider(create: (_) => LoginProvider()),
       ],
       child: const PaliPayApp(),
     ),
@@ -74,7 +77,7 @@ class PaliPayApp extends StatelessWidget {
         ),
       ),
       // 시작 화면을 분리된 MainScreen으로 설정
-      home: const MainScreen(),
+      home: const LoginScreen(),
     );
   }
 }
