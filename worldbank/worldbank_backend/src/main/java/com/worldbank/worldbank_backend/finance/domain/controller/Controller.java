@@ -3,6 +3,8 @@ package com.worldbank.worldbank_backend.finance.domain.controller;
 import com.worldbank.worldbank_backend.finance.domain.dto.Business.BusinessResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkRequestDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.service.BusinessService;
@@ -45,4 +47,11 @@ public class Controller {
                 .build();
         return checkService.checkAccount(request);
     }
+
+    @PostMapping("/Link")
+    public LinkResponseDto linkAccount(@RequestBody LinkRequestDto request){
+        return checkService.linkAccount(request);
+    }
+
+
 }

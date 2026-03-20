@@ -1,6 +1,7 @@
 package com.worldbank.worldbank_backend.finance.domain.strategy;
 
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.entity.us.AccountHistoryUS;
 import com.worldbank.worldbank_backend.finance.domain.entity.us.BankUS;
@@ -57,6 +58,29 @@ public class BankUSStrategy implements BankStrategy {
                 .build();
 
         historyRepository.save(history);
+    }
+
+    @Override
+    public LinkResponseDto linkAccount(String accountNumber, String password) {
+        return bankRepository.findByAccountNumber(accountNumber)
+                .map(account -> {
+                    // DB의 비밀번호와 입력받은 비밀번호 비교
+                    if (account.getAccountPassword().equals(password)) {
+                        return LinkResponseDto.builder()
+                                .message("계좌 연결에 성공했습니다.")
+                                .check(true)
+                                .build();
+                    } else {
+                        return LinkResponseDto.builder()
+                                .message("비밀번호가 일치하지 않습니다.")
+                                .check(false)
+                                .build();
+                    }
+                })
+                .orElse(LinkResponseDto.builder()
+                        .message("존재하지 않는 계좌입니다.")
+                        .check(false)
+                        .build());
     }
 
     @Override
