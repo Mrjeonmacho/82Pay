@@ -92,7 +92,6 @@ public class FinanceController {
                 userId,
                 request
         );
-
         return ResponseEntity.ok(response);
     }
 

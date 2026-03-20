@@ -23,6 +23,8 @@ public class BusinessService {
                 .data(BusinessResponseDto.BusinessData.builder()
                         .companyName(business.getCompanyName())
                         .businessPerson(business.getBusinessPerson())
+                        .businessNumber(business.getBusinessNumber())
+                        .businessAddress(business.getBusinessAddress())
                         .build())
                 .build();
     }

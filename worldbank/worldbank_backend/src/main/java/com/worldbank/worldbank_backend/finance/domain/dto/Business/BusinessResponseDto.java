@@ -21,5 +21,7 @@ public class BusinessResponseDto {
     public static class BusinessData {
         private String companyName;
         private String businessPerson;
+        private String businessNumber;
+        private String businessAddress;
     }
 }
