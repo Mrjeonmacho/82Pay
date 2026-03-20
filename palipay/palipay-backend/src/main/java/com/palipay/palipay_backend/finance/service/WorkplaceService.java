@@ -5,32 +5,39 @@ import com.palipay.palipay_backend.external.service.ExternalBankClient;
 import com.palipay.palipay_backend.finance.domain.Workplace;
 import com.palipay.palipay_backend.finance.repository.WorkplaceRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Slf4j
 public class WorkplaceService {
     private final WorkplaceRepository workplaceRepository;
 
     private final ExternalBankClient externalBankClient;
 
-    public Long getWorkplaceId(String accountNumber){
+    @Transactional
+    public Optional<Long> getWorkplaceId(String accountNumber){
         /*ExternalWorkplaceResponse workplaceInfo(String accountNumber)*/
 
-        ExternalWorkplaceResponse response = externalBankClient.workplaceInfo(accountNumber);
+        Optional<ExternalWorkplaceResponse> responseOpt = externalBankClient.workplaceInfo(accountNumber);
 
-        /*TODO response 가 에러일 경우*/
-        if (response == null) {
-            throw new IllegalArgumentException("외부 사업장 조회 응답이 없습니다.");
+        if (responseOpt.isEmpty()) {
+            log.info("외부 사업장 조회 결과 없음. accountNumber={}", accountNumber);
+            return Optional.empty();
         }
-        //db에 존재한다면 id 가져오고 없다면 저장
-        return workplaceRepository.findByBusinessNumber(response.businessNumber())
+
+        ExternalWorkplaceResponse response = responseOpt.get();
+
+        Long workplaceId = workplaceRepository.findByBusinessNumber(response.businessNumber())
                 .map(Workplace::getWorkplaceId)
                 .orElseGet(() -> createWorkplace(response).getWorkplaceId());
+
+        return Optional.of(workplaceId);
     }
 
     private Workplace createWorkplace(ExternalWorkplaceResponse response) {

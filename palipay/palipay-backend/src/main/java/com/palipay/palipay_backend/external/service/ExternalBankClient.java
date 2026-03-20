@@ -10,8 +10,9 @@ import com.palipay.palipay_backend.external.dto.response.ExternalWorkplaceRespon
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.*;
+
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -49,14 +50,18 @@ public class ExternalBankClient {
         }
     }
 
-    public ExternalWorkplaceResponse workplaceInfo(String accountNumber){
+    public Optional<ExternalWorkplaceResponse> workplaceInfo(String accountNumber){
 
-        ExternalWorkplaceResponse response = externalFinanceRestClient.get()
-                .uri("/api/finance/corporation/{accountNumber}", accountNumber)
-                .retrieve()
-                .body(ExternalWorkplaceResponse.class);
-
-        return response;
+        try{
+            ExternalWorkplaceResponse response = externalFinanceRestClient.get()
+                    .uri("/api/finance/corporation/{accountNumber}", accountNumber)
+                    .retrieve()
+                    .body(ExternalWorkplaceResponse.class);
+            return Optional.ofNullable(response);
+        } catch (RestClientException e) {
+            log.warn("외부 사업장 조회 실패 accountNumber={}", accountNumber, e);
+            return Optional.empty();
+        }
     }
 
     //TODO 추후 DTO 수정

@@ -11,10 +11,14 @@ import com.palipay.palipay_backend.finance.dto.response.ExAccValidateResponse;
 import com.palipay.palipay_backend.finance.dto.response.PinValidateResponse;
 import com.palipay.palipay_backend.global.bank.BankCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FinanceValidationService {
 
     private final WalletService walletService;
@@ -81,9 +85,10 @@ public class FinanceValidationService {
         if(!response.success()){
             return new ExAccValidateResponse(false, null, null, response.message());
         }
-        //Long workplaceId = workplaceService.getWorkplaceId(request.otherAccountNumber());
-        //FIXME
-        Long workplaceId = null;
+
+        Long workplaceId = workplaceService.getWorkplaceId(request.otherAccountNumber())
+                .orElse(null);
+
         return new ExAccValidateResponse(true, response.amount(), workplaceId, "계좌 검증 성공");
     }
 }
