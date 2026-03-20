@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 public class CheckResponseDto {
     String message;
     BigDecimal amount;
