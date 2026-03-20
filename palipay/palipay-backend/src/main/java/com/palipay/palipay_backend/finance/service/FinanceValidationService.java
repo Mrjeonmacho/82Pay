@@ -11,14 +11,20 @@ import com.palipay.palipay_backend.finance.dto.response.ExAccValidateResponse;
 import com.palipay.palipay_backend.finance.dto.response.PinValidateResponse;
 import com.palipay.palipay_backend.global.bank.BankCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FinanceValidationService {
 
     private final WalletService walletService;
     private final ExternalCommonBankService externalCommonBankService;
+
+    private final WorkplaceService workplaceService;
 
     public BalanceCheckResponse checkBalance(
             Long userId,
@@ -71,14 +77,18 @@ public class FinanceValidationService {
         ExternalCheckRequest exReq = new ExternalCheckRequest(
                 request.otherAccountNumber(),
                 request.otherAccountName(),
-                BankCode.valueOf(request.otherBankCode()),
+                request.otherBankCode() != null ? BankCode.valueOf(request.otherBankCode()) : null,
                 request.accountCurrency()
         );
         ExternalCheckResponse response = externalCommonBankService.checkAccount(exReq);
 
-        if(response.message().equals("success")){
-            return new ExAccValidateResponse(true, response.amount());
+        if(!response.success()){
+            return new ExAccValidateResponse(false, null, null, response.message());
         }
-        return new ExAccValidateResponse(false, null);
+
+        Long workplaceId = workplaceService.getWorkplaceId(request.otherAccountNumber())
+                .orElse(null);
+
+        return new ExAccValidateResponse(true, response.amount(), workplaceId, "계좌 검증 성공");
     }
 }

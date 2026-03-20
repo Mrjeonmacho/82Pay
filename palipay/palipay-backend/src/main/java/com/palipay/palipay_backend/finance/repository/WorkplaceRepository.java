@@ -11,5 +11,7 @@ public interface WorkplaceRepository extends JpaRepository<Workplace, Long> {
 
     boolean existsByBusinessNumber(String businessNumber);
 
+    boolean existsByCompanyName(String companyName);
+
     Optional<Workplace> findByCompanyName(String companyName);
 }
