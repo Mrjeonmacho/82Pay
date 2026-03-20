@@ -27,7 +27,6 @@ public class BankRouter {
         if(strategy == null){
             throw new RuntimeException("지원하지 않는 은행");
         }
-
         return strategy;
     }
 }

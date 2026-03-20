@@ -32,7 +32,17 @@ public class Controller {
     }
 
     @GetMapping("/check")
-    public CheckResponseDto checkAccount(@ModelAttribute CheckRequestDto request) {
+    public CheckResponseDto checkAccount(@RequestParam String targetAccountNumber,
+                                         @RequestParam(required = false) String targetAccountName,
+                                         @RequestParam(required = false) String targetBankCode,
+                                         @RequestParam String targetCurrency){
+
+        CheckRequestDto request = CheckRequestDto.builder()
+                .targetAccountNumber(targetAccountNumber)
+                .targetAccountName(targetAccountName)
+                .targetBankCode(targetBankCode)
+                .targetCurrency(targetCurrency)
+                .build();
         return checkService.checkAccount(request);
     }
 }
