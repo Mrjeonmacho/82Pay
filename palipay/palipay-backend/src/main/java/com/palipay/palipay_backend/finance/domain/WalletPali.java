@@ -87,4 +87,19 @@ public class WalletPali {
     public boolean matchesPin(String pinNumber){
         return this.pinNumber != null && this.pinNumber.equals(pinNumber);
     }
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+
+        if (this.amount == null) {
+            this.amount = BigDecimal.ZERO;
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }
