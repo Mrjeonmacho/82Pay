@@ -42,6 +42,16 @@ public class WalletService {
         return walletPali;
     }
 
+    @Transactional
+    public void initCreateWalletPali(Long userId){
+        WalletPali initWalletPali = WalletPali
+                .builder()
+                .userId(userId)
+                .build();
+
+        walletPaliRepository.save(initWalletPali);
+    }
+
     public WalletPali getWalletPali(Long walletId){
         return walletPaliRepository.findById(walletId)
                 .orElseThrow(() -> new IllegalArgumentException("지갑 미존재 예외처리 추가"));
