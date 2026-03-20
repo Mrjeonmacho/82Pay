@@ -21,7 +21,10 @@ class EmailStep extends StatelessWidget {
       child: PaliInputField(
         hintText: 'Enter your email',
         controller: provider.emailController,
+        // 1. 글자를 칠 때마다 서버 체크 & 형식 체크 실행
         onChanged: (value) => provider.checkEmailAvailability(),
+        // 2. 칠 때마다 즉시 에러 메시지를 보여주도록 설정 (핵심!)
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         suffixIcon: provider.isCheckingEmail
             ? const SizedBox(
                 width: 20,
@@ -31,13 +34,16 @@ class EmailStep extends StatelessWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               )
-            : null,
+            : (provider.isEmailAvailable && provider.isEmailValid
+                  ? const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                    ) // 성공 시 체크 아이콘
+                  : null),
         validator: (value) {
           if (value == null || value.isEmpty) return 'Enter your email';
           if (!provider.isEmailValid) return 'Invalid email address.';
-          if (!provider.isCheckingEmail &&
-              !provider.isEmailAvailable &&
-              value == 'test@test.com') {
+          if (!provider.isCheckingEmail && !provider.isEmailAvailable) {
             return 'This email is already taken.';
           }
           return null;

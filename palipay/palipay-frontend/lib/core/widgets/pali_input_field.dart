@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 // FilteringTextInputFormatter 사용을 위해 필요
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -15,6 +16,8 @@ class PaliInputField extends StatelessWidget {
   final bool useShadow; // 그림자 사용 여부
   final String? errorText;
   final bool useExternalErrorText;
+  final AutovalidateMode? autovalidateMode; // 추가된 변수(회원가입 시 실시간 검증 위함)
+  final List<TextInputFormatter>? inputFormatters; // ⭐️ 추가: 숫자만 입력 등 제한용
 
   const PaliInputField({
     super.key,
@@ -29,6 +32,8 @@ class PaliInputField extends StatelessWidget {
     this.useShadow = false, // 기존 false
     this.errorText,
     this.useExternalErrorText = false,
+    this.autovalidateMode,
+    this.inputFormatters,
   });
 
   @override
@@ -38,9 +43,10 @@ class PaliInputField extends StatelessWidget {
       obscureText: isPassword,
       keyboardType: keyboardType, // 실제 TextField에 전달
       maxLength: maxLength, // 실제 TextField에 전달
+      inputFormatters: inputFormatters,
       validator: validator,
       onChanged: onChanged,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       style: AppTextStyles.bodyMedium, // 입력 시 16pt, Bold
       decoration: InputDecoration(
         hintText: hintText,
