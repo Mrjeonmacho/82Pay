@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class HistoryService {
   // 실제 환경에서는 baseUrl을 환경 변수나 공통 설정에서 가져옵니다.
@@ -51,6 +52,6 @@ class HistoryService {
 
   // 공통 에러 핸들링
   String _handleError(DioException e) {
-    return e.response?.data['message'] ?? 'Network error occurred';
+    return e.response?.data['message'] ?? 'error.network_issue'.tr();
   }
 }

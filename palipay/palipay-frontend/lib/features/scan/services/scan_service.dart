@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:dio/dio.dart';
 import '../models/scan_result_model.dart';
 
@@ -32,7 +33,7 @@ class ScanService {
       );
     } catch (e) {
       return ScanResultModel.failure(
-        message: 'OCR request failed.',
+        message: 'scan.error_ocr_failed'.tr(),
       );
     }
   }
@@ -45,7 +46,7 @@ class ScanService {
 
     if (fileName.contains('fail')) {
       return ScanResultModel.failure(
-        message: 'Account number could not be recognized.',
+        message: 'scan.error_recognition_failed'.tr(),
       );
     }
 

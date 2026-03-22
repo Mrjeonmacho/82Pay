@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -95,7 +96,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8FB),
       appBar: PaliTopBar(
-        title: 'Transfer',
+        title: 'transfer.title'.tr(),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
@@ -112,7 +113,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
             children: [
               if (widget.scanFailed) ...[
                 Text(
-                  'Scan failed. Please enter account information manually.',
+                  'account_input.scan_failed_msg'.tr(),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.warningRed,
                   ),
@@ -121,7 +122,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
               ],
 
               Text(
-                'Account Number',
+                'account_input.account_number'.tr(),
                 style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.abledFont,
                   fontWeight: FontWeight.bold,
@@ -129,7 +130,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
               ),
               const SizedBox(height: 6),
               PaliInputOnelineField(
-                hintText: 'Enter the account number',
+                hintText: 'transfer.input.hint_account_number'.tr(),
                 controller: _accountController,
                 keyboardType: TextInputType.number,
                 onChanged: (_) {
@@ -138,7 +139,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
               ),
               const SizedBox(height: 36),
               Text(
-                'Bank',
+                'account_input.bank'.tr(),
                 style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.abledFont,
                   fontWeight: FontWeight.bold,
@@ -152,7 +153,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
                     alignment: Alignment.centerRight,
                     children: [
                       PaliInputOnelineField(
-                        hintText: 'Select a bank',
+                        hintText: 'transfer.input.hint_select_bank'.tr(),
                         controller: _bankController,
                         onChanged: (_) {},
                       ),
@@ -169,7 +170,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
               ),
               const Spacer(),
               PaliButton(
-                text: 'Next',
+                text: 'transfer.btn_next'.tr(),
                 onPressed: _canProceed ? _onNext : null,
                 backgroundColor: AppColors.mainBlue,
               ),

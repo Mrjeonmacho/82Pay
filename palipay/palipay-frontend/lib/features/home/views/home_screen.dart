@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:palipay_app/features/home/widgets/empty_wallet_card.dart';
 import 'package:palipay_app/features/home/widgets/transactions_section.dart';
@@ -18,6 +19,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    context.locale; // 다국어 변경을 감지하여 Rebuild 되도록 의존성 주입
     final accountProvider = context.watch<AccountProvider>();
     final bool hasWallet = accountProvider.hasWallet;
 
@@ -25,35 +27,66 @@ class _HomeScreenState extends State<HomeScreen> {
       extendBody: true,
       backgroundColor: AppColors.background,
       appBar: const PaliTopBar(title: 'PaliPay'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 100),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. 지갑 카드 (있으면 잔액, 없으면 링크 유도)
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: hasWallet
-                  ? WalletCard(provider: accountProvider) // 분리된 위젯 사용
-                  : const EmptyWalletCard(),
-            ),
+      body: Stack(
+        children: [
 
-            // 2. 액션 버튼 섹션
-            // _buildActionButtons(context),
-
-            // 3. 최근 거래 내역 섹션
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Text(
-                'Recent Transactions',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.abledFont,
+          // 배경 글래스모피즘 효과를 극대화하기 위한 은은한 오로라 도형 1 (좌측 상단)  --. TEST용
+          // Positioned(
+          //   top: 180,
+          //   left: -80,
+          //   child: Container(
+          //     width: 300,
+          //     height: 300,
+          //     decoration: BoxDecoration(
+          //       shape: BoxShape.circle,
+          //       color: AppColors.mainBlue.withOpacity(0.04),
+          //       boxShadow: [
+          //         BoxShadow(
+          //           color: AppColors.mainBlue.withOpacity(0.4),
+          //           blurRadius: 100,
+          //           spreadRadius: 60,
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+          // // 배경 글래스모피즘 효과를 극대화하기 위한 은은한 오로라 도형 2 (우측 하단)
+          // Positioned(
+          //   bottom: 80,
+          //   right: -100,
+          //   child: Container(
+          //     width: 350,
+          //     height: 350,
+          //     decoration: BoxDecoration(
+          //       shape: BoxShape.circle,
+          //       color: const Color(0xFFC75146).withOpacity(0.04),
+          //       boxShadow: [
+          //         BoxShadow(
+          //           color: const Color(0xFFC75146).withOpacity(0.4),
+          //           blurRadius: 120,
+          //           spreadRadius: 80,
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+          // 기존 뷰
+          SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 100),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: hasWallet
+                      ? WalletCard(provider: accountProvider) 
+                      : const EmptyWalletCard(),
                 ),
-              ),
+                const TransactionsSection(),
+              ],
             ),
-            const TransactionsSection(),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

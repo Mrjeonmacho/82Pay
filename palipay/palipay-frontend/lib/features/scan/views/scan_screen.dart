@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -177,7 +178,7 @@ class _ScanScreenState extends State<ScanScreen> {
           return Scaffold(
             backgroundColor: Colors.black,
             appBar: PaliTopBar(
-              title: 'Scan',
+              title: 'common.scan'.tr(),
               leading: IconButton(
                 icon: const Icon(
                   Icons.arrow_back_ios_new_rounded,
@@ -238,7 +239,7 @@ class _ScanScreenState extends State<ScanScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'Align account number within the frame',
+                        'scan.align_account_number'.tr(),
                         textAlign: TextAlign.center,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: Colors.white,
@@ -271,7 +272,7 @@ class _ScanScreenState extends State<ScanScreen> {
                           ),
                           const SizedBox(width: 10),
                           Text(
-                            provider.isBusy ? 'Scanning...' : 'Ready to scan',
+                            provider.isBusy ? 'scan.status_scanning'.tr() : 'scan.status_ready'.tr(),
                             style: AppTextStyles.headlineLarge.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -283,8 +284,8 @@ class _ScanScreenState extends State<ScanScreen> {
                       const SizedBox(height: 8),
                       Text(
                         provider.isBusy
-                            ? 'Recognizing account information'
-                            : 'Keep your device steady',
+                            ? 'scan.desc_recognizing'.tr()
+                            : 'scan.desc_steady'.tr(),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Colors.white70,
                           fontSize: 14,
@@ -400,69 +401,92 @@ class _GuideFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double corner = 34;
-    const double thickness = 4;
-
-    return SizedBox(
-      width: width,
-      height: height,
-      child: Stack(
-        children: [
-          _corner(top: true, left: true, corner: corner, thickness: thickness),
-          _corner(top: true, left: false, corner: corner, thickness: thickness),
-          _corner(top: false, left: true, corner: corner, thickness: thickness),
-          _corner(
-            top: false,
-            left: false,
-            corner: corner,
-            thickness: thickness,
-          ),
-        ],
+    return CustomPaint(
+      size: Size(width, height),
+      painter: _ScannerFramePainter(
+        colorRed: AppColors.warningRed,
+        colorBlue: AppColors.thirdBlue,
+        borderRadius: 28, // 오버레이 컷아웃과 일치시킴
+        strokeWidth: 4,
       ),
     );
   }
+}
 
-  Widget _corner({
-    required bool top,
-    required bool left,
-    required double corner,
-    required double thickness,
-  }) {
-    return Positioned(
-      top: top ? 0 : null,
-      bottom: top ? null : 0,
-      left: left ? 0 : null,
-      right: left ? null : 0,
-      child: Container(
-        width: corner,
-        height: corner,
-        decoration: BoxDecoration(
-          border: Border(
-            top: top
-                ? BorderSide(color: AppColors.warningRed, width: thickness)
-                : BorderSide.none,
-            bottom: !top
-                ? BorderSide(color: AppColors.warningRed, width: thickness)
-                : BorderSide.none,
-            left: left
-                ? BorderSide(color: AppColors.thirdBlue, width: thickness)
-                : BorderSide.none,
-            right: !left
-                ? BorderSide(color: AppColors.thirdBlue, width: thickness)
-                : BorderSide.none,
-          ),
-          borderRadius: BorderRadius.only(
-            topLeft: top && left ? const Radius.circular(18) : Radius.zero,
-            topRight: top && !left ? const Radius.circular(18) : Radius.zero,
-            bottomLeft: !top && left ? const Radius.circular(18) : Radius.zero,
-            bottomRight: !top && !left
-                ? const Radius.circular(18)
-                : Radius.zero,
-          ),
-        ),
-      ),
+class _ScannerFramePainter extends CustomPainter {
+  final Color colorRed;
+  final Color colorBlue;
+  final double borderRadius;
+  final double strokeWidth;
+
+  _ScannerFramePainter({
+    required this.colorRed,
+    required this.colorBlue,
+    required this.borderRadius,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 코너 선의 총 길이를 조금 더 길게(예: 40) 잡으면 더 네이버페이 같습니다.
+    final double len = 40.0; 
+    final double rad = borderRadius;
+
+    final paintRed = Paint()
+      ..color = colorRed
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    final paintBlue = Paint()
+      ..color = colorBlue
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    // 1. 좌상단 (Vertical: Blue, Curve: Blue, Horizontal: Red)
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, len)
+        ..lineTo(0, rad)
+        ..arcToPoint(Offset(rad, 0), radius: Radius.circular(rad), clockwise: true),
+      paintBlue,
     );
+    canvas.drawLine(Offset(rad, 0), Offset(len, 0), paintRed);
+
+    // 2. 우상단 (Horizontal: Red, Curve: Red, Vertical: Blue)
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width - len, 0)
+        ..lineTo(size.width - rad, 0)
+        ..arcToPoint(Offset(size.width, rad), radius: Radius.circular(rad), clockwise: true),
+      paintRed,
+    );
+    canvas.drawLine(Offset(size.width, rad), Offset(size.width, len), paintBlue);
+
+    // 3. 좌하단 (Vertical: Blue, Curve: Blue, Horizontal: Red)
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, size.height - len)
+        ..lineTo(0, size.height - rad)
+        ..arcToPoint(Offset(rad, size.height), radius: Radius.circular(rad), clockwise: false),
+      paintBlue,
+    );
+    canvas.drawLine(Offset(rad, size.height), Offset(len, size.height), paintRed);
+
+    // 4. 우하단 (Horizontal: Red, Curve: Red, Vertical: Blue)
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width - len, size.height)
+        ..lineTo(size.width - rad, size.height)
+        ..arcToPoint(Offset(size.width, size.height - rad), radius: Radius.circular(rad), clockwise: false),
+      paintRed,
+    );
+    canvas.drawLine(Offset(size.width, size.height - rad), Offset(size.width, size.height - len), paintBlue);
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _RoundActionButton extends StatelessWidget {

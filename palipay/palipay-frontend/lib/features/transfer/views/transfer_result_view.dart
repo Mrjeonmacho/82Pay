@@ -1,5 +1,6 @@
 // lib/features/transfer/views/transfer_result_view.dart
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // 날짜 및 금액 포맷팅용
 import 'package:palipay_app/core/utils/currency_input_formatter.dart';
@@ -81,7 +82,7 @@ class _TransferResultViewState extends State<TransferResultView> {
               ),
               const SizedBox(height: 24),
               Text(
-                "Payment Complete",
+                'transfer_result.payment_complete'.tr(),
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize: 24,
@@ -90,13 +91,13 @@ class _TransferResultViewState extends State<TransferResultView> {
               ),
               const SizedBox(height: 10),
               Text(
-                "Payment Amount",
+                'transfer_result.payment_amount'.tr(),
                 style: AppTextStyles.bodyMedium.copyWith(color: AppColors.disabledFont),
               ),
               const SizedBox(height: 8),
               // 금액 강조 (시안 #4처럼 진한 파란색 대형 폰트)
               Text(
-              "$formattedAmount KRW", 
+              'transfer_confirm.amount_krw'.tr(namedArgs: {'amount': formattedAmount}), 
               style: AppTextStyles.titleLarge.copyWith(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
@@ -134,7 +135,7 @@ class _TransferResultViewState extends State<TransferResultView> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Recipient",
+                            Text('transfer_result.recipient'.tr(),
                                 style: AppTextStyles.bodySmall
                                     .copyWith(color: Colors.grey)),
                             const SizedBox(height: 4),
@@ -150,9 +151,9 @@ class _TransferResultViewState extends State<TransferResultView> {
                     const SizedBox(height: 20),
                     
                     // 상세 항목들 (Row 스타일)
-                    _buildReceiptRow("Sender", "James Cooper"), // 가짜 보낸이
-                    _buildReceiptRow("Transaction Date", dateFormat.format(now)),
-                    _buildReceiptRow("Transaction ID", transactionId),
+                    _buildReceiptRow('transfer.result.sender'.tr(), "James Cooper"), // 가짜 보낸이
+                    _buildReceiptRow('transfer.result.transaction_date'.tr(), dateFormat.format(now)),
+                    _buildReceiptRow('transfer.result.transaction_id'.tr(), transactionId),
                   ],
                 ),
               ),
@@ -164,7 +165,7 @@ class _TransferResultViewState extends State<TransferResultView> {
                 controller: _memoController,
                 maxLength: 20, // 짧은 메모 유도
                 decoration: InputDecoration(
-                  hintText: 'Add a live memo (optional)',
+                  hintText: 'transfer.result.memo_hint'.tr(),
                   prefixIcon: const Icon(Icons.edit_note, color: Colors.grey),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -185,7 +186,7 @@ class _TransferResultViewState extends State<TransferResultView> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(24.0),
         child: PaliButton(
-          text: "Back to Home",
+          text: 'transfer.result.btn_back_home'.tr(),
           backgroundColor: const Color(0xFF0D1B63), // 시안의 진한 파란색
           onPressed: () {
             // 메모 저장 로직이 필요하다면 여기서 처리 (예: provider 호출)

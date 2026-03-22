@@ -1,4 +1,5 @@
 // widgets/email_step.dart
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../core/widgets/widgets.dart';
 import 'step_layout.dart';
@@ -16,10 +17,10 @@ class EmailStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<SignUpProvider>(context);
     return StepLayout(
-      title: 'Email',
+      title: 'sign_up.step_email'.tr(),
       shakeController: shakeController,
       child: PaliInputField(
-        hintText: 'Enter your email',
+        hintText: 'sign_up.hint_email'.tr(),
         controller: provider.emailController,
         // 1. 글자를 칠 때마다 서버 체크 & 형식 체크 실행
         onChanged: (value) => provider.checkEmailAvailability(),

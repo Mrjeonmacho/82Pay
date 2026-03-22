@@ -1,5 +1,6 @@
 // lib/features/transfer/views/transfer_confirm_view.dart
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
@@ -68,8 +69,8 @@ class TransferConfirmView extends StatelessWidget {
     return Scaffold(
       // 결과 페이지와 통일된 배경색
       backgroundColor: const Color(0xFFF8F9FB),
-      appBar: const PaliTopBar(
-        title: 'Confirm Transfer',
+      appBar: PaliTopBar(
+        title: 'transfer.confirm.title'.tr(),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -80,7 +81,7 @@ class TransferConfirmView extends StatelessWidget {
               
               // 1. 헤더 영역: 질문 뉘앙스
               Text(
-                "Send Money?",
+                'transfer_confirm.send_money'.tr(),
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontSize: 32,
                   color: AppColors.disabledFont,
@@ -89,7 +90,7 @@ class TransferConfirmView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                "$formattedAmount KRW",
+                'transfer_confirm.amount_krw'.tr(namedArgs: {'amount': formattedAmount}),
                 style: AppTextStyles.titleLarge.copyWith(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
@@ -98,7 +99,7 @@ class TransferConfirmView extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                "to $recipientName",
+                'transfer_confirm.to_recipient'.tr(namedArgs: {'name': recipientName}),
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: 32,
                   fontWeight: FontWeight.w600,
@@ -127,7 +128,7 @@ class TransferConfirmView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Recipient Details",
+                      'transfer_confirm.recipient_details'.tr(),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.grey,
                         fontWeight: FontWeight.bold,
@@ -161,8 +162,8 @@ class TransferConfirmView extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     // 추가 정보 (출금 계좌 등)
-                    _buildConfirmRow("Withdraw from", "My Wallet"),
-                    _buildConfirmRow("Transfer Fee", "Free"),
+                    _buildConfirmRow('transfer.confirm.withdraw_from'.tr(), 'transfer.confirm.my_wallet'.tr()),
+                    _buildConfirmRow('transfer.confirm.transfer_fee'.tr(), 'transfer.confirm.free'.tr()),
                   ],
                 ),
               ),
@@ -176,7 +177,7 @@ class TransferConfirmView extends StatelessWidget {
                   const Icon(Icons.security, size: 16, color: Colors.grey),
                   const SizedBox(width: 8),
                   Text(
-                    "Securely encrypted by PaliPay",
+                    'transfer_confirm.securely_encrypted'.tr(),
                     style: AppTextStyles.bodySmall.copyWith(color: Colors.grey),
                   ),
                 ],
@@ -195,7 +196,7 @@ class TransferConfirmView extends StatelessWidget {
             Expanded(
               flex: 1,
               child: PaliButton(
-                text: "Cancel",
+                text: 'common.cancel'.tr(),
                 backgroundColor: Colors.white,
                 // 테두리가 있는 스타일을 원하시면 PaliButton 내부에서 처리하거나 
                 // 아래처럼 스타일을 조정하세요.
@@ -207,7 +208,7 @@ class TransferConfirmView extends StatelessWidget {
             Expanded(
               flex: 2, // 송금 버튼을 더 넓게 배치하여 강조
               child: PaliButton(
-                text: transferProvider.isLoading ? "Sending..." : "Send Now",
+                text: transferProvider.isLoading ? 'transfer.confirm.btn_sending'.tr() : 'transfer.confirm.btn_send_now'.tr(),
                 backgroundColor: const Color(0xFF0D1B63),
                 onPressed: transferProvider.isLoading 
                     ? null 

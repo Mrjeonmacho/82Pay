@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:palipay_app/features/user/provider/login_provider.dart';
 import 'package:palipay_app/features/user/views/sign_up_screen.dart';
@@ -67,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     final provider = context.watch<LoginProvider>();
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: Text('login.title'.tr())),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -77,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen>
               children: [
                 const SizedBox(height: 60),
                 Text(
-                  'Welcome!',
+                  'login.welcome'.tr(),
                   style: AppTextStyles.titleLarge.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.mainBlue, // 앱 기본 텍스트 색상
@@ -284,6 +285,7 @@ class _LoginScreenState extends State<LoginScreen>
               ],
             ),
           ),
+
           if (provider.showOverlayMessage) _buildPasswordChangedOverlay(),
         ],
       ),

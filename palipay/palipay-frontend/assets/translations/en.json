@@ -1,0 +1,266 @@
+{
+    "common": {
+        "home": "Home",
+        "scan": "Scan",
+        "wallet": "Wallet",
+        "profile": "Profile",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "ok": "OK",
+        "done": "Done",
+        "see_all": "See all",
+        "add_money": "Add Money",
+        "cash_out": "Cash Out"
+    },
+    "profile": {
+        "change_language": "Language Change",
+        "select_language": "Select Language",
+        "title": "Profile",
+        "section_service": "Service",
+        "section_security": "Security",
+        "menu_linked_accounts": "Linked Accounts",
+        "menu_language": "Language",
+        "menu_change_password": "Change Password",
+        "menu_change_pin": "Change PIN",
+        "menu_delete_account": "Delete Account",
+        "msg_password_changed": "Your password has been changed successfully.",
+        "password": {
+            "title_change": "Change Password",
+            "btn_change": "Change Password",
+            "label_current": "Current Password",
+            "hint_current": "Enter your current password",
+            "label_new": "New Password",
+            "hint_new": "Enter your new password",
+            "label_confirm": "Confirm New Password",
+            "hint_confirm": "Confirm your new password",
+            "error_empty_current": "Please enter your current password.",
+            "error_empty_new": "Please enter a new password.",
+            "error_too_short": "Password must be at least 8 characters.",
+            "error_same_as_current": "New password must be different from the current password.",
+            "error_empty_confirm": "Please confirm your new password.",
+            "error_mismatch": "Passwords do not match.",
+            "error_failed": "Failed to change password. Please try again."
+        },
+        "linked": {
+            "title": "Linked Accounts",
+            "my_account": "My Account",
+            "msg_removed": "Linked account has been removed.",
+            "msg_failed": "Failed to remove linked account."
+        },
+        "pin_auth": {
+            "title_verify": "Verify PIN",
+            "error_invalid": "Invalid PIN. Please try again."
+        }
+    },
+    "languages": {
+        "ko": "한국어",
+        "en": "English",
+        "ja": "日本語",
+        "zh": "中文"
+    },
+    "bank": {
+        "selection": {
+            "title": "Select {countryCode} Bank ({currency})"
+        },
+        "pwd": {
+            "link_success": "Bank account linked successfully!",
+            "invalid_msg": "Invalid password. Try '1111' for testing.",
+            "title": "Enter Bank Password",
+            "desc": "Please enter your 4-digit bank password"
+        }
+    },
+    "account_link": {
+        "currency_info": "Your currency will be set to KRW based on your profile.",
+        "fill_all_fields": "Please fill in all fields."
+    },
+    "account_management": {
+        "title": "Account management",
+        "linked_bank_account": "LINKED BANK ACCOUNT",
+        "one_active_account_msg": "One active international account allowed",
+        "verified_account": "VERIFIED ACCOUNT",
+        "replace_account": "Replace Account",
+        "unlink_account": "Unlink Account",
+        "delete_confirm_msg": "Are you sure you want to delete it?",
+        "delete_success_msg": "The linked account has been safely deleted."
+    },
+    "history": {
+        "detail": {
+            "title": "Transaction Detail",
+            "transaction_successful": "TRANSACTION SUCCESSFUL",
+            "receipt_details": "RECEIPT DETAILS"
+        },
+        "view": {
+            "title": "Transaction History",
+            "total_amount_spent": "Total Amount Spent"
+        },
+        "filter": {
+            "title": "Filter",
+            "period": "Period",
+            "transaction_type": "Transaction Type",
+            "all": "All",
+            "payment": "Payment",
+            "sort_order": "Sort Order"
+        }
+    },
+    "home_screen": {
+        "recent_transactions": "Recent Transactions"
+    },
+    "linked_accounts": {
+        "link_bank_account": "Link your bank account"
+    },
+    "wallet_card": {
+        "main_wallet": "Main Wallet",
+        "card_holder": "CARD HOLDER"
+    },
+    "pin": {
+        "logo_text": "+82Pay",
+        "error_incorrect": "Incorrect PIN. Please try again ({count}/5)",
+        "error_registration_failed": "PIN registration failed. Please try again.",
+        "error_mismatch": "PINs do not match. Please try again.",
+        "change": {
+            "error_invalid_current": "The current PIN is incorrect.",
+            "error_same_as_current": "Your new PIN must be different from the current PIN.",
+            "error_mismatch": "The new PINs do not match. Please try again.",
+            "error_failed": "Failed to change PIN.",
+            "title_verify_current": "Verify Current PIN",
+            "title_create_new": "Create New PIN",
+            "title_confirm_new": "Confirm New PIN",
+            "title_completed": "PIN Changed",
+            "desc_verify_current": "Enter your current 6-digit PIN",
+            "desc_create_new": "Set a new 6-digit PIN",
+            "desc_confirm_new": "Please re-enter your new PIN",
+            "desc_completed": "Your PIN has been changed successfully"
+        },
+        "create": {
+            "title_enter": "Enter Your PIN",
+            "desc_enter": "To secure your payment",
+            "title_create": "Create Your PIN",
+            "desc_create": "Set a 6-digit payment PIN",
+            "title_confirm": "Confirm Your PIN",
+            "desc_confirm": "Please re-enter your PIN to confirm"
+        }
+    },
+    "unlink_pin_auth": {
+        "verify_pin": "Verify Your PIN",
+        "enter_pin_to_remove": "Enter your PIN to remove the linked account"
+    },
+    "scan_loading": {
+        "scanning": "Scanning",
+        "analyzing_image_desc": "Analyzing the selected image and extracting details.",
+        "may_take_a_few_seconds": "This may take a few seconds",
+        "scanning_account_info": "Scanning account information",
+        "scanning_account_desc": "Please wait while we recognize the bank name and account number from the image."
+    },
+    "scan": {
+        "align_account_number": "Align account number within the frame",
+        "status_scanning": "Scanning...",
+        "status_ready": "Ready to scan",
+        "desc_recognizing": "Recognizing account information",
+        "desc_steady": "Keep your device steady",
+        "error_ocr_failed": "OCR request failed.",
+        "error_recognition_failed": "Account number could not be recognized."
+    },
+    "account_input": {
+        "scan_failed_msg": "Scan failed. Please enter manually.",
+        "account_number": "Account Number",
+        "bank": "Bank"
+    },
+    "amount_input": {
+        "from_my_wallet": "From My Wallet",
+        "to_bank": "To {bankName}",
+        "amount": "Amount",
+        "enter_in_krw": "Please enter in Korean Won",
+        "withdrawable_amount": "Withdrawable amount is ₩ {balance}"
+    },
+    "transfer_confirm": {
+        "send_money": "Send Money?",
+        "amount_krw": "{amount} KRW",
+        "to_recipient": "to {name}",
+        "recipient_details": "Recipient Details",
+        "securely_encrypted": "Securely encrypted by PaliPay"
+    },
+    "transfer_result": {
+        "payment_complete": "Payment Complete",
+        "payment_amount": "Payment Amount",
+        "recipient": "Recipient"
+    },
+    "login": {
+        "title": "Login",
+        "hint_email": "Email",
+        "hint_password": "Password",
+        "btn_login": "Login",
+        "or": "Or",
+        "msg_password_changed": "Your password has been changed successfully. Please log in again.",
+        "welcome": "Welcome!",
+        "google": "Continue with Google"
+    },
+    "sign_up": {
+        "create_your_account": "Create Your Account",
+        "step_email": "Email",
+        "step_confirm": "Confirm",
+        "step_profile": "Profile",
+        "step_password": "Password",
+        "btn_sign_up": "Sign Up",
+        "btn_next": "Next",
+        "hint_email": "Enter your email",
+        "error_invalid_email": "Invalid email address.",
+        "error_email_taken": "This email is already taken.",
+        "verification_code": "Verification Code",
+        "hint_auth_code": "Enter 6-digit code",
+        "error_empty_auth_code": "Please enter the verification code.",
+        "error_auth_code_length": "The code must be 6 digits.",
+        "name": "Name",
+        "hint_name": "Full Name",
+        "error_empty_name": "Enter your name",
+        "phone_number": "Phone Number",
+        "hint_phone_number": "Phone Number",
+        "error_empty_phone": "Enter phone number",
+        "password": "Password",
+        "hint_set_password": "Set Password",
+        "error_empty_password": "Enter password",
+        "error_invalid_password": "8+ characters with letters, numbers, and symbols",
+        "confirm_password": "Confirm Password",
+        "hint_confirm_password": "Confirm Password",
+        "error_empty_confirm_password": "Confirm your password",
+        "error_password_mismatch": "Passwords do not match."
+    },
+    "sign_up_success": {
+        "welcome": "Welcome to Pali!",
+        "success_desc": "Registration completed. Start using the service right now!",
+        "btn_sign_in": "Sign In"
+    },
+    "wallet": {
+        "refund": {
+            "max": "Max"
+        }
+    },
+    "transfer": {
+        "title": "Transfer",
+        "btn_next": "Next",
+        "input": {
+            "hint_account_number": "Enter the account number",
+            "hint_select_bank": "Select a bank"
+        },
+        "amount": {
+            "balance_loading": "Balance loading...",
+            "balance_value": "Balance ₩ {balance}"
+        },
+        "confirm": {
+            "title": "Confirm Transfer",
+            "withdraw_from": "Withdraw from",
+            "my_wallet": "My Wallet",
+            "transfer_fee": "Transfer Fee",
+            "free": "Free",
+            "btn_sending": "Sending...",
+            "btn_send_now": "Send Now"
+        },
+        "result": {
+            "sender": "Sender",
+            "transaction_date": "Transaction Date",
+            "transaction_id": "Transaction ID",
+            "memo_hint": "Add a live memo (optional)",
+            "btn_back_home": "Back to Home"
+        }
+    }
+}

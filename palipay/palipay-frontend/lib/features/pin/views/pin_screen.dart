@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:palipay_app/features/pin/providers/pin_provider.dart';
 import 'package:provider/provider.dart';
@@ -210,14 +211,24 @@ class _PinScreenState extends State<PinScreen>
 
       case PinMode.confirm:
         if (widget.firstPin == _inputPin) {
-          // TODO: 실제 PIN 등록 API 연결
-          // final success = await pinProvider.createPin(
-          //   walletId: walletId,
-          //   pinNumber: _inputPin,
-          // );
-          Navigator.pop(context, true);
+          // [수정] Provider를 통해 실제로 PIN을 생성/등록합니다.
+          final success = await pinProvider.createPin(walletId);
+
+          if (mounted && success) {
+            // [기획 반영] 생성 성공 시 바로 계좌 관리 화면으로!
+            // pushAndRemoveUntil을 써서 이전 PIN 입력 스택을 모두 비워줍니다.
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AccountManagementView(),
+              ),
+              (route) => route.isFirst, // 홈 화면만 남기고 다 지움
+            );
+          } else {
+            _handleError(message: 'pin.error_registration_failed'.tr());
+          }
         } else {
-          _handleError(message: 'PINs do not match. Please try again.');
+          _handleError(message: 'pin.error_mismatch'.tr());
         }
         break;
 
@@ -378,8 +389,8 @@ class _PinScreenState extends State<PinScreen>
           : AppBar(
               // 디자인 시안의 백 버튼과 타이틀 구현
               title: Text(
-                _title,
-                style: TextStyle(
+                'pin.logo_text'.tr(),
+                style: const TextStyle(
                   color: AppColors.mainBlue,
                   fontWeight: FontWeight.bold,
                 ),

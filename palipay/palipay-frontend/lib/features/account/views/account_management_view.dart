@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -18,7 +19,7 @@ class AccountManagementView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const PaliTopBar(title: 'Manage Wallet'),
+      appBar: PaliTopBar(title: 'account_management.title'.tr()),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
@@ -26,7 +27,7 @@ class AccountManagementView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'LINKED BANK ACCOUNT',
+              'account_management.linked_bank_account'.tr(),
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.disabledFont,
                 letterSpacing: 1.2,
@@ -34,7 +35,7 @@ class AccountManagementView extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'One active international account allowed',
+              'account_management.one_active_account_msg'.tr(),
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.exampleFont,
               ),
@@ -122,7 +123,7 @@ class AccountManagementView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'VERIFIED ACCOUNT',
+                        'account_management.verified_account'.tr(),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Colors.white.withOpacity(0.6),
                           letterSpacing: 1.2,
@@ -170,7 +171,7 @@ class AccountManagementView extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'Delete',
+                        'common.delete'.tr(),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -199,7 +200,7 @@ class AccountManagementView extends StatelessWidget {
           ),
           icon: const Icon(Icons.add, color: AppColors.mainBlue),
           label: Text(
-            'Replace Account',
+            'account_management.replace_account'.tr(),
             style: AppTextStyles.bodyMedium.copyWith(color: AppColors.mainBlue),
           ),
         ),
@@ -213,18 +214,18 @@ class AccountManagementView extends StatelessWidget {
       context: parentContext,
       builder: (dialogContext) => AlertDialog(
         title: Text(
-          'Unlink Account',
+          'account_management.unlink_account'.tr(),
           style: AppTextStyles.bodyLarge.copyWith(color: AppColors.abledFont),
         ),
         content: Text(
-          '정말 삭제하시겠습니까?',
+          'account_management.delete_confirm_msg'.tr(),
           style: AppTextStyles.bodySmall.copyWith(color: AppColors.exampleFont),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
-              '취소',
+              'common.cancel'.tr(),
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.exampleFont,
               ),
@@ -252,7 +253,7 @@ class AccountManagementView extends StatelessWidget {
                 if (success && parentContext.mounted) {
                   // 2. 성공 메시지 출력
                   ScaffoldMessenger.of(parentContext).showSnackBar(
-                    const SnackBar(content: Text('연동된 계좌가 안전하게 삭제되었습니다.')),
+                    SnackBar(content: Text('account_management.delete_success_msg'.tr())),
                   );
 
                   // 3. (선택 사항) 삭제 후 홈 화면으로 아예 보내버리고 싶다면?
@@ -261,7 +262,7 @@ class AccountManagementView extends StatelessWidget {
               }
             },
             child: Text(
-              '삭제',
+              'common.delete'.tr(),
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.warningRed,
                 fontWeight: FontWeight.w600,

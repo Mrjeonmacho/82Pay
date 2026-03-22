@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -57,7 +58,7 @@ class _UnlinkPinAuthViewState extends State<UnlinkPinAuthView> {
       setState(() {
         _isLoading = false;
         _inputPin = '';
-        _errorMessage = 'Invalid PIN. Please try again.';
+        _errorMessage = 'profile.pin_auth.error_invalid'.tr();
       });
     }
   }
@@ -66,14 +67,14 @@ class _UnlinkPinAuthViewState extends State<UnlinkPinAuthView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const PaliTopBar(title: 'Verify PIN'),
+      appBar: PaliTopBar(title: 'profile.pin_auth.title_verify'.tr()),
       body: SafeArea(
         child: Column(
           children: [
             const SizedBox(height: 16),
 
             Text(
-              'Verify Your PIN',
+              'unlink_pin_auth.verify_pin'.tr(),
               style: AppTextStyles.titleMedium.copyWith(
                 color: AppColors.mainBlue,
                 fontWeight: FontWeight.bold,
@@ -84,7 +85,7 @@ class _UnlinkPinAuthViewState extends State<UnlinkPinAuthView> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
-                'Enter your PIN to remove the linked account',
+                'unlink_pin_auth.enter_pin_to_remove'.tr(),
                 style: AppTextStyles.bodyMedium.copyWith(color: Colors.grey),
                 textAlign: TextAlign.center,
               ),

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/config/env_config.dart';
 import '../../../core/constants/api_constants.dart';
 import '../models/wallet_model.dart';
@@ -35,7 +36,7 @@ class WalletService {
       isSufficient: isSufficient,
       requiredAmount: amount.toInt(),
       shortageAmount: shortageAmount,
-      message: isSufficient ? '잔액이 충분합니다.' : '잔액이 부족합니다.',
+      message: isSufficient ? 'wallet.error.sufficient_balance'.tr() : 'wallet.error.insufficient_balance'.tr(),
     );
   }
 
@@ -55,12 +56,12 @@ class WalletService {
       );
 
       if (response.data is! Map<String, dynamic>) {
-        return const WalletBalanceModel(
+        return WalletBalanceModel(
           currentBalance: null,
           isSufficient: null,
           requiredAmount: null,
           shortageAmount: null,
-          message: 'Invalid response format',
+          message: 'error.invalid_response'.tr(),
         );
       }
 
@@ -80,7 +81,7 @@ class WalletService {
         isSufficient: null,
         requiredAmount: null,
         shortageAmount: null,
-        message: e.response?.data?['message'] ?? 'Network error occurred',
+        message: e.response?.data?['message'] ?? 'error.network_issue'.tr(),
       );
     }
   }

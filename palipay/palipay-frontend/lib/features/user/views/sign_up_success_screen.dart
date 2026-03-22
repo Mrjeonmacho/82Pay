@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -28,21 +29,21 @@ class SignUpSuccessScreen extends StatelessWidget {
               const SizedBox(height: 30),
 
               Text(
-                'Welcome to Pali!',
+                'sign_up_success.welcome'.tr(),
                 style: AppTextStyles.titleLarge.copyWith(fontSize: 28),
               ),
               const SizedBox(height: 16),
 
-              const Text(
-                '회원가입이 성공적으로 완료되었습니다.\n지금 바로 서비스를 시작해보세요!',
+              Text(
+                'sign_up_success.success_desc'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, fontSize: 16, height: 1.5),
+                style: const TextStyle(color: Colors.grey, fontSize: 16, height: 1.5),
               ),
               const Spacer(),
 
               // 시작하기 버튼
               PaliButton(
-                text: 'Sign In',
+                text: 'sign_up_success.btn_sign_in'.tr(),
                 onPressed: () {
                   // 홈 화면으로 이동 (스택을 모두 비우고 이동하는 것이 좋음)
                   Navigator.of(context).pushAndRemoveUntil(

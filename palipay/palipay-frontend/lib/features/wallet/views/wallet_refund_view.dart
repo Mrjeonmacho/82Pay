@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:palipay_app/features/pin/views/pin_screen.dart';
 import 'package:palipay_app/features/wallet/views/wallet_result_view.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +27,7 @@ class _ExchangeViewState extends State<ExchangeView> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      appBar: const PaliTopBar(title: 'Refund'),
+      appBar: PaliTopBar(title: 'common.cash_out'.tr()),
       body: SafeArea(
         child: Column(
           children: [
@@ -100,7 +101,7 @@ class _ExchangeViewState extends State<ExchangeView> {
                     provider.errorMessage == null && provider.krwAmount > 0
                     ? AppColors.mainBlue
                     : AppColors.disabledBackground,
-                text: 'Refund Now',
+                text: 'common.cash_out'.tr(),
                 onPressed:
                     provider.errorMessage == null && provider.krwAmount > 0
                     ? () async {
@@ -155,7 +156,7 @@ class _RefundMaxButton extends StatelessWidget {
           border: Border.all(color: Colors.white.withOpacity(0.1)),
         ),
         child: Text(
-          'Max',
+          'wallet.refund.max'.tr(),
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.mainBlue,
             fontWeight: FontWeight.bold,
