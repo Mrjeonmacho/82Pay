@@ -1,5 +1,6 @@
-import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../services/pin_service.dart';
 import '../models/pin_request_dto.dart';
 
@@ -130,7 +131,7 @@ class PinProvider extends ChangeNotifier {
         _status = PinStatus.success;
       } else {
         _status = PinStatus.failure;
-        _errorMessage = "PIN number does not match.";
+        _errorMessage = 'pin.error_mismatch'.tr();
         if (pinNumber == null) {
           _inputPin = "";
         }
@@ -139,7 +140,7 @@ class PinProvider extends ChangeNotifier {
       return isSuccess;
     } catch (e) {
       _status = PinStatus.failure;
-      _errorMessage = "An error occurred while communicating with the server.";
+      _errorMessage = 'error.network_issue'.tr();
       notifyListeners();
       return false;
     }
@@ -154,7 +155,8 @@ class PinProvider extends ChangeNotifier {
     final isSuccess = await _service.createPin(request);
 
     _status = isSuccess ? PinStatus.success : PinStatus.failure;
-    if (!isSuccess) _errorMessage = "Failed to create PIN.";
+    if (!isSuccess) _errorMessage = 'pin.error_registration_failed'.tr();
+
 
     notifyListeners();
     return isSuccess;
@@ -183,14 +185,14 @@ class PinProvider extends ChangeNotifier {
         _status = PinStatus.success;
       } else {
         _status = PinStatus.failure;
-        _errorMessage = "Failed to change PIN.";
+        _errorMessage = 'pin.change.error_failed'.tr();
       }
 
       notifyListeners();
       return isSuccess;
     } catch (e) {
       _status = PinStatus.failure;
-      _errorMessage = "An error occurred while communicating with the server.";
+      _errorMessage = 'error.network_issue'.tr();
       notifyListeners();
       return false;
     }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:palipay_app/features/pin/views/pin_screen.dart';
 import 'package:palipay_app/features/wallet/views/wallet_result_view.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +37,7 @@ class _TopupViewState extends State<TopupView> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      appBar: const PaliTopBar(title: 'Top-up'),
+      appBar: PaliTopBar(title: 'common.add_money'.tr()),
       body: SafeArea(
         child: Column(
           children: [
@@ -133,7 +134,7 @@ class _TopupViewState extends State<TopupView> {
                 provider.errorMessage == null && provider.krwAmount > 0
                 ? AppColors.mainBlue
                 : AppColors.disabledBackground,
-            text: 'Top-up Now',
+            text: 'common.add_money'.tr(),
             onPressed: provider.errorMessage == null && provider.krwAmount > 0
                 ? () async {
                     // 1. PIN 인증 화면 호출 (PinMode.auth)

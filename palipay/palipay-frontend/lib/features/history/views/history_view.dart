@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; // 날짜 포맷팅용
@@ -8,6 +9,7 @@ import '../providers/history_provider.dart';
 import '../models/transaction_model.dart';
 import 'history_detail_view.dart';
 import '../widgets/history_filter_bottom_sheet.dart';
+import '../../../core/utils/date_formatter_util.dart';
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
@@ -38,7 +40,7 @@ class _HistoryViewState extends State<HistoryView> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: PaliTopBar(
-        title: 'Transaction History',
+        title: 'history.view.title'.tr(),
         actions: [
           IconButton(
             onPressed: () {
@@ -71,7 +73,7 @@ class _HistoryViewState extends State<HistoryView> {
                 ? const Center(
                     child: CircularProgressIndicator(color: AppColors.mainBlue),
                   )
-                : _buildGroupedCardList(provider.items),
+                : _buildGroupedCardList(context, provider.items),
           ),
         ],
       ),
@@ -87,7 +89,7 @@ class _HistoryViewState extends State<HistoryView> {
       child: Column(
         children: [
           Text(
-            'Total Amount Spent',
+            'history.view.total_amount_spent'.tr(),
             style: AppTextStyles.headlineLarge.copyWith(
               color: AppColors.mainBlue,
             ),
@@ -106,11 +108,11 @@ class _HistoryViewState extends State<HistoryView> {
   }
 
   // 데이터를 날짜별로 묶어서 카드로 렌더링
-  Widget _buildGroupedCardList(List<Transaction> items) {
+  Widget _buildGroupedCardList(BuildContext context, List<Transaction> items) {
     // 날짜별 그룹화 로직
     Map<String, List<Transaction>> groups = {};
     for (var item in items) {
-      String dateKey = DateFormat('MMMM d\'th\' EEEE').format(item.createdAt);
+      String dateKey = DateFormatterUtil.formatHistoryHeader(context, item.createdAt);
       groups.putIfAbsent(dateKey, () => []).add(item);
     }
 
@@ -193,7 +195,7 @@ class _HistoryViewState extends State<HistoryView> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  DateFormat('hh:mm').format(tx.createdAt),
+                  DateFormat.jm(context.locale.toString()).format(tx.createdAt),
                   style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFF64748B),

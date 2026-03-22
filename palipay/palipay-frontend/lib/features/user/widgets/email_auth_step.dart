@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:palipay_app/core/theme/app_colors.dart';
 import 'step_layout.dart';
@@ -19,7 +20,7 @@ class EmailAuthStep extends StatelessWidget {
     final provider = Provider.of<SignUpProvider>(context);
 
     return StepLayout(
-      title: 'Verification Code',
+      title: 'sign_up.verification_code'.tr(),
       shakeController: shakeController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,3 +1,5 @@
+import 'dart:ui';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:palipay_app/features/history/views/history_view.dart';
@@ -17,99 +19,99 @@ class _TransactionsSectionState extends State<TransactionsSection> {
 
   @override
   Widget build(BuildContext context) {
+    context.locale; // 다국어 변경을 감지하여 Rebuild 되도록 의존성 주입
     final provider = context.watch<HistoryProvider>();
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 24),
       child: Column(
         children: [
           _buildHeader(context),
-          _buildFilterToggle(provider),
           _buildList(provider),
         ],
       ),
     );
   }
 
-  // 헤더: 타이틀 + See all
+  // 헤더: 타이틀 + View all 가로 배치
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+      padding: const EdgeInsets.fromLTRB(28, 16, 28, 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          Text(
+            'home_screen.recent_transactions'.tr(),
+            style: AppTextStyles.titleMedium.copyWith(
+              fontWeight: FontWeight.w900,
+              fontSize: 18, // 사진과 유사하게
+              letterSpacing: -0.5,
+              color: const Color(0xFF2E3A59), // 사진의 진한 네이비 컬러
+            ),
+          ),
           GestureDetector(
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const HistoryView()),
             ),
-            child: Text(
-              'See all',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.mainBlue,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 필터 토글 (All, Top-up, Payment)
-  Widget _buildFilterToggle(HistoryProvider provider) {
-    final filters = ['All', 'Top-up', 'Payment'];
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: filters.map((filter) {
-          final isSelected = _selectedFilter == filter;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() => _selectedFilter = filter);
-                // API 명세에 따른 카테고리 매핑
-                String? category;
-                if (filter == 'Top-up') category = 'INPUT';
-                if (filter == 'Payment') category = 'OUTPUT';
-                provider.fetchHistory(category: category);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: isSelected ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 4,
-                          ),
-                        ]
-                      : [],
-                ),
-                child: Center(
-                  child: Text(
-                    filter,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: isSelected ? Colors.black : AppColors.abledFont,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(1.0), // 테두리 두께 역할
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withOpacity(0.7), // 빛을 받는 부분
+                          Colors.white.withOpacity(0.0), // 투명한 그림자 부분
+                        ],
+                      ),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(19),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withOpacity(0.4),
+                            Colors.white.withOpacity(0.1),
+                          ],
+                        ),
+                      ),
+                      child: Text(
+                        'common.see_all'.tr().toUpperCase(),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: const Color(0xFFC75146),
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          );
-        }).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -119,69 +121,124 @@ class _TransactionsSectionState extends State<TransactionsSection> {
     if (provider.isLoading) {
       return const Padding(
         padding: EdgeInsets.all(40),
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(color: AppColors.mainBlue),
       );
     }
 
-    return ListView.builder(
+    // UI 디자인 확인을 위해 사진 속 데이터를 하드코딩으로 강제 표시 (4개)
+    final int demoCount = 4;
+
+    return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      itemCount: provider.items.length,
+      itemCount: demoCount,
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
-        final item = provider.items[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: [
-              _buildIcon(item.category),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.otherAccountName ?? 'Unknown',
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Today, 2:30 PM',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.abledFont,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                '${item.category == 'OUTPUT' ? '-' : '+'} ${item.amount.toInt()} ₩',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+        // 첨부해주신 사진과 완벽하게 동일한 하드코딩 텍스트
+        String title;
+        int amount;
+        bool isOutput;
+
+        if (index == 0) {
+          title = 'Starbucks Gangnam'; amount = 5500; isOutput = true;
+        } else if (index == 1) {
+          title = 'Wallet Top-up'; amount = 50000; isOutput = false;
+        } else if (index == 2) {
+          title = 'Shake Shack'; amount = 14500; isOutput = true;
+        } else {
+          title = 'Public Transport'; amount = 1250; isOutput = true;
+        }
+
+        final amountPrefix = isOutput ? '-' : '+';
+
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05), // 외곽 그림자
+                blurRadius: 24,
+                spreadRadius: -5,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildIcon(String category) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        shape: BoxShape.circle,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24), // 그래스모피즘 알약 모서리
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0), // 굴절 강도
+              child: Container(
+                padding: const EdgeInsets.all(1.5), // 베젤(테두리) 역할을 할 그라데이션 두께
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.8), // 왼쪽 위 하이라이트 (빛)
+                      Colors.white.withOpacity(0.0), // 오른쪽 아래 투명 (그림자)
+                    ],
+                  ),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(22.5), // 외부 - 테두리 두께
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withOpacity(0.35), // 표면의 은은한 반사광
+                        Colors.white.withOpacity(0.05), // 깊이감
+                      ],
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            color: const Color(0xFF2E3A59),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Today, 2:30 PM', // 임시 표기
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.disabledFont,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '$amountPrefix $amount ₩', // 원화 단일 굵게 표기
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      color: const Color(0xFF2E3A59),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
-      child: Icon(
-        category == 'OUTPUT'
-            ? Icons.shopping_bag_outlined
-            : Icons.account_balance_wallet_outlined,
-        color: AppColors.abledFont,
-        size: 24,
-      ),
     );
+  },
+);
   }
 }

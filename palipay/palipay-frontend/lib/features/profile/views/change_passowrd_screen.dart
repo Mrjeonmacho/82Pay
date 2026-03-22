@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -46,22 +47,22 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       _confirmPasswordError = null;
 
       if (oldPassword.isEmpty) {
-        _oldPasswordError = 'Please enter your current password.';
+        _oldPasswordError = 'profile.password.error_empty_current'.tr();
       }
 
       if (newPassword.isEmpty) {
-        _newPasswordError = 'Please enter a new password.';
+        _newPasswordError = 'profile.password.error_empty_new'.tr();
       } else if (newPassword.length < 8) {
-        _newPasswordError = 'Password must be at least 8 characters.';
+        _newPasswordError = 'profile.password.error_too_short'.tr();
       } else if (newPassword == oldPassword) {
         _newPasswordError =
-            'New password must be different from the current password.';
+            'profile.password.error_same_as_current'.tr();
       }
 
       if (confirmPassword.isEmpty) {
-        _confirmPasswordError = 'Please confirm your new password.';
+        _confirmPasswordError = 'profile.password.error_empty_confirm'.tr();
       } else if (confirmPassword != newPassword) {
-        _confirmPasswordError = 'Passwords do not match.';
+        _confirmPasswordError = 'profile.password.error_mismatch'.tr();
       }
     });
   }
@@ -98,7 +99,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       );
     } else {
       setState(() {
-        _oldPasswordError = 'Failed to change password. Please try again.';
+        _oldPasswordError = 'profile.password.error_failed'.tr();
       });
     }
   }
@@ -142,17 +143,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FA),
-      appBar: const PaliTopBar(title: 'Change Password'),
+      appBar: PaliTopBar(title: 'profile.password.title_change'.tr()),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Current Password', style: AppTextStyles.bodyMedium),
+              Text('profile.password.label_current'.tr(), style: AppTextStyles.bodyMedium),
               const SizedBox(height: 10),
               PaliInputField(
-                hintText: 'Enter your current password',
+                hintText: 'profile.password.hint_current'.tr(),
                 controller: _oldPasswordController,
                 isPassword: _obscureOldPassword,
                 onChanged: (_) => _validateFields(),
@@ -171,10 +172,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 20),
 
-              const Text('New Password', style: AppTextStyles.bodyMedium),
+              Text('profile.password.label_new'.tr(), style: AppTextStyles.bodyMedium),
               const SizedBox(height: 10),
               PaliInputField(
-                hintText: 'Enter your new password',
+                hintText: 'profile.password.hint_new'.tr(),
                 controller: _newPasswordController,
                 isPassword: _obscureNewPassword,
                 onChanged: (_) => _validateFields(),
@@ -193,13 +194,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 20),
 
-              const Text(
-                'Confirm New Password',
+              Text(
+                'profile.password.label_confirm'.tr(),
                 style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: 10),
               PaliInputField(
-                hintText: 'Confirm your new password',
+                hintText: 'profile.password.hint_confirm'.tr(),
                 controller: _confirmPasswordController,
                 isPassword: _obscureConfirmPassword,
                 onChanged: (_) => _validateFields(),
@@ -226,7 +227,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ),
                     )
                   : PaliButton(
-                      text: 'Change Password',
+                      text: 'profile.password.btn_change'.tr(),
                       onPressed: _submit,
                       backgroundColor: AppColors.mainBlue,
                     ),

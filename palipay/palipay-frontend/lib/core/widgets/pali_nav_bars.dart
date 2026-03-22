@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
@@ -66,9 +67,9 @@ class PaliBottomNavigationBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildNavItem(Icons.home_filled, 'Home', 0),
+              _buildNavItem(Icons.home_filled, 'common.home'.tr(), 0),
               const SizedBox(width: 80), // 중앙 Scan 버튼 자리를 위한 여백
-              _buildNavItem(Icons.person_outline, 'Profile', 1),
+              _buildNavItem(Icons.person_outline, 'common.profile'.tr(), 1),
             ],
           ),
         ),
@@ -105,7 +106,7 @@ class PaliBottomNavigationBar extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Scan',
+                'common.scan'.tr(),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: currentIndex == 2
                       ? AppColors.mainBlue

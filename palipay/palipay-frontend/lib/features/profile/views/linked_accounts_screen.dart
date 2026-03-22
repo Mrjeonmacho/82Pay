@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -33,9 +34,9 @@ class _LinkedAccountsViewState extends State<LinkedAccountsView> {
     if (!mounted) return;
 
     if (success) {
-      _showCenterMessage('Linked account has been removed.');
+      _showCenterMessage('profile.linked.msg_removed'.tr());
     } else {
-      _showCenterMessage('Failed to remove linked account.');
+      _showCenterMessage('profile.linked.msg_failed'.tr());
     }
   }
 
@@ -102,7 +103,7 @@ class _LinkedAccountsViewState extends State<LinkedAccountsView> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const PaliTopBar(title: 'Linked Accounts'),
+      appBar: PaliTopBar(title: 'profile.linked.title'.tr()),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -155,7 +156,7 @@ class _LinkedAccountCard extends StatelessWidget {
             top: 6,
             left: 0,
             child: Text(
-              'My Account',
+              'profile.linked.my_account'.tr(),
               style: AppTextStyles.headlineLarge.copyWith(
                 color: AppColors.buttonFont,
                 fontWeight: FontWeight.bold,
@@ -234,7 +235,7 @@ class _EmptyLinkedAccountCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Link your bank account',
+              'linked_accounts.link_bank_account'.tr(),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.abledFont,
               ),

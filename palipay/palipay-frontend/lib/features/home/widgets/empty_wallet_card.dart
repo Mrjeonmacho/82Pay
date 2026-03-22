@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // Provider 임포트 추가
 import '../../../core/theme/app_colors.dart';
@@ -12,6 +13,7 @@ class EmptyWalletCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.locale; // 다국어 변경을 감지하여 Rebuild 되도록 의존성 주입
     return InkWell(
       onTap: () async {
         // 1. PinProvider를 읽어옵니다.
@@ -56,7 +58,7 @@ class EmptyWalletCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Link your bank account',
+                'linked_accounts.link_bank_account'.tr(),
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.abledFont,
                 ),

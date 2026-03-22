@@ -42,6 +42,7 @@ dependencies:
 
   camera: ^0.10.5+9
   image_picker: ^1.1.2
+  easy_localization: ^3.0.8
   flutter_secure_storage: ^9.2.2
 
 dev_dependencies:
@@ -110,9 +111,11 @@ flutter:
   assets:
     # --- 환경 변수 파일 ---
     - .env
-    # --- Service Logos ---
+    # --- 은행 Logos ---
     - assets/images/logos/
     - assets/images/banks/kr/
     - assets/images/banks/us/
     - assets/images/banks/jp/
     - assets/images/banks/cn/
+    # --- 다국어 번역 파일 --- 
+    - assets/translations/

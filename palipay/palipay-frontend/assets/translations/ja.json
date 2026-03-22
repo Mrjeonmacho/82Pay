@@ -1,0 +1,266 @@
+{
+    "common": {
+        "home": "ホーム",
+        "scan": "スキャン",
+        "wallet": "ウォレット",
+        "profile": "プロフィール",
+        "confirm": "確認",
+        "cancel": "キャンセル",
+        "delete": "削除",
+        "ok": "OK",
+        "done": "完了",
+        "see_all": "すべて見る",
+        "add_money": "チャージ",
+        "cash_out": "出金"
+    },
+    "profile": {
+        "change_language": "言語変更",
+        "select_language": "言語を選択",
+        "title": "プロフィール",
+        "section_service": "サービス",
+        "section_security": "セキュリティ",
+        "menu_linked_accounts": "連携済み口座",
+        "menu_language": "言語設定",
+        "menu_change_password": "パスワード変更",
+        "menu_change_pin": "PIN変更",
+        "menu_delete_account": "サービス退会",
+        "msg_password_changed": "パスワードが正常に変更されました。",
+        "password": {
+            "title_change": "パスワード変更",
+            "btn_change": "パスワード変更",
+            "label_current": "현재パスワード",
+            "hint_current": "현재パスワードを入力してください",
+            "label_new": "새パスワード",
+            "hint_new": "새パスワードを入力してください",
+            "label_confirm": "새パスワードの確認",
+            "hint_confirm": "새パスワード를 다시 입력해 주세요",
+            "error_empty_current": "현재パスワードを入力してください。",
+            "error_empty_new": "새パスワードを入力してください。",
+            "error_too_short": "パスワードは8文字以上で入力してください。",
+            "error_same_as_current": "현재のパスワードとは異なるものを入力してください。",
+            "error_empty_confirm": "パスワードの確認を入力してください。",
+            "error_mismatch": "パスワードが一致しません。",
+            "error_failed": "パスワードの変更に失敗しました。もう一度お試しください。"
+        },
+        "linked": {
+            "title": "連携済み口座",
+            "my_account": "私の口座",
+            "msg_removed": "口座の連携を解除しました。",
+            "msg_failed": "口座連携の解除に失敗しました。"
+        },
+        "pin_auth": {
+            "title_verify": "PINを確認",
+            "error_invalid": "PINが正しくありません。もう一度お試しください。"
+        }
+    },
+    "languages": {
+        "ko": "韓国語",
+        "en": "英語",
+        "ja": "日本語",
+        "zh": "中国語"
+    },
+    "bank": {
+        "selection": {
+            "title": "{countryCode}銀行を選択 ({currency})"
+        },
+        "pwd": {
+            "link_success": "口座の連携が完了しました！",
+            "invalid_msg": "パスワードが違います。テスト用 '1111' をお試しください。",
+            "title": "銀行パスワード入力",
+            "desc": "銀行の暗証番号4桁を入力してください"
+        }
+    },
+    "account_link": {
+        "currency_info": "プロフィールに基づき、通貨がKRWに設定されます。",
+        "fill_all_fields": "すべての項目を入力してください。"
+    },
+    "account_management": {
+        "title": "口座管理",
+        "linked_bank_account": "連携済み銀行口座",
+        "one_active_account_msg": "有効な海外口座は1つのみ許可されます。",
+        "verified_account": "認証済み口座",
+        "replace_account": "口座の変更",
+        "unlink_account": "連携解除",
+        "delete_confirm_msg": "本当に削除しますか？",
+        "delete_success_msg": "連携口座が正常に削除されました。"
+    },
+    "history": {
+        "detail": {
+            "title": "取引明細",
+            "transaction_successful": "取引完了",
+            "receipt_details": "レシート詳細"
+        },
+        "view": {
+            "title": "取引履歴",
+            "total_amount_spent": "総支出額"
+        },
+        "filter": {
+            "title": "フィルター",
+            "period": "期間",
+            "transaction_type": "取引タイプ",
+            "all": "すべて",
+            "payment": "決済",
+            "sort_order": "並べ替え順"
+        }
+    },
+    "home_screen": {
+        "recent_transactions": "最近の取引"
+    },
+    "linked_accounts": {
+        "link_bank_account": "銀行口座を連携する"
+    },
+    "wallet_card": {
+        "main_wallet": "メインウォレット",
+        "card_holder": "カード名義人"
+    },
+    "pin": {
+        "logo_text": "+82Pay",
+        "error_incorrect": "PINが正しくありません。もう一度お試しください ({count}/5)",
+        "error_registration_failed": "PINの登録に失敗しました。もう一度お試しください。",
+        "error_mismatch": "PINが一致しません。もう一度お試しください。",
+        "change": {
+            "error_invalid_current": "現在のPINが正しくありません。",
+            "error_same_as_current": "現在のPINとは異なるものを入力してください。",
+            "error_mismatch": "新しいPINが一致しません。もう一度お試しください。",
+            "error_failed": "PINの変更に失敗しました。",
+            "title_verify_current": "現在のPINを確認",
+            "title_create_new": "新しいPINを設定",
+            "title_confirm_new": "新しいPINの確認",
+            "title_completed": "PINの変更が完了",
+            "desc_verify_current": "現在の6桁のPINを入力してください",
+            "desc_create_new": "新しい6桁のPINを設定してください",
+            "desc_confirm_new": "新しいPINをもう一度入力してください",
+            "desc_completed": "PINの変更が正常に完了しました。"
+        },
+        "create": {
+            "title_enter": "PINを入力",
+            "desc_enter": "安全な決済のためにPINを入力してください",
+            "title_create": "PINを設定",
+            "desc_create": "決済用の6桁のPINを設定してください",
+            "title_confirm": "PINの確認",
+            "desc_confirm": "確認のためもう一度PINを入力してください"
+        }
+    },
+    "unlink_pin_auth": {
+        "verify_pin": "PINを確認",
+        "enter_pin_to_remove": "連携解除のためにPINを入力してください"
+    },
+    "scan_loading": {
+        "scanning": "スキャン中",
+        "analyzing_image_desc": "画像を分析して情報を抽出しています。",
+        "may_take_a_few_seconds": "少々お待ちください",
+        "scanning_account_info": "口座情報をスキャン中",
+        "scanning_account_desc": "画像から銀行名と口座番号を認識しています。"
+    },
+    "scan": {
+        "align_account_number": "枠内に口座番号を合わせてください",
+        "status_scanning": "スキャン中...",
+        "status_ready": "スキャン準備完了",
+        "desc_recognizing": "口座情報を認識しています",
+        "desc_steady": "デバイスを動かさないでください",
+        "error_ocr_failed": "OCRリクエストに失敗しました。",
+        "error_recognition_failed": "口座番号を認識できませんでした。"
+    },
+    "account_input": {
+        "scan_failed_msg": "スキャンに失敗しました。手動で入力してください。",
+        "account_number": "口座番号",
+        "bank": "銀行"
+    },
+    "amount_input": {
+        "from_my_wallet": "私の財布から",
+        "to_bank": "{bankName}口座へ",
+        "amount": "金額",
+        "enter_in_krw": "KRW単位で入力してください",
+        "withdrawable_amount": "出金可能額: ₩ {balance}"
+    },
+    "transfer_confirm": {
+        "send_money": "このまま振り込みますか？",
+        "amount_krw": "{amount} KRW",
+        "to_recipient": "{name}様へ",
+        "recipient_details": "受取人詳細",
+        "securely_encrypted": "PaliPayセキュリティで保護されています"
+    },
+    "transfer_result": {
+        "payment_complete": "送金完了",
+        "payment_amount": "送金額",
+        "recipient": "受取人"
+    },
+    "login": {
+        "title": "ログイン",
+        "hint_email": "メールアドレス",
+        "hint_password": "パスワード",
+        "btn_login": "ログイン",
+        "or": "または",
+        "msg_password_changed": "パスワードが変更されました。再度ログインしてください。",
+        "welcome": "ようこそ！",
+        "google": "Googleで続ける"
+    },
+    "sign_up": {
+        "create_your_account": "アカウント作成",
+        "step_email": "メール",
+        "step_confirm": "確認",
+        "step_profile": "プロフィール",
+        "step_password": "パスワード",
+        "btn_sign_up": "登録する",
+        "btn_next": "次へ",
+        "hint_email": "メールアドレスを入力してください",
+        "error_invalid_email": "無効なメールアドレスです。",
+        "error_email_taken": "このメールアドレスは既に使用されています。",
+        "verification_code": "認証コード",
+        "hint_auth_code": "6桁の認証コードを入力してください",
+        "error_empty_auth_code": "認証コードを入力してください。",
+        "error_auth_code_length": "コードは6桁である必要があります。",
+        "name": "お名前",
+        "hint_name": "フルネーム",
+        "error_empty_name": "お名前を入力してください",
+        "phone_number": "電話番号",
+        "hint_phone_number": "電話番号を入力",
+        "error_empty_phone": "電話番号を入力してください",
+        "password": "パスワード",
+        "hint_set_password": "パスワードを設定",
+        "error_empty_password": "パスワードを入力してください",
+        "error_invalid_password": "文字、数字、記号を含む8文字以上",
+        "confirm_password": "パスワードの確認",
+        "hint_confirm_password": "パスワードを再入力",
+        "error_empty_confirm_password": "パスワードの確認を入力してください",
+        "error_password_mismatch": "パスワードが一致しません。"
+    },
+    "sign_up_success": {
+        "welcome": "Paliへようこそ！",
+        "success_desc": "登録が完了しました。今すぐサービスを利用しましょう！",
+        "btn_sign_in": "ログインする"
+    },
+    "wallet": {
+        "refund": {
+            "max": "最大"
+        }
+    },
+    "transfer": {
+        "title": "移行",
+        "btn_next": "次へ",
+        "input": {
+            "hint_account_number": "口座番号を入力してください",
+            "hint_select_bank": "銀行を選択してください"
+        },
+        "amount": {
+            "balance_loading": "残高を読み込み中...",
+            "balance_value": "残高 ₩ {balance}"
+        },
+        "confirm": {
+            "title": "送金確認",
+            "withdraw_from": "出金元",
+            "my_wallet": "내ウォレット",
+            "transfer_fee": "振込手数料",
+            "free": "無料",
+            "btn_sending": "送金中...",
+            "btn_send_now": "送金する"
+        },
+        "result": {
+            "sender": "依頼人",
+            "transaction_date": "取引日時",
+            "transaction_id": "取引ID",
+            "memo_hint": "ライブメモを追加する（任意)",
+            "btn_back_home": "ホームに戻る"
+        }
+    }
+}

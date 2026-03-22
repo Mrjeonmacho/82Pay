@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:palipay_app/core/utils/currency_input_formatter.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -14,6 +15,7 @@ class WalletCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.locale; // 다국어 변경을 감지하여 Rebuild 되도록 의존성 주입
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -42,19 +44,19 @@ class WalletCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [_buildHeader(), _buildBalance(), _buildFooter(context)],
+          children: [_buildHeader(context), _buildBalance(context), _buildFooter(context)],
         ),
       ),
     );
   }
 
   // 내부 컴포넌트들도 작은 메서드로 쪼개면 관리가 더 쉽습니다.
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Main Wallet',
+          'wallet_card.main_wallet'.tr(),
           style: AppTextStyles.bodyMedium.copyWith(
             color: Colors.white.withOpacity(0.8),
           ),
@@ -64,7 +66,7 @@ class WalletCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBalance() {
+  Widget _buildBalance(BuildContext context) {
     // 1. 숫자를 가져와서
     final int amount = provider.linkedAccount?.amount ?? 0;
 
@@ -92,7 +94,7 @@ class WalletCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'CARD HOLDER',
+              'wallet_card.card_holder'.tr(),
               style: AppTextStyles.bodySmall.copyWith(
                 color: Colors.white.withOpacity(0.6),
                 fontSize: 10,
@@ -111,7 +113,7 @@ class WalletCard extends StatelessWidget {
         Row(
           children: [
             _CardSmallButton(
-              label: 'Top-up',
+              label: 'common.add_money'.tr(),
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const TopupView()),
@@ -119,7 +121,7 @@ class WalletCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             _CardSmallButton(
-              label: 'Withdraw',
+              label: 'common.cash_out'.tr(),
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ExchangeView()),

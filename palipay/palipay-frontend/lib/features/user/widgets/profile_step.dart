@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
@@ -20,17 +21,17 @@ class ProfileStep extends StatelessWidget {
     return Column(
       children: [
         StepLayout(
-          title: 'Name',
+          title: 'sign_up.name'.tr(),
           shakeController: shakeController,
           child: PaliInputField(
-            hintText: 'Full Name',
+            hintText: 'sign_up.hint_name'.tr(),
             controller: provider.nameController,
-            validator: (value) => value!.isEmpty ? 'Enter your name' : null,
+            validator: (value) => value!.isEmpty ? 'sign_up.error_empty_name'.tr() : null,
           ),
         ),
         const SizedBox(height: 16),
         StepLayout(
-          title: 'Phone Number',
+          title: 'sign_up.phone_number'.tr(),
           shakeController: shakeController,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,7 +58,7 @@ class ProfileStep extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: PaliInputField(
-                  hintText: 'Phone Number',
+                  hintText: 'sign_up.hint_phone_number'.tr(),
                   controller: provider.phoneController,
                   keyboardType: TextInputType.phone,
                   inputFormatters: [

@@ -1,5 +1,6 @@
 // 결과 완료 화면
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart'; // PaliButton 등
@@ -39,7 +40,7 @@ class WalletResultView extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                isRecharge ? 'Charge' : 'Refund',
+                isRecharge ? 'common.add_money'.tr() : 'common.cash_out'.tr(),
                 style: AppTextStyles.titleLarge.copyWith(
                   color: AppColors.abledFont,
                 ),
@@ -50,7 +51,7 @@ class WalletResultView extends StatelessWidget {
               // 3. 확인 버튼 (메인으로 이동)
               PaliButton(
                 backgroundColor: AppColors.mainBlue,
-                text: 'Ok',
+                text: 'common.ok'.tr(),
                 onPressed: () {
                   // 모든 화면을 닫고 홈(메인)으로 돌아갑니다.
                   Navigator.of(context).popUntil((route) => route.isFirst);

@@ -1,5 +1,6 @@
 // lib/features/account/views/bank_password_view.dart
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
@@ -79,8 +80,8 @@ class _BankPasswordViewState extends State<BankPasswordView> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Bank account linked successfully! 🚀'),
+            SnackBar(
+              content: Text('bank_password.link_success_msg'.tr()),
               backgroundColor: AppColors.mainBlue,
             ),
           );
@@ -94,8 +95,8 @@ class _BankPasswordViewState extends State<BankPasswordView> {
           _inputPassword = ""; // 입력값 초기화
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid password. Try "1111" for testing.'),
+          SnackBar(
+            content: Text('bank.pwd.invalid_msg'.tr()),
             backgroundColor: AppColors.warningRed,
           ),
         );
@@ -127,13 +128,13 @@ class _BankPasswordViewState extends State<BankPasswordView> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Enter Bank Password',
+            'bank_password.enter_password_title'.tr(),
             style: AppTextStyles.titleMedium.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text('Please enter your 4-digit bank password'),
+          Text('bank_password.enter_password_desc'.tr()),
           const SizedBox(height: 48),
 
           // 4자리 도트 (6자리가 아님!)

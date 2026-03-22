@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/wallet_model.dart';
 import '../services/wallet_service.dart';
 
@@ -88,9 +89,9 @@ class WalletProvider extends ChangeNotifier {
   // 4. 유효성 검사 (기획서 6번: 실시간 잔액 부족 알림)
   void _validateAmount() {
     if (wallet.currentBalance != null && _krwAmount > wallet.currentBalance!) {
-      _errorMessage = "금액이 부족합니다.";
+      _errorMessage = 'wallet.error.insufficient_balance'.tr();
     } else if (_krwAmount > 2000000) {
-      _errorMessage = "최대 충전 가능 금액은 2,000,000₩ 입니다.";
+      _errorMessage = 'wallet.error.max_limit'.tr();
     } else {
       _errorMessage = null;
     }

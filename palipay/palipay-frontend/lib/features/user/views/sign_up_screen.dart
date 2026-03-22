@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
@@ -163,21 +164,21 @@ class _SignUpScreenState extends State<SignUpScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: Column(
                   children: [
-                    const Text(
-                      'Create Your Account',
+                    Text(
+                      'sign_up.create_your_account'.tr(),
                       style: AppTextStyles.titleLarge,
                     ),
                     const SizedBox(height: 25),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildStepItem(0, 'Email', provider),
+                        _buildStepItem(0, 'sign_up.step_email'.tr(), provider),
                         _buildStepLine(0, provider),
-                        _buildStepItem(1, 'Confirm', provider),
+                        _buildStepItem(1, 'sign_up.step_confirm'.tr(), provider),
                         _buildStepLine(1, provider),
-                        _buildStepItem(2, 'Profile', provider),
+                        _buildStepItem(2, 'sign_up.step_profile'.tr(), provider),
                         _buildStepLine(2, provider),
-                        _buildStepItem(3, 'Password', provider),
+                        _buildStepItem(3, 'sign_up.step_password'.tr(), provider),
                       ],
                     ),
                   ],
@@ -203,7 +204,7 @@ class _SignUpScreenState extends State<SignUpScreen>
               Padding(
                 padding: const EdgeInsets.all(30.0),
                 child: PaliButton(
-                  text: provider.currentIndex == 3 ? 'Sign Up' : 'Next',
+                  text: provider.currentIndex == 3 ? 'sign_up.btn_sign_up'.tr() : 'sign_up.btn_next'.tr(),
                   onPressed: () => _onNextPressed(provider),
                   backgroundColor: AppColors.mainBlue,
                 ),

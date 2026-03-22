@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:palipay_app/features/account/views/bank_password_view.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +37,7 @@ class _AccountLinkViewState extends State<AccountLinkView> {
   void _handleNextStep() {
     // 1. 유효성 검사
     if (_usernameController.text.isEmpty || _accountController.text.isEmpty) {
-      _showErrorSnackBar('Please fill in all fields.');
+      _showErrorSnackBar('account_link.fill_all_fields'.tr());
       return;
     }
 
@@ -92,7 +93,7 @@ class _AccountLinkViewState extends State<AccountLinkView> {
                     ),
                     const SizedBox(height: 24),
 
-                    _buildSectionTitle('Account Number'),
+                    _buildSectionTitle('account_input.account_number'.tr()),
                     PaliInputField(
                       hintText: 'Enter account number (digits only)',
                       controller: _accountController,
@@ -100,7 +101,7 @@ class _AccountLinkViewState extends State<AccountLinkView> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Your currency will be set to KRW based on your profile.',
+                      'account_link.currency_info'.tr(),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.exampleFont,
                       ),

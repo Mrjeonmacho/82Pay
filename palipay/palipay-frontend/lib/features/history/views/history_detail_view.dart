@@ -1,5 +1,6 @@
 // lib/features/history/views/history_detail_view.dart
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:palipay_app/core/theme/app_colors.dart';
@@ -9,6 +10,7 @@ import 'package:palipay_app/core/widgets/pali_nav_bars.dart';
 import 'package:palipay_app/features/history/models/transaction_model.dart';
 import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:palipay_app/core/utils/date_formatter_util.dart';
 
 class HistoryDetailView extends StatelessWidget {
   final Transaction transaction;
@@ -23,7 +25,7 @@ class HistoryDetailView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const PaliTopBar(title: 'History Detail'),
+      appBar: PaliTopBar(title: 'history.detail.title'.tr()),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -56,7 +58,7 @@ class HistoryDetailView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                'TRANSACTION SUCCESSFUL',
+                'history.detail.transaction_successful'.tr(),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: statusColor,
                   fontWeight: FontWeight.bold,
@@ -100,7 +102,7 @@ class HistoryDetailView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'RECEIPT DETAILS',
+                      'history.detail.receipt_details'.tr(),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: const Color(0xFF94A3B8),
                         fontWeight: FontWeight.w800,
@@ -118,11 +120,11 @@ class HistoryDetailView extends StatelessWidget {
                     ),
                     _buildReceiptRow(
                       'Date',
-                      DateFormat('MMM d, yyyy').format(transaction.createdAt),
+                      DateFormatterUtil.formatHistoryHeader(context, transaction.createdAt),
                     ),
                     _buildReceiptRow(
                       'Time',
-                      DateFormat('HH:mm a').format(transaction.createdAt),
+                      DateFormat.jm(context.locale.toString()).format(transaction.createdAt),
                     ),
 
                     // 환율 정보가 있을 경우 추가 표시 (기존 002 API 로직 유지)

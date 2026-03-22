@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'step_layout.dart';
 import '../../../core/widgets/widgets.dart';
@@ -18,19 +19,19 @@ class PasswordStep extends StatelessWidget {
     return Column(
       children: [
         StepLayout(
-          title: 'Password',
+          title: 'sign_up.password'.tr(),
           shakeController: shakeController,
           child: PaliInputField(
-            hintText: 'Set Password',
+            hintText: 'sign_up.hint_set_password'.tr(),
             controller: provider.passwordController, // ✅ 올바른 컨트롤러 연결
             isPassword: true,
             onChanged: (_) => provider.checkPasswordLogic(), // ✅ 입력할 때마다 로직 실행
             validator: (value) {
-              if (value == null || value.isEmpty) return 'Enter password';
+              if (value == null || value.isEmpty) return 'sign_up.error_empty_password'.tr();
 
               // 8자리 이상, 영문, 숫자, 특수문자 포함 여부 확인
               if (!provider.isPasswordSecure) {
-                return '8+ characters with letters, numbers, and symbols';
+                return 'sign_up.error_invalid_password'.tr();
               }
               return null;
             },
@@ -38,20 +39,19 @@ class PasswordStep extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         StepLayout(
-          title: 'Confirm Password',
+          title: 'sign_up.confirm_password'.tr(),
           shakeController: shakeController,
           child: PaliInputField(
-            hintText: 'Confirm Password',
+            hintText: 'sign_up.hint_confirm_password'.tr(),
             controller: provider.confirmPasswordController, // ✅ 올바른 컨트롤러 연결
             isPassword: true,
             onChanged: (_) => provider.checkPasswordLogic(), // ✅ 입력할 때마다 로직 실행
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Confirm your password';
+                return 'sign_up.error_empty_confirm_password'.tr();
               }
-              // 비밀번호 일치 여부 확인
               if (!provider.isPasswordMatch) {
-                return 'Passwords do not match.';
+                return 'sign_up.error_password_mismatch'.tr();
               }
               return null;
             },

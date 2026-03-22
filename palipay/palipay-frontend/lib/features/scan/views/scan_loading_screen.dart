@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -188,7 +189,7 @@ class _LoadingHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Scanning',
+          'scan_loading.scanning'.tr(),
           style: AppTextStyles.headlineLarge.copyWith(
             color: Colors.white,
             fontSize: 30,
@@ -198,7 +199,7 @@ class _LoadingHeader extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'We are analyzing the selected image\nand extracting the account details.',
+          'scan_loading.analyzing_image_desc'.tr(),
           style: AppTextStyles.bodyMedium.copyWith(
             color: Colors.white.withOpacity(0.84),
             height: 1.45,
@@ -259,7 +260,7 @@ class _LoadingCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Scanning account information',
+                  'scan_loading.scanning_account_info'.tr(),
                   style: AppTextStyles.headlineLarge.copyWith(
                     color: AppColors.logo,
                     fontSize: 18,
@@ -271,7 +272,7 @@ class _LoadingCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'Please wait while we recognize the bank name and account number from the image.',
+            'scan_loading.scanning_account_desc'.tr(),
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.abledFont,
               height: 1.45,
@@ -311,7 +312,7 @@ class _LoadingCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'This may take a few seconds',
+                'scan_loading.may_take_a_few_seconds'.tr(),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.abledFont,
                   fontSize: 13,

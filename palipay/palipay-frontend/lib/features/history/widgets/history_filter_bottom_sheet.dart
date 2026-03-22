@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -59,14 +60,14 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
               ),
             ),
             Text(
-              'Filter',
+              'history.filter.title'.tr(),
               style: AppTextStyles.headlineLarge.copyWith(
                 color: AppColors.abledFont,
               ),
             ),
             const SizedBox(height: 24),
             Text(
-              'Period',
+              'history.filter.period'.tr(),
               style: AppTextStyles.bodySmall.copyWith(
                 color: const Color(0xFF64748B),
               ),
@@ -119,7 +120,7 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
             ],
             const SizedBox(height: 24),
             Text(
-              'Transaction Type',
+              'history.filter.transaction_type'.tr(),
               style: AppTextStyles.bodySmall.copyWith(
                 color: const Color(0xFF64748B),
               ),
@@ -136,22 +137,22 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
                 child: DropdownButton<String>(
                   value: _transactionType,
                   isExpanded: true,
-                  items: const [
+                  items: [
                     DropdownMenuItem(
-                      value: 'All',
-                      child: Text('All'),
+                      value: 'history.filter.all'.tr(),
+                      child: Text('history.filter.all'.tr()),
                     ),
                     DropdownMenuItem(
-                      value: 'Top-up',
-                      child: Text('Top-up'),
+                      value: 'common.add_money'.tr(),
+                      child: Text('common.add_money'.tr()),
                     ),
                     DropdownMenuItem(
-                      value: 'Refund',
-                      child: Text('Refund'),
+                      value: 'common.cash_out'.tr(),
+                      child: Text('common.cash_out'.tr()),
                     ),
                     DropdownMenuItem(
-                      value: 'Payment',
-                      child: Text('Payment'),
+                      value: 'history.filter.payment'.tr(),
+                      child: Text('history.filter.payment'.tr()),
                     ),
                   ],
                   onChanged: (value) {
@@ -165,7 +166,7 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Sort Order',
+              'history.filter.sort_order'.tr(),
               style: AppTextStyles.bodySmall.copyWith(
                 color: const Color(0xFF64748B),
               ),
