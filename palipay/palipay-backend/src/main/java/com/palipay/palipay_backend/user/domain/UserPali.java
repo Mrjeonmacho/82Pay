@@ -45,4 +45,8 @@ public class UserPali {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }

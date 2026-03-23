@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.palipay.palipay_backend.finance.service.WalletService;
 import com.palipay.palipay_backend.global.redis.RedisService;
 import com.palipay.palipay_backend.user.domain.UserPali;
 import com.palipay.palipay_backend.user.dto.request.JoinRequest;
@@ -26,6 +27,7 @@ public class UserJoinService {
     private final RedisService redisService;
     private final EmailSender emailSender;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final WalletService walletService;
 
     // 1. 이메일 중복 체크
     @Transactional(readOnly = true)
@@ -95,7 +97,10 @@ public class UserJoinService {
         // 4. DB 저장
         userPaliRepository.save(newUser);
 
-        // 5. 성공 시 201 Created와 함께 ID 반환
+        // 5. 지갑 생성
+        walletService.initCreateWalletPali(newUser.getUserId());
+
+        // 6. 성공 시 201 Created와 함께 ID 반환
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(newUser.getUserId());
     }
