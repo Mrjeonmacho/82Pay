@@ -77,6 +77,7 @@ public class JwtProvider {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (ExpiredJwtException e) {
+            // 만료된 토큰이라도 그 안에 들어있는 유저 ID(Subject)는 알아야 Redis에서 기존 토큰을 찾아 비교할 수 있음
             return e.getClaims();
         }
     }
@@ -100,4 +101,17 @@ public class JwtProvider {
         }
         return false;
     }
+
+    // 토큰 만료 시간 추출 (앞으로 몇 초 뒤에 수명이 다하는가?)
+    public long getExpiration(String token) {
+        Date expiration = parseClaims(token).getExpiration();
+        long now = System.currentTimeMillis();
+        return (expiration.getTime() - now);
+    }
+
+    // 새로 만들 토큰에 부여할 수명
+    public long getRefreshExpirationTime() {
+        return refreshTokenExpiration;
+    }
+
 }

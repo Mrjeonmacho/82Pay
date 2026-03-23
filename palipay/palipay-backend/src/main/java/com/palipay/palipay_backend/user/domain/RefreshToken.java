@@ -19,4 +19,8 @@ public class RefreshToken {
 
     @Indexed
     private String refreshToken;
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 }
