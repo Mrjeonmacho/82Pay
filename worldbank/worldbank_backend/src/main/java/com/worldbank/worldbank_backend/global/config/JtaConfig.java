@@ -1,9 +1,8 @@
-package com.worldbank.worldbank_backend.finance.global.config;
+package com.worldbank.worldbank_backend.global.config;
 
 import com.atomikos.icatch.jta.UserTransactionImp;
 import com.atomikos.icatch.jta.UserTransactionManager;
 import jakarta.transaction.SystemException;
-import jakarta.transaction.TransactionManager;
 import jakarta.transaction.UserTransaction;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
