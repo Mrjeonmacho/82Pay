@@ -16,6 +16,8 @@ public interface BankKRRepository
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<BankKR> findByAccountNumber(String accountNumber);
 
+    Optional<BankKR> findByUserId(Long userId);
+
     @Query("SELECT b FROM BankKR b WHERE b.accountNumber = :accountNumber")
     Optional<BankKR> findByAccountNumberNoLock(@Param("accountNumber") String accountNumber);
 }

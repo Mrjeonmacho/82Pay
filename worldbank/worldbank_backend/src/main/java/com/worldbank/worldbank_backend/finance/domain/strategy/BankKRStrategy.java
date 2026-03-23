@@ -38,6 +38,23 @@ public class BankKRStrategy implements BankStrategy{
                         .check(false)
                         .build());
     }
+
+    @Override
+    public CheckResponseDto getAmountByUserId(Long userId) {
+        return bankRepository.findByUserId(userId)
+                .map(account -> CheckResponseDto.builder()
+                        .message("사용자 계좌 조회가 성공했습니다.")
+                        .amount(account.getAmount())
+                        .currency(getBankCurrency())
+                        .check(true)
+                        .build())
+                .orElse(CheckResponseDto.builder()
+                        .message("존재하지 않는 사용자 계좌입니다.")
+                        .amount(null)
+                        .currency(null)
+                        .check(false)
+                        .build());
+    }
     @Override
     public LinkResponseDto linkAccount(String accountNumber, String password) {
         return bankRepository.findByAccountNumber(accountNumber)

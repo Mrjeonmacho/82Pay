@@ -16,6 +16,8 @@ public interface BankJPRepository
     @Lock(LockModeType.PESSIMISTIC_WRITE) //비관적 락
     Optional<BankJP> findByAccountNumber(String accountNumber);
 
+    Optional<BankJP> findByUserId(Long userId);
+
     @Query("SELECT b FROM BankJP b WHERE b.accountNumber = :accountNumber")
     Optional<BankJP> findByAccountNumberNoLock(@Param("accountNumber") String accountNumber);
 }

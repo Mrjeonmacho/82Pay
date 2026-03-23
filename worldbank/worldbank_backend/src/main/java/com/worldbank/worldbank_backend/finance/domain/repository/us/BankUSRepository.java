@@ -15,6 +15,8 @@ public interface BankUSRepository
     @Lock(LockModeType.PESSIMISTIC_WRITE) //비관적 락
     Optional<BankUS> findByAccountNumber(String accountNumber);
 
+    Optional<BankUS> findByUserId(Long userId);
+
     @Query("SELECT b FROM BankUS b WHERE b.accountNumber = :accountNumber")
     Optional<BankUS> findByAccountNumberNoLock(@Param("accountNumber") String accountNumber);
 }
