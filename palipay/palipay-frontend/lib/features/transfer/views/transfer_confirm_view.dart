@@ -11,6 +11,7 @@ import '../../../core/utils/currency_input_formatter.dart'; // 공통 유틸 활
 import '../../pin/views/pin_screen.dart';
 import '../models/transfer_model.dart';
 import '../providers/transfer_provider.dart';
+import '../../account/providers/account_provider.dart';
 import 'transfer_result_view.dart';
 
 class TransferConfirmView extends StatelessWidget {
@@ -28,24 +29,29 @@ class TransferConfirmView extends StatelessWidget {
   });
 
   void _handleSend(BuildContext context) async {
-    final authenticated = await Navigator.push<bool>(
+    final authenticatedPin = await Navigator.push<String?>(
       context,
       MaterialPageRoute(
         builder: (context) => const PinScreen(mode: PinMode.auth),
       ),
     );
 
-    if (authenticated == true && context.mounted) {
+    if (authenticatedPin != null && context.mounted) {
       final provider = context.read<TransferProvider>();
+      final accountProvider = context.read<AccountProvider>();
+      final walletId = accountProvider.linkedAccount?.walletId ?? "tempWalletId";
 
-      final success = await provider.sendMoney(
+      final response = await provider.performTransfer(
         TransferRequest(
-          toBank: bankName,
-          toAccount: accountNumber,
-          toName: recipientName,
-          amount: amount,
+          walletId: walletId, // 실제 지갑 ID 연동
+          otherBankCode: bankName,
+          otherAccountNumber: accountNumber,
+          otherAccountName: recipientName,
+          amount: amount.toDouble(),
+          pinNumber: authenticatedPin, // PIN 번호 추가
         ),
       );
+      final success = response != null;
 
       if (success && context.mounted) {
         Navigator.pushReplacement(
@@ -55,6 +61,14 @@ class TransferConfirmView extends StatelessWidget {
               recipientName: recipientName,
               amount: amount,
             ),
+          ),
+        );
+      } else if (context.mounted) {
+        // 에러 발생 시 피드백 제공
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(provider.errorMessage ?? '송금 처리 중 오류가 발생했습니다.'),
+            backgroundColor: Colors.red,
           ),
         );
       }

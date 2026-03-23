@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // ),
           // 기존 뷰
           SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 100),
+            // padding: const EdgeInsets.only(bottom: 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

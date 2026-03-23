@@ -4,15 +4,10 @@ import '../../../core/config/env_config.dart';
 import '../../../core/constants/api_constants.dart';
 import '../models/wallet_model.dart';
 
+import 'package:palipay_app/core/network/dio_client.dart';
+
 class WalletService {
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: EnvConfig.baseUrl, // [수정] .env에서 읽어옴
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 20),
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
-    ),
-  );
+  final Dio _dio = DioClient().dio;
 
   /// -----------------------------
   /// 1. 지금 화면 확인용 더미 데이터
@@ -36,7 +31,7 @@ class WalletService {
       isSufficient: isSufficient,
       requiredAmount: amount.toInt(),
       shortageAmount: shortageAmount,
-      message: isSufficient ? 'wallet.error.sufficient_balance'.tr() : 'wallet.error.insufficient_balance'.tr(),
+      // message: isSufficient ? 'wallet.error.sufficient_balance'.tr() : 'wallet.error.insufficient_balance'.tr(),
     );
   }
 

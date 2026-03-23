@@ -23,7 +23,7 @@ class WalletCard extends StatelessWidget {
       ),
       child: Container(
         width: double.infinity,
-        height: 200,
+        height: 220,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
@@ -54,25 +54,41 @@ class WalletCard extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'wallet_card.main_wallet'.tr(),
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Colors.white.withOpacity(0.8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'wallet_card.card_holder'.tr(),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 10,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'ALEX JOHNSON', // 실제 데이터 연결 시 provider.name 등으로 교체
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
         ),
-        const Icon(Icons.account_balance_wallet, color: Colors.white, size: 18),
+        const Icon(Icons.account_balance_wallet, color: Colors.white, size: 28),
       ],
     );
   }
 
+  // 2. 잔액 표시 (중앙 유지)
   Widget _buildBalance(BuildContext context) {
-    // 1. 숫자를 가져와서
     final int amount = provider.linkedAccount?.amount ?? 0;
-
-    // 2. 사전에 정의된 포맷터 양식 적용 (₩ 2,450,000)
-    // 만약 CurrencyInputFormatter에 static 메서드가 없다면
-    // 아래와 같이 직접 포맷팅하거나 유틸을 호출합니다.
     final String formattedAmount = CurrencyInputFormatter.format(amount);
 
     return Text(
@@ -80,54 +96,30 @@ class WalletCard extends StatelessWidget {
       style: AppTextStyles.titleMedium.copyWith(
         color: Colors.white,
         fontWeight: FontWeight.bold,
-        fontSize: 32,
+        fontSize: 34, // 가독성을 위해 폰트 크기 유지 또는 살짝 확대
       ),
     );
   }
 
+  // 3. 푸터: 버튼만 오른쪽으로 정렬
   Widget _buildFooter(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.end, // 버튼을 오른쪽으로 밀착
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'wallet_card.card_holder'.tr(),
-              style: AppTextStyles.bodySmall.copyWith(
-                color: Colors.white.withOpacity(0.6),
-                fontSize: 10,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'ALEX JOHNSON',
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+        _CardSmallButton(
+          label: 'common.add_money'.tr(),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const TopupView()),
+          ),
         ),
-        Row(
-          children: [
-            _CardSmallButton(
-              label: 'common.add_money'.tr(),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const TopupView()),
-              ),
-            ),
-            const SizedBox(width: 8),
-            _CardSmallButton(
-              label: 'common.cash_out'.tr(),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ExchangeView()),
-              ),
-            ),
-          ],
+        const SizedBox(width: 8),
+        _CardSmallButton(
+          label: 'common.cash_out'.tr(),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ExchangeView()),
+          ),
         ),
       ],
     );

@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:palipay_app/features/user/services/auth_service.dart';
 
+import 'package:palipay_app/features/user/provider/login_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:palipay_app/core/providers/user_provider.dart';
+
 class SignUpProvider extends ChangeNotifier {
   // 1. 컨트롤러들 (이제 여기서 관리합니다)
   final emailController = TextEditingController();
@@ -20,6 +24,16 @@ class SignUpProvider extends ChangeNotifier {
   bool isEmailAvailable = false;
   String selectedCountryCode = '+1';
   bool isPasswordMatch = false;
+
+  // --- 추가된 매핑 로직: 다이얼 코드를 국가 코드로 변환 ---
+  String get _isoCountryCode {
+    return {
+      '+82': 'KR',
+      '+1': 'US',
+      '+81': 'JP',
+      '+86': 'CN',
+    }[selectedCountryCode] ?? 'US';
+  }
 
   void resetData() {
     currentIndex = 0;
@@ -159,7 +173,7 @@ class SignUpProvider extends ChangeNotifier {
   }
 
   // 5. 최종 회원가입 요청
-  Future<bool> finalSignUp() async {
+  Future<bool> finalSignUp(BuildContext context) async {
     // 1. 혹시 들어갔을지 모르는 숫자가 아닌 모든 문자 제거
     String cleanPhone = phoneController.text.replaceAll(RegExp(r'[^0-9]'), '');
 
@@ -174,13 +188,27 @@ class SignUpProvider extends ChangeNotifier {
     debugPrint("Final DB Phone Number: $internationalPhone");
 
     // 4. 최종 데이터 전송
-    return await _authService.signUp(
+    bool success = await _authService.signUp(
       emailController.text.trim(),
       passwordController.text.trim(),
       nameController.text.trim(),
       internationalPhone,
       selectedCountryCode,
     );
+
+    // [추가] user_provider 에 데이터 전달 로직
+    if (success && context.mounted) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      
+      // 회원가입 단계에서 정해진 국가/이름/이메일을 전역 프로바이더에 장착
+      userProvider.setUserConfig(
+        countryCode: _isoCountryCode, // 매핑된 KR, US 등 전달
+        name: nameController.text.trim(),
+        email: emailController.text.trim(),
+        context: context, // 여기서 언어 자동 변경(setLocale)이 실행됨
+      );
+    }
+    return success;
   }
 
   // 인증 코드 발송 및 타이머 시작

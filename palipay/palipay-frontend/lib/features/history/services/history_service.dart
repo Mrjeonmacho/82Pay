@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 
+import 'package:palipay_app/core/network/dio_client.dart';
+
 class HistoryService {
-  // 실제 환경에서는 baseUrl을 환경 변수나 공통 설정에서 가져옵니다.
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+  final Dio _dio = DioClient().dio;
 
   // 1. 거래 내역 목록 조회 (FINANCE_HISTORY_001)
   Future<Map<String, dynamic>> getTransactions({
@@ -14,7 +15,7 @@ class HistoryService {
   }) async {
     try {
       final response = await _dio.get(
-        '/api/finance/transactions',
+        '/finance/transactions',
         queryParameters: {
           'page': page,
           'size': size,
@@ -39,7 +40,7 @@ class HistoryService {
   }) async {
     try {
       final response = await _dio.get(
-        '/api/finance/transactions/$transactionId/currency',
+        '/finance/transactions/$transactionId/currency',
         queryParameters: {'targetCurrency': targetCurrency},
         options: Options(headers: {'accesstoken': token ?? 'TEMP_TOKEN'}),
       );

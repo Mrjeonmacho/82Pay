@@ -108,7 +108,7 @@ class _SignUpScreenState extends State<SignUpScreen>
         );
       } else {
         // 성공 시 이동
-        bool success = await provider.finalSignUp();
+        bool success = await provider.finalSignUp(context);
         if (success) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(

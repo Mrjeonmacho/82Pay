@@ -3,8 +3,10 @@ import 'package:palipay_app/core/constants/api_constants.dart';
 import '../models/pin_request_dto.dart';
 // core/network/dio_client.dart 가 있다면 이를 활용하는 것이 좋습니다.
 
+import 'package:palipay_app/core/network/dio_client.dart';
+
 class PinService {
-  final Dio _dio = Dio(); // 실제로는 전역으로 관리되는 Dio 인스턴스를 쓰는 것이 좋습니다.
+  final Dio _dio = DioClient().dio;
 
   // API 경로 설정 (팀 내 약속된 ApiConstants가 있다면 교체해 주세요)
   static const String _baseUrl = ApiConstants.pinSet;

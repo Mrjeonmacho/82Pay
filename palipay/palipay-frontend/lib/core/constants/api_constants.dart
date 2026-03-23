@@ -1,24 +1,31 @@
 class ApiConstants {
-  // 1. 버전 관리
-  // static const String _version = '/v1';
+  // 1. 잔액 및 PIN 검증 (Check)
+  static const String balanceCheck = '/finance/balance/check';
+  static const String pinValidate = '/finance/pin/validate';
+  static const String externalAccountValidate = '/finance/external-accounts/validate';
 
-  // 2. 인증 관련 (Auth)
+  // 2. 이체 관련 (Transfer)
+  static const String transferValidate = '/finance/transfers/validate';
+  static const String transferExecute = '/finance/transfers';
+  
+  // 이체 실패 처리 (Path Variable 포함)
+  static String transferFail(String transferId) => '/finance/transfers/$transferId/fail';
+
+  // 3. 인증 및 사용자 (Auth & User)
   static const String login = '/auth/login';
   static const String signUp = '/auth/signup';
-
-  // 3. 외부 계좌 관련 (Account)
-  static const String accountLink = '/users/accounts';
-  static const String accountDelete = '/users/accounts/{walletId}';
-  static const String pinSet = '/users/pin';
-  static const String accountBalance = '/finance/balance/check';
-  static String accountBalanceInsufficient(int amount) =>
-      '/finance/balance/check?amount=$amount';
-
-  // 등 필요한 API 엔드포인트를 여기에 추가
-  // 4. Profile - 추후 API 확정되면 맞게 수정
   static const String profile = '/users/profile';
-  static const String language = '/users/language';
+  
+  // 4. 계좌 관리
+  static const String accountLink = '/users/accounts';
+  // 팁: Path Variable({walletId})은 보통 서비스단에서 문자열 치환하거나 아래처럼 함수로 관리합니다.
+  static String accountDelete(String walletId) => '/users/accounts/$walletId';
+
+  // TEST
+  static const String pinSet = '/pin/set';
+  static const String accountBalance = '/wallet/balance';
+  static const String language = '/user/language';
   static const String logout = '/auth/logout';
-  static const String deleteUser = '/users';
-  static const String changePassword = '/users/password';
+  static const String deleteUser = '/user/delete';
+  static const String changePassword = '/user/change-password';
 }
