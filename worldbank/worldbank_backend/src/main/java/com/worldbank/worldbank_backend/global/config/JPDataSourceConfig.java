@@ -12,49 +12,49 @@ import javax.sql.DataSource;
 import java.util.Properties;
 
 @Configuration
-@EnableJpaRepositories(
-        basePackages = "com.worldbank.worldbank_backend.finance.domain.repository.jp",
-        entityManagerFactoryRef = "jpEntityManager",
-        transactionManagerRef = "transactionManager"
-)
+@EnableJpaRepositories(basePackages = { "com.worldbank.worldbank_backend.finance.domain.repository.jp",
+                "com.worldbank.worldbank_backend.user.repository.jp"
+}, entityManagerFactoryRef = "jpEntityManager", transactionManagerRef = "transactionManager")
 public class JPDataSourceConfig {
 
-    @Bean(initMethod = "init", destroyMethod = "close")
-    public DataSource jpDataSource() {
-        AtomikosDataSourceBean ds = new AtomikosDataSourceBean();
-        ds.setUniqueResourceName("jpDataSource");
-        ds.setXaDataSourceClassName("com.mysql.cj.jdbc.MysqlXADataSource");
-        
-        ds.setMinPoolSize(5);
-        ds.setMaxPoolSize(20);
-        ds.setBorrowConnectionTimeout(60);
-        
-        Properties p = new Properties();
-        p.setProperty("URL", "jdbc:mysql://localhost:3306/jp_bank");
-        p.setProperty("user", "root");
-        p.setProperty("password", "root");
-        p.setProperty("pinGlobalTxToPhysicalConnection", "true");
-        ds.setXaProperties(p);
-        
-        return ds;
-    }
+        @Bean(initMethod = "init", destroyMethod = "close")
+        public DataSource jpDataSource() {
+                AtomikosDataSourceBean ds = new AtomikosDataSourceBean();
+                ds.setUniqueResourceName("jpDataSource");
+                ds.setXaDataSourceClassName("com.mysql.cj.jdbc.MysqlXADataSource");
 
-    @Bean(name = "jpEntityManager")
-    @DependsOn("transactionManager") // ✅ 트랜잭션 매니저가 먼저 초기화되도록 보장
-    public LocalContainerEntityManagerFactoryBean jpEntityManager() {
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setJtaDataSource(jpDataSource());
-        em.setPersistenceUnitName("jpPersistenceUnit");
-        em.setPackagesToScan("com.worldbank.worldbank_backend.finance.domain.entity.jp");
-        em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+                ds.setMinPoolSize(5);
+                ds.setMaxPoolSize(20);
+                ds.setBorrowConnectionTimeout(60);
 
-        Properties properties = new Properties();
-        properties.setProperty("jakarta.persistence.transactionType", "JTA");
-        properties.setProperty("hibernate.transaction.jta.platform", "com.worldbank.worldbank_backend.global.config.CustomAtomikosJtaPlatform");
-        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+                Properties p = new Properties();
+                p.setProperty("URL", "jdbc:mysql://localhost:3306/jp_bank");
+                p.setProperty("user", "root");
+                p.setProperty("password", "root");
+                p.setProperty("pinGlobalTxToPhysicalConnection", "true");
+                ds.setXaProperties(p);
 
-        em.setJpaProperties(properties);
+                return ds;
+        }
 
-        return em;
-    }
+        @Bean(name = "jpEntityManager")
+        @DependsOn("transactionManager") // ✅ 트랜잭션 매니저가 먼저 초기화되도록 보장
+        public LocalContainerEntityManagerFactoryBean jpEntityManager() {
+                LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+                em.setJtaDataSource(jpDataSource());
+                em.setPersistenceUnitName("jpPersistenceUnit");
+                em.setPackagesToScan("com.worldbank.worldbank_backend.finance.domain.entity.jp",
+                                "com.worldbank.worldbank_backend.user.entity.jp");
+                em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+
+                Properties properties = new Properties();
+                properties.setProperty("jakarta.persistence.transactionType", "JTA");
+                properties.setProperty("hibernate.transaction.jta.platform",
+                                "com.worldbank.worldbank_backend.global.config.CustomAtomikosJtaPlatform");
+                properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+
+                em.setJpaProperties(properties);
+
+                return em;
+        }
 }
