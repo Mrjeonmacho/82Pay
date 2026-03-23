@@ -50,7 +50,7 @@ public class CHDataSourceConfig {
 
         Properties properties = new Properties();
         properties.setProperty("jakarta.persistence.transactionType", "JTA");
-        properties.setProperty("hibernate.transaction.jta.platform", "com.worldbank.worldbank_backend.finance.global.config.CustomAtomikosJtaPlatform");
+        properties.setProperty("hibernate.transaction.jta.platform", "com.worldbank.worldbank_backend.global.config.CustomAtomikosJtaPlatform");
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
 
         em.setJpaProperties(properties);
