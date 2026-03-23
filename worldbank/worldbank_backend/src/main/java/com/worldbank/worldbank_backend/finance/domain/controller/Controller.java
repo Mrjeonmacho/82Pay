@@ -53,5 +53,10 @@ public class Controller {
         return checkService.linkAccount(request);
     }
 
+    @GetMapping("/{userid}")
+    public CheckResponseDto getAmountByUserId(@PathVariable("userid") Long userId) {
+        return checkService.getAmountByUserId(userId);
+    }
+
 
 }
