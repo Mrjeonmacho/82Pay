@@ -1,12 +1,10 @@
 package com.palipay.palipay_backend.external.service;
 
 import com.palipay.palipay_backend.external.dto.request.ExternalCheckRequest;
+import com.palipay.palipay_backend.external.dto.request.ExternalLinkRequest;
 import com.palipay.palipay_backend.external.dto.request.ExternalRealRequest;
 import com.palipay.palipay_backend.external.dto.request.ExternalTransferRequest;
-import com.palipay.palipay_backend.external.dto.response.ExternalCheckResponse;
-import com.palipay.palipay_backend.external.dto.response.ExternalRealResponse;
-import com.palipay.palipay_backend.external.dto.response.ExternalTransferResponse;
-import com.palipay.palipay_backend.external.dto.response.ExternalWorkplaceResponse;
+import com.palipay.palipay_backend.external.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -57,11 +55,14 @@ public class ExternalBankClient {
                     .uri("/api/finance/corporation/{accountNumber}", accountNumber)
                     .retrieve()
                     .body(ExternalWorkplaceResponse.class);
+
             return Optional.ofNullable(response);
+
         } catch (RestClientException e) {
             log.warn("외부 사업장 조회 실패 accountNumber={}", accountNumber, e);
             return Optional.empty();
         }
+
     }
 
     //TODO 추후 DTO 수정
@@ -150,6 +151,26 @@ public class ExternalBankClient {
                 res.getMessage(),
                 data
         );
+    }
+
+    public ExternalLinkResponse linkAccount(ExternalLinkRequest req){
+        try{
+            ExternalLinkResponse response = externalFinanceRestClient.post()
+                    .uri("/api/finance/Link")
+                    .body(req)
+                    .retrieve()
+                    .body(ExternalLinkResponse.class);
+
+            return response;
+
+        } catch (RestClientException e) {
+            log.warn("계좌 등록 실패", e);
+
+            return new ExternalLinkResponse(
+                    "계좌 등록 실패" + e.getMessage(),
+                    Boolean.FALSE
+            );
+        }
     }
 
 }
