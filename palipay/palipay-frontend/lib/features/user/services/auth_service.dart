@@ -1,27 +1,21 @@
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+import 'package:palipay_app/core/network/dio_client.dart';
 
 class AuthService {
-  final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8081';
+  final Dio _dio = DioClient().dio;
   final _storage = const FlutterSecureStorage();
 
   // 이메일 중복 확인
   Future<bool> checkEmailDuplicate(String email) async {
-    final url = Uri.parse(
-      '$baseUrl/user/check',
-    ).replace(queryParameters: {'type': 'email', 'value': email});
-
     try {
-      final response = await http.get(
-        url,
-        headers: {"Content-Type": "application/json"},
+      final response = await _dio.get(
+        '/user/check',
+        queryParameters: {'type': 'email', 'value': email},
       );
 
       if (response.statusCode == 200) {
-        final result = jsonDecode(response.body);
-        return result['isEmailAvailable'] ?? false;
+        return response.data['isEmailAvailable'] ?? false;
       }
 
       return false;
@@ -33,12 +27,10 @@ class AuthService {
 
   // 이메일 인증 코드 발송
   Future<bool> sendEmailCode(String email) async {
-    final url = Uri.parse('$baseUrl/user/email/code');
     try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email}),
+      final response = await _dio.post(
+        '/user/email/code',
+        data: {"email": email},
       );
       if (response.statusCode == 200) {
         return true;
@@ -52,16 +44,13 @@ class AuthService {
 
   // 이메일 인증 코드 확인
   Future<bool> verifyEmailCode(String email, String code) async {
-    final url = Uri.parse('$baseUrl/user/email/verification');
     try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "authCode": code}),
+      final response = await _dio.post(
+        '/user/email/verification',
+        data: {"email": email, "authCode": code},
       );
       if (response.statusCode == 200) {
-        final result = jsonDecode(response.body);
-        return result == true;
+        return response.data == true;
       }
       return false;
     } catch (e) {
@@ -78,30 +67,28 @@ class AuthService {
     String phoneNumber,
     String countryCode,
   ) async {
-    final url = Uri.parse('$baseUrl/user/signup');
-
     try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
+      final response = await _dio.post(
+        '/user/signup',
+        data: {
           "email": email,
           "password": password,
           "name": name,
           "phoneNumber": phoneNumber,
           "countryCode": countryCode,
-        }),
+        },
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("✅ [성공] 바디 내용: ${response.body}");
+        print("✅ [성공] 바디 내용: ${response.data}");
         return true;
       } else {
-        // 400, 403, 500 에러 등이 날 때 백엔드가 보내주는 에러 이유를 확인!
-        print("❌ [실패] 상태코드: ${response.statusCode}");
-        print("❌ [실패] 에러내용: ${response.body}");
         return false;
       }
+    } on DioException catch (e) {
+        print("❌ [실패] 상태코드: ${e.response?.statusCode}");
+        print("❌ [실패] 에러내용: ${e.response?.data}");
+        return false;
     } catch (e) {
       print("네트워크 에러: $e");
       return false;
@@ -110,16 +97,13 @@ class AuthService {
 
   // 로그인
   Future<int> login(String email, String password) async {
-    final url = Uri.parse('$baseUrl/user/login');
-
     try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password}),
+      final response = await _dio.post(
+        '/user/login',
+        data: {"email": email, "password": password},
       );
 
-      final data = jsonDecode(response.body);
+      final data = response.data;
 
       if (response.statusCode == 200) {
         // ⭐️ 토큰 저장 (캡처해주신 JSON 키값 기준)
@@ -128,7 +112,9 @@ class AuthService {
         await _storage.write(key: 'grantType', value: data['grantType']);
         return 200;
       }
-      return data.status;
+      return data['status'] ?? 500;
+    } on DioException catch (e) {
+      return e.response?.data['status'] ?? 500;
     } catch (e) {
       return 500;
     }
@@ -151,20 +137,18 @@ class AuthService {
   }
 
   Future<bool> reissueToken() async {
-    final url = Uri.parse('$baseUrl/user/reissue'); // 서버의 재발급 엔드포인트
     final refreshToken = await _storage.read(key: 'refreshToken');
 
     if (refreshToken == null) return false;
 
     try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"refreshToken": refreshToken}),
+      final response = await _dio.post(
+        '/user/reissue',
+        data: {"refreshToken": refreshToken},
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = response.data;
         // ⭐️ 새로운 토큰들로 덮어쓰기
         await _storage.write(key: 'accessToken', value: data['accessToken']);
         await _storage.write(key: 'refreshToken', value: data['refreshToken']);

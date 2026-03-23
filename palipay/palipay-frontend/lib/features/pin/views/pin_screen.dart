@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:palipay_app/features/pin/providers/pin_provider.dart';
 import 'package:provider/provider.dart';
+import '../../account/providers/account_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../account/views/account_management_view.dart';
@@ -190,9 +191,10 @@ class _PinScreenState extends State<PinScreen>
   void _handleComplete() async {
     final pinProvider = context.read<PinProvider>();
 
-    // [수정] walletId를 widget에서 받도록 변경
-    // 아직 연결 전이면 임시값으로 fallback
-    final walletId = widget.walletId ?? 12345;
+    // [수정] walletId를 Provider의 실제 계좌 정보나 widget에서 받도록 변경
+    final accountProvider = context.read<AccountProvider>();
+    final walletIdStr = accountProvider.linkedAccount?.walletId ?? "12345";
+    final walletId = widget.walletId ?? int.tryParse(walletIdStr) ?? 12345;
 
     switch (widget.mode) {
       case PinMode.create:
@@ -254,7 +256,7 @@ class _PinScreenState extends State<PinScreen>
 
         if (isValid) {
           pinProvider.resetPinLockState();
-          Navigator.pop(context, true);
+          Navigator.pop(context, _inputPin);
         } else {
           _handleError(
             message: "Incorrect PIN. Please try again.",

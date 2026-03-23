@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../constants/bank_constants.dart'; // 아까 만든 상수 파일
+import 'package:easy_localization/easy_localization.dart';
 
 class BankSelectionSheet extends StatelessWidget {
   final String countryCode; // 'KR', 'US' 등 국가 코드
@@ -36,9 +37,13 @@ class BankSelectionSheet extends StatelessWidget {
           const SizedBox(height: 24),
           
           Text(
-            'Select $countryCode Bank ($currency)',
-            style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold),
+            'bank.selection.title'.tr(namedArgs: {
+              'country': countryCode,
+              'currency': currency,
+            }),
+            style: AppTextStyles.titleMedium,
           ),
+
           const SizedBox(height: 24),
 
           Expanded(
@@ -80,8 +85,8 @@ class BankSelectionSheet extends StatelessWidget {
             ),
             child: Image.asset(
               bank['logo'],
-              width: 48,
-              height: 48,
+              width: 32,
+              height: 32,
               errorBuilder: (context, error, stackTrace) => const Icon(Icons.account_balance),
             ),
           ),
@@ -89,7 +94,7 @@ class BankSelectionSheet extends StatelessWidget {
           Text(
             bank['name'],
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodySmall.copyWith(fontSize: 20, fontWeight: FontWeight.w500),
+            style: AppTextStyles.bodySmall.copyWith(fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ],
       ),
