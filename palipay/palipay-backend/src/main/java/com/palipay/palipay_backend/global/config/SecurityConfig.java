@@ -11,6 +11,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.palipay.palipay_backend.global.redis.RedisService;
 import com.palipay.palipay_backend.global.security.JwtAuthenticationFilter;
 import com.palipay.palipay_backend.global.security.JwtProvider;
 
@@ -23,6 +24,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
+    private final RedisService redisService;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -35,8 +37,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // FIXME security 비로그인 상태로 설정
                 // .authorizeHttpRequests(auth -> auth
                 // .requestMatchers(
@@ -50,7 +51,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll())
                 .formLogin(form -> form.disable())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, redisService),
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

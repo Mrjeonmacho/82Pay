@@ -27,7 +27,7 @@ import org.springframework.http.ResponseEntity;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
-public class UserAuthController {
+public class UserController {
 
     private final UserJoinService userJoinService;
     private final UserAuthService userAuthService;
@@ -68,13 +68,6 @@ public class UserAuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> join(@Valid @RequestBody JoinRequest request) {
         return userJoinService.join(request);
-    }
-
-    // 로그인
-    @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
-        TokenResponse response = userAuthService.login(request);
-        return ResponseEntity.ok(response);
     }
 
 }

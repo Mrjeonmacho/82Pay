@@ -9,6 +9,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.palipay.palipay_backend.global.redis.RedisService;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final RedisService redisService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -29,13 +32,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 2. 유효성 검사
         if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
 
-            // 3. 토큰에서 userId 추출
-            Long userId = jwtProvider.getUserId(token);
+            // 2-1 레디스 블랙리스트 체크
+            String isLogout = redisService.getData(token);
 
-            // 4. SecurityContext에 인증 정보 저장
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null,
-                    null);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (isLogout == null) {
+
+                // 3. 토큰에서 userId 추출
+                Long userId = jwtProvider.getUserId(token);
+
+                // 4. SecurityContext에 인증 정보 저장
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId,
+                        null, null);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
         // 5. 다음 필터로 진행
         filterChain.doFilter(request, response);
