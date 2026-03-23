@@ -1,4 +1,4 @@
-package com.worldbank.worldbank_backend.finance.global.config;
+package com.worldbank.worldbank_backend.global.config;
 
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.UserTransaction;

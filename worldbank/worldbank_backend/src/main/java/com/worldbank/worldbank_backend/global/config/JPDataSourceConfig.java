@@ -1,4 +1,4 @@
-package com.worldbank.worldbank_backend.finance.global.config;
+package com.worldbank.worldbank_backend.global.config;
 
 import com.atomikos.jdbc.AtomikosDataSourceBean;
 import org.springframework.context.annotation.Bean;
@@ -13,16 +13,16 @@ import java.util.Properties;
 
 @Configuration
 @EnableJpaRepositories(
-        basePackages = "com.worldbank.worldbank_backend.finance.domain.repository.us",
-        entityManagerFactoryRef = "usEntityManager",
+        basePackages = "com.worldbank.worldbank_backend.finance.domain.repository.jp",
+        entityManagerFactoryRef = "jpEntityManager",
         transactionManagerRef = "transactionManager"
 )
-public class USDataSourceConfig {
+public class JPDataSourceConfig {
 
     @Bean(initMethod = "init", destroyMethod = "close")
-    public DataSource usDataSource() {
+    public DataSource jpDataSource() {
         AtomikosDataSourceBean ds = new AtomikosDataSourceBean();
-        ds.setUniqueResourceName("usDataSource");
+        ds.setUniqueResourceName("jpDataSource");
         ds.setXaDataSourceClassName("com.mysql.cj.jdbc.MysqlXADataSource");
         
         ds.setMinPoolSize(5);
@@ -30,7 +30,7 @@ public class USDataSourceConfig {
         ds.setBorrowConnectionTimeout(60);
         
         Properties p = new Properties();
-        p.setProperty("URL", "jdbc:mysql://localhost:3306/us_bank");
+        p.setProperty("URL", "jdbc:mysql://localhost:3306/jp_bank");
         p.setProperty("user", "root");
         p.setProperty("password", "root");
         p.setProperty("pinGlobalTxToPhysicalConnection", "true");
@@ -39,13 +39,13 @@ public class USDataSourceConfig {
         return ds;
     }
 
-    @Bean(name = "usEntityManager")
-    @DependsOn("transactionManager")
-    public LocalContainerEntityManagerFactoryBean usEntityManager() {
+    @Bean(name = "jpEntityManager")
+    @DependsOn("transactionManager") // ✅ 트랜잭션 매니저가 먼저 초기화되도록 보장
+    public LocalContainerEntityManagerFactoryBean jpEntityManager() {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setJtaDataSource(usDataSource());
-        em.setPersistenceUnitName("usPersistenceUnit");
-        em.setPackagesToScan("com.worldbank.worldbank_backend.finance.domain.entity.us");
+        em.setJtaDataSource(jpDataSource());
+        em.setPersistenceUnitName("jpPersistenceUnit");
+        em.setPackagesToScan("com.worldbank.worldbank_backend.finance.domain.entity.jp");
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Properties properties = new Properties();
