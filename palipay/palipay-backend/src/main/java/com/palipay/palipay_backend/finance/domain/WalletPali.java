@@ -88,6 +88,19 @@ public class WalletPali {
         return this.pinNumber != null && this.pinNumber.equals(pinNumber);
     }
 
+    public void updateAccount(
+            String bankCode,
+            String accountNumber,
+            String accountUsername,
+            String moneyCode
+    ) {
+        this.bankCode = bankCode;
+        this.accountNumber = accountNumber;
+        this.accountUsername = accountUsername;
+        this.moneyCode = moneyCode;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
