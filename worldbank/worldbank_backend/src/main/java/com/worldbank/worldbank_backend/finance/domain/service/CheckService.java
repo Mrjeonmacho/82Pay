@@ -23,6 +23,12 @@ public class CheckService {
     }
 
     @Transactional(readOnly = true)
+    public CheckResponseDto getAmountByUserId(Long userId, String currency) {
+        BankStrategy strategy = bankRouter.route(currency);
+        return strategy.getAmountByUserId(userId);
+    }
+
+    @Transactional(readOnly = true)
     public LinkResponseDto linkAccount(LinkRequestDto request){
         BankStrategy strategy = bankRouter.route(request.getTargetCurrency());
         return strategy.linkAccount(request.getTargetAccountNumber(), request.getTargetAccountPassword());

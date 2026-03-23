@@ -15,5 +15,7 @@ public interface BankStrategy {
 
     CheckResponseDto checkAccount(String accountNumber);
 
+    CheckResponseDto getAmountByUserId(Long userId);
+
     LinkResponseDto linkAccount(String accountNumber, String password);
 }

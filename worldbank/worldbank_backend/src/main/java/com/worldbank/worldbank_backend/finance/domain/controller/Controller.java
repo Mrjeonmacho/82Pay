@@ -53,5 +53,12 @@ public class Controller {
         return checkService.linkAccount(request);
     }
 
+    @GetMapping("/{userid}")
+    public CheckResponseDto getAmountByUserId(
+            @RequestParam("userid") Long userId,
+            @RequestParam("currency") String currency) {
+        return checkService.getAmountByUserId(userId, currency);
+    }
+
 
 }
