@@ -1,9 +1,10 @@
-package com.worldbank.worldbank_backend.finance.global.config;
+package com.worldbank.worldbank_backend.global.config;
 
 import com.atomikos.jdbc.AtomikosDataSourceBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -13,16 +14,17 @@ import java.util.Properties;
 
 @Configuration
 @EnableJpaRepositories(
-        basePackages = "com.worldbank.worldbank_backend.finance.domain.repository.ch",
-        entityManagerFactoryRef = "chEntityManager",
+        basePackages = "com.worldbank.worldbank_backend.finance.domain.repository.kr",
+        entityManagerFactoryRef = "krEntityManager",
         transactionManagerRef = "transactionManager"
 )
-public class CHDataSourceConfig {
+public class KRDataSourceConfig {
 
+    @Primary
     @Bean(initMethod = "init", destroyMethod = "close")
-    public DataSource chDataSource() {
+    public DataSource krDataSource() {
         AtomikosDataSourceBean ds = new AtomikosDataSourceBean();
-        ds.setUniqueResourceName("chDataSource");
+        ds.setUniqueResourceName("krDataSource");
         ds.setXaDataSourceClassName("com.mysql.cj.jdbc.MysqlXADataSource");
         
         ds.setMinPoolSize(5);
@@ -30,7 +32,7 @@ public class CHDataSourceConfig {
         ds.setBorrowConnectionTimeout(60);
         
         Properties p = new Properties();
-        p.setProperty("URL", "jdbc:mysql://localhost:3306/ch_bank");
+        p.setProperty("URL", "jdbc:mysql://localhost:3306/kr_bank");
         p.setProperty("user", "root");
         p.setProperty("password", "root");
         p.setProperty("pinGlobalTxToPhysicalConnection", "true");
@@ -39,13 +41,14 @@ public class CHDataSourceConfig {
         return ds;
     }
 
-    @Bean(name = "chEntityManager")
-    @DependsOn("transactionManager")
-    public LocalContainerEntityManagerFactoryBean chEntityManager() {
+    @Primary
+    @Bean(name = "krEntityManager")
+    @DependsOn("transactionManager") // ✅ 트랜잭션 매니저가 먼저 초기화되도록 보장
+    public LocalContainerEntityManagerFactoryBean krEntityManager() {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setJtaDataSource(chDataSource());
-        em.setPersistenceUnitName("chPersistenceUnit");
-        em.setPackagesToScan("com.worldbank.worldbank_backend.finance.domain.entity.ch");
+        em.setJtaDataSource(krDataSource());
+        em.setPersistenceUnitName("krPersistenceUnit");
+        em.setPackagesToScan("com.worldbank.worldbank_backend.finance.domain.entity.kr");
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Properties properties = new Properties();
