@@ -3,6 +3,7 @@ package com.palipay.palipay_backend.finance.controller;
 import com.palipay.palipay_backend.finance.dto.request.*;
 import com.palipay.palipay_backend.finance.dto.response.*;
 import com.palipay.palipay_backend.finance.service.*;
+import com.palipay.palipay_backend.global.security.JwtProvider;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,8 @@ public class FinanceController {
     private final FinanceValidationService financeValidationService;
     private final AccountHistoryService accountHistoryService;
 
+    private final JwtProvider jwtProvider;
+
     @PostMapping("/transfers")
     public ResponseEntity<FinanceTransferResponse> transfer(
             @RequestHeader(value = "accesstoken", required = false) String accessToken,
@@ -27,7 +30,7 @@ public class FinanceController {
     ) {
 
         //FIXME userId filter에서 받기
-        Long userId = 1L;
+        Long userId = jwtProvider.getUserId(accessToken);
 
         FinanceTransferResponse response = financeTransferService.transfer(
                 userId,
@@ -42,7 +45,9 @@ public class FinanceController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody FinanceAdjustmentRequest request
     ){
-        Long userId = 1L;
+
+        Long userId = jwtProvider.getUserId(accessToken);
+
         FinanceAdjustmentResponse response = financeChargeService.charge(
                 userId,
                 idempotencyKey,
@@ -57,7 +62,9 @@ public class FinanceController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody FinanceAdjustmentRequest request
     ){
-        Long userId = 1L;
+
+        Long userId = jwtProvider.getUserId(accessToken);
+
         FinanceAdjustmentResponse response = financeRefundService.refund(
                 userId,
                 idempotencyKey,
@@ -72,7 +79,9 @@ public class FinanceController {
             @RequestHeader(value = "accesstoken", required = false) String accessToken,
             @ModelAttribute FinanceHistoryRequest request
     ) {
-        Long userId = 1L;
+
+        Long userId = jwtProvider.getUserId(accessToken);
+
         FinanceHistoryResponse response
                 = accountHistoryService.getTransactionHistories(userId, request);
         return ResponseEntity.ok(response);
@@ -85,8 +94,7 @@ public class FinanceController {
             @Valid @RequestBody BalanceCheckRequest request
     ){
 
-        //FIXME userId 하드코딩
-        Long userId = 1L;
+        Long userId = jwtProvider.getUserId(accessToken);
 
         BalanceCheckResponse response = financeValidationService.checkBalance(
                 userId,
@@ -102,8 +110,8 @@ public class FinanceController {
             @Valid @RequestBody PinValidateRequest request
     ){
 
-        //FIXME userId 하드코딩
-        Long userId = 1L;
+        Long userId = jwtProvider.getUserId(accessToken);
+
         PinValidateResponse response = financeValidationService.checkPin(
                 userId,
                 request
@@ -119,6 +127,7 @@ public class FinanceController {
     ){
         /*외부 계좌 존재 여부 체크
            worldbank와 연결*/
+        Long userId = jwtProvider.getUserId(accessToken);
 
         ExAccValidateResponse response = financeValidationService.checkExternAccount(request);
         return ResponseEntity.ok(response);

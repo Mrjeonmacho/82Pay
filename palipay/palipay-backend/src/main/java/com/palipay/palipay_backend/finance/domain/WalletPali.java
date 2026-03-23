@@ -101,6 +101,13 @@ public class WalletPali {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void updatePin(
+            String pinNumber
+    ){
+        this.pinNumber = pinNumber;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
