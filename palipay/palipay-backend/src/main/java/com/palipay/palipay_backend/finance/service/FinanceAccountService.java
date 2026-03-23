@@ -8,7 +8,7 @@ import com.palipay.palipay_backend.finance.dto.request.FinanceAccountRequest;
 import com.palipay.palipay_backend.finance.dto.request.WalletPinRequest;
 import com.palipay.palipay_backend.finance.dto.request.WalletPinUpdateRequest;
 import com.palipay.palipay_backend.finance.dto.response.FinanceAccountResponse;
-import com.palipay.palipay_backend.finance.dto.response.WalletPinResponse;
+import com.palipay.palipay_backend.finance.dto.response.WalletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -57,9 +57,9 @@ public class FinanceAccountService {
         /*wallet에 계좌 정보 업데이트*/
         walletService.updateWalletPali(
                 walletId,
+                bankCode,
                 accountNumber,
                 accountUsername,
-                bankCode,
                 moneyCode
         );
 
@@ -69,7 +69,7 @@ public class FinanceAccountService {
         );
     }
 
-    public WalletPinResponse createPin(
+    public WalletResponse createPin(
             Long userId,
             WalletPinRequest req){
 
@@ -77,11 +77,11 @@ public class FinanceAccountService {
 
         walletService.updatePin(walletPali.getWalletId(), req.pinNumber());
 
-        return WalletPinResponse.builder()
+        return WalletResponse.builder()
                 .message("pin is created!").build();
     }
 
-    public WalletPinResponse updatePin(
+    public WalletResponse updatePin(
             Long userId,
             WalletPinUpdateRequest req
     ){
@@ -93,9 +93,22 @@ public class FinanceAccountService {
 
         walletService.updatePin(walletPali.getWalletId(), req.newPinNumber());
 
-        return WalletPinResponse.builder()
+        return WalletResponse.builder()
                 .message("pin is updated!").build();
     }
 
+    public WalletResponse unconnectWallet(Long userId, Long walletId){
+
+        WalletPali walletPali = walletService.getWalletPaliByUserId(userId);
+
+        // 권한 체크
+        if (!walletPali.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("지갑 접근 권한이 없습니다.");
+        }
+
+        walletService.unlinkAccount(userId, walletId);
+
+        return new WalletResponse("계좌 연동이 성공적으로 해제되었습니다.");
+    }
 
 }

@@ -4,7 +4,7 @@ import com.palipay.palipay_backend.finance.dto.request.FinanceAccountRequest;
 import com.palipay.palipay_backend.finance.dto.request.WalletPinRequest;
 import com.palipay.palipay_backend.finance.dto.request.WalletPinUpdateRequest;
 import com.palipay.palipay_backend.finance.dto.response.FinanceAccountResponse;
-import com.palipay.palipay_backend.finance.dto.response.WalletPinResponse;
+import com.palipay.palipay_backend.finance.dto.response.WalletResponse;
 import com.palipay.palipay_backend.finance.service.FinanceAccountService;
 import com.palipay.palipay_backend.global.security.JwtProvider;
 import jakarta.validation.Valid;
@@ -37,13 +37,13 @@ public class FinanceAccountController {
     }
 
     @PostMapping("/pin")
-    public ResponseEntity<WalletPinResponse> createPin(
+    public ResponseEntity<WalletResponse> createPin(
             @RequestHeader(value = "accesstoken", required = false) String accessToken,
             @Valid @RequestBody WalletPinRequest request
     ){
         Long userId = jwtProvider.getUserId(accessToken);
 
-        WalletPinResponse response = financeAccountService.createPin(
+        WalletResponse response = financeAccountService.createPin(
                 userId,
                 request
         );
@@ -52,18 +52,31 @@ public class FinanceAccountController {
     }
 
     @PatchMapping("/pin")
-    public ResponseEntity<WalletPinResponse> createPin(
+    public ResponseEntity<WalletResponse> createPin(
             @RequestHeader(value = "accesstoken", required = false) String accessToken,
             @Valid @RequestBody WalletPinUpdateRequest request
     ){
         Long userId = jwtProvider.getUserId(accessToken);
 
-        WalletPinResponse response = financeAccountService.updatePin(
+        WalletResponse response = financeAccountService.updatePin(
                 userId,
                 request
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/accounts/{walletId}")
+    public ResponseEntity<WalletResponse> unlinkAccount(
+            @RequestHeader(value = "accesstoken", required = false) String accessToken,
+            @PathVariable Long walletId
+    ) {
+        Long userId = jwtProvider.getUserId(accessToken);
+
+
+        return ResponseEntity.ok(
+                financeAccountService.unconnectWallet(userId, walletId)
+        );
     }
 
 

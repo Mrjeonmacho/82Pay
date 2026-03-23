@@ -3,7 +3,7 @@ package com.palipay.palipay_backend.finance.dto.response;
 import lombok.Builder;
 
 @Builder
-public record WalletPinResponse(
+public record WalletResponse(
         String message
 ) {
 }
