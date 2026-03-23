@@ -108,6 +108,14 @@ public class WalletPali {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void unlinkAccount() {
+        this.accountNumber = null;
+        this.bankCode = null;
+        this.accountUsername = null;
+        this.amount = null;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

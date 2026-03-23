@@ -86,6 +86,22 @@ public class WalletService {
         walletPali.updatePin(pinNumber);
     }
 
+    @Transactional
+    public void unlinkAccount(Long userId, Long walletId) {
+
+        //FIXME 예외 구체화
+        WalletPali wallet = walletPaliRepository.findById(walletId)
+                .orElseThrow(() -> new IllegalArgumentException("해제할 지갑 정보를 찾을 수 없습니다."));
+
+
+        // 이미 연동 안된 경우 (선택)
+        if (wallet.getAccountNumber() == null) {
+            throw new IllegalArgumentException("이미 계좌 연동이 해제된 상태입니다.");
+        }
+
+        wallet.unlinkAccount();
+    }
+
     public WalletPali getWalletPali(Long walletId){
         return walletPaliRepository.findById(walletId)
                 .orElseThrow(() -> new IllegalArgumentException("지갑 미존재 예외처리 추가"));

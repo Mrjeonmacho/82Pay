@@ -34,14 +34,10 @@ public class TransferValidationCommonService {
         }
 
         //source amount 음수 일 경우 예외
-        if(req.sourceAmount().compareTo(BigDecimal.ZERO) <= 0){
+        if(req.sourceAmount().compareTo(BigDecimal.ZERO) < 0){
             throw new IllegalArgumentException("amount 음수 일 경우 예외");
         }
 
-        //송금 시 부족 예외
-        if(walletPali.getAmount().compareTo(req.sourceAmount()) < 0){
-            throw new IllegalArgumentException("송금 시 부족 예외");
-        }
 
         //TODO 현재 내 계좌 잔액이 음수일 경우 에외???
 
