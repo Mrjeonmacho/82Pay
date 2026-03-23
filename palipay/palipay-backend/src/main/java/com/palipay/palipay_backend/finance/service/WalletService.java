@@ -52,6 +52,27 @@ public class WalletService {
         walletPaliRepository.save(initWalletPali);
     }
 
+    @Transactional
+    public void updateWalletPali(
+            Long walletId,
+            String bankCode,
+            String accountNumber,
+            String accountUsername,
+            String moneyCode){
+
+        //FIXME 예외 구체화
+        WalletPali walletPali = walletPaliRepository.findById(walletId)
+                .orElseThrow(() -> new IllegalArgumentException("지갑 없음"));
+
+
+        walletPali.updateAccount(
+                bankCode,
+                accountNumber,
+                accountUsername,
+                moneyCode
+        );
+    }
+
     public WalletPali getWalletPali(Long walletId){
         return walletPaliRepository.findById(walletId)
                 .orElseThrow(() -> new IllegalArgumentException("지갑 미존재 예외처리 추가"));
