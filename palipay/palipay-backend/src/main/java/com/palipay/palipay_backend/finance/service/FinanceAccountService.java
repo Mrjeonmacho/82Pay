@@ -5,7 +5,10 @@ import com.palipay.palipay_backend.external.dto.response.ExternalLinkResponse;
 import com.palipay.palipay_backend.external.service.ExternalBankClient;
 import com.palipay.palipay_backend.finance.domain.WalletPali;
 import com.palipay.palipay_backend.finance.dto.request.FinanceAccountRequest;
+import com.palipay.palipay_backend.finance.dto.request.WalletPinRequest;
+import com.palipay.palipay_backend.finance.dto.request.WalletPinUpdateRequest;
 import com.palipay.palipay_backend.finance.dto.response.FinanceAccountResponse;
+import com.palipay.palipay_backend.finance.dto.response.WalletPinResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -64,6 +67,34 @@ public class FinanceAccountService {
                 "success",
                 walletId
         );
+    }
+
+    public WalletPinResponse createPin(
+            Long userId,
+            WalletPinRequest req){
+
+        WalletPali walletPali = walletService.getWalletPaliByUserId(userId);
+
+        walletService.updatePin(walletPali.getWalletId(), req.pinNumber());
+
+        return WalletPinResponse.builder()
+                .message("pin is created!").build();
+    }
+
+    public WalletPinResponse updatePin(
+            Long userId,
+            WalletPinUpdateRequest req
+    ){
+        WalletPali walletPali = walletService.getWalletPaliByUserId(userId);
+
+        if(!walletPali.matchesPin(req.oldPinNumber())){
+            //TODO 예외 발생
+        }
+
+        walletService.updatePin(walletPali.getWalletId(), req.newPinNumber());
+
+        return WalletPinResponse.builder()
+                .message("pin is updated!").build();
     }
 
 
