@@ -1,12 +1,20 @@
 package com.worldbank.worldbank_backend.user.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.worldbank.worldbank_backend.global.jwt.JwtProvider;
+import com.worldbank.worldbank_backend.global.redis.RedisRepository;
+import com.worldbank.worldbank_backend.global.redis.RefreshToken;
+import com.worldbank.worldbank_backend.user.dto.request.LoginRequest;
 import com.worldbank.worldbank_backend.user.dto.request.SignupRequest;
+import com.worldbank.worldbank_backend.user.dto.response.LoginResponse;
+import com.worldbank.worldbank_backend.user.dto.response.TokenResponse;
+import com.worldbank.worldbank_backend.user.entity.BaseUser;
 import com.worldbank.worldbank_backend.user.strategy.UserStrategy;
 import com.worldbank.worldbank_backend.user.strategy.UserStrategyFactory;
 
@@ -19,6 +27,8 @@ public class UserService {
     private final UserStrategyFactory strategyFactory;
     private final PasswordEncoder passwordEncoder;
     private final List<UserStrategy> strategies;
+    private final JwtProvider jwtTokenProvider;
+    private final RedisRepository redisRepository;
 
     @Transactional
     public void signUp(SignupRequest request) {
@@ -36,6 +46,31 @@ public class UserService {
     public boolean isEmailDuplicate(String email) {
         return strategies.stream()
                 .anyMatch(strategy -> strategy.existsByEmail(email));
+    }
+
+    @Transactional(readOnly = true)
+    public TokenResponse login(LoginRequest request) {
+        return strategies.stream()
+                .map(strategy -> strategy.findByEmail(request.email())
+                        .map(user -> new UserWithCountry(user, strategy.getCountryCode())))
+                .flatMap(Optional::stream)
+                .filter(u -> passwordEncoder.matches(request.password(), u.user().getPassword()))
+                .map(u -> {
+                    // 1. AT(국가코드 포함)와 RT 생성
+                    String at = jwtTokenProvider.createAccessToken(u.user().getUserId(), u.countryCode());
+                    String rt = jwtTokenProvider.createRefreshToken(u.user().getUserId());
+
+                    // 2. Redis Repository에 RT 저장 (KR1 : rt)
+                    redisRepository.save(new RefreshToken(u.countryCode(), u.user().getUserId(), rt));
+
+                    // 3. 컨트롤러가 응답과 쿠키를 구성할 수 있도록 DTO 반환
+                    return new TokenResponse(u.user().getUserId(), at, rt);
+                })
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("이메일 또는 비밀번호가 틀렸습니다."));
+    }
+
+    private record UserWithCountry(BaseUser user, String countryCode) {
     }
 
 }

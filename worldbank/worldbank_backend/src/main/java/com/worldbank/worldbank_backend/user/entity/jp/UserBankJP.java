@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import com.worldbank.worldbank_backend.user.entity.BaseUser;
 import com.worldbank.worldbank_backend.user.entity.UserStatus;
 
 @Entity
@@ -12,7 +13,7 @@ import com.worldbank.worldbank_backend.user.entity.UserStatus;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserBankJP {
+public class UserBankJP implements BaseUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +28,9 @@ public class UserBankJP {
 
     @Enumerated(EnumType.STRING)
     private UserStatus status; // ACTIVE, INACTIVE 등의 Enum
+
+    @Column
+    private String currency;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
