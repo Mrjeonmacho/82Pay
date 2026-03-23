@@ -36,10 +36,10 @@ def preprocess(img_bgr: np.ndarray, mode: str = "basic") -> np.ndarray:
     gray = _clahe(gray)
 
     # 3) denoise
-    gray = cv2.fastNlMeansDenoising(gray, h=10, templateWindowSize=7, searchWindowSize=21)
+    gray = cv2.fastNlMeansDenoising(gray, h=5, templateWindowSize=7, searchWindowSize=21)
 
-    # 4) sharpen
-    gray = _sharpen(gray)
+    # # 4) sharpen
+    # gray = _sharpen(gray)
 
     if mode == "strong":
         # 5) binarize (영수증/계좌번호에 강함, 사진 상태 나쁘면 역효과도 가능)
