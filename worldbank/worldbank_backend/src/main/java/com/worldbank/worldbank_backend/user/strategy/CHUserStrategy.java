@@ -1,6 +1,7 @@
 package com.worldbank.worldbank_backend.user.strategy;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,12 +32,18 @@ public class CHUserStrategy implements UserStrategy {
     }
 
     @Override
+    public Optional<UserBankCH> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
     @Transactional
     public void signup(SignupRequest request, String encodedPassword) {
         // 1. 중국 유저 엔티티 생성 및 저장
         UserBankCH user = UserBankCH.builder()
                 .email(request.getEmail())
                 .password(encodedPassword)
+                .currency("CNY")
                 .build();
         userRepository.save(user);
 
