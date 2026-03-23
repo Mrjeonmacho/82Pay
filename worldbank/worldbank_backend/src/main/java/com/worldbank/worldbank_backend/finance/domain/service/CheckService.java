@@ -22,6 +22,7 @@ public class CheckService {
         return strategy.checkAccount(request.getTargetAccountNumber());
     }
 
+    @Transactional(readOnly = true)
     public LinkResponseDto linkAccount(LinkRequestDto request){
         BankStrategy strategy = bankRouter.route(request.getTargetCurrency());
         return strategy.linkAccount(request.getTargetAccountNumber(), request.getTargetAccountPassword());
