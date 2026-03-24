@@ -11,7 +11,7 @@ router = APIRouter()
 @router.post("/api/ocr")
 async def ocr_image(
     file: UploadFile = File(...),
-    engine: str = Query("paddle", description="paddle | easy | clova(추후)"),
+    engine: str = Query("paddle", description="paddle (기본)"),
     preprocess_mode: str = Query("basic", description="none | basic | strong"),
 ):
     content = await file.read()
