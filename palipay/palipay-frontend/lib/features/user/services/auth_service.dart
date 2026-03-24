@@ -1,6 +1,9 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:palipay_app/core/network/dio_client.dart';
+import 'package:palipay_app/main_screen.dart';
+import 'package:palipay_app/features/user/views/login_screen.dart';
 
 class AuthService {
   final Dio _dio = DioClient().dio;
@@ -86,9 +89,9 @@ class AuthService {
         return false;
       }
     } on DioException catch (e) {
-        print("❌ [실패] 상태코드: ${e.response?.statusCode}");
-        print("❌ [실패] 에러내용: ${e.response?.data}");
-        return false;
+      print("❌ [실패] 상태코드: ${e.response?.statusCode}");
+      print("❌ [실패] 에러내용: ${e.response?.data}");
+      return false;
     } catch (e) {
       print("네트워크 에러: $e");
       return false;
@@ -99,16 +102,14 @@ class AuthService {
   Future<int> login(String email, String password) async {
     try {
       final response = await _dio.post(
-        '/user/login',
+        '/auth/login',
         data: {"email": email, "password": password},
       );
 
       final data = response.data;
 
       if (response.statusCode == 200) {
-        // ⭐️ 토큰 저장 (캡처해주신 JSON 키값 기준)
         await _storage.write(key: 'accessToken', value: data['accessToken']);
-        await _storage.write(key: 'refreshToken', value: data['refreshToken']);
         await _storage.write(key: 'grantType', value: data['grantType']);
         return 200;
       }
@@ -136,22 +137,48 @@ class AuthService {
     return value == 'true';
   }
 
+  Future<void> checkAutoLoginStatus(BuildContext context) async {
+    // 1. 사용자가 자동 로그인을 켰는지 확인
+    bool autoLogin = await isAutoLoginEnabled();
+
+    if (!context.mounted) return;
+
+    if (!autoLogin) {
+      // 자동 로그인 안 켰으면 로그인 페이지로
+      goToLoginScreen(context);
+      return;
+    }
+
+    // 2. Access Token이 있는지 확인
+    String? at = await _storage.read(key: 'accessToken');
+
+    if (!context.mounted) return;
+
+    if (at != null) {
+      // 토큰이 있다면 메인으로 (인터셉터가 알아서 검증하거나 첫 API 호출 시 판가름 남)
+      goToMainScreen(context);
+    } else {
+      // 3. AT가 없거나 만료되었다면 Refresh 시도
+      // 이때 DioClient의 쿠키(RT)가 서버로 날아가서 새 AT를 받아옵니다.
+      bool success = await reissueToken();
+
+      if (!context.mounted) return;
+
+      if (success) {
+        goToMainScreen(context);
+      } else {
+        goToLoginScreen(context); // RT도 만료되었으면 결국 다시 로그인
+      }
+    }
+  }
+
   Future<bool> reissueToken() async {
-    final refreshToken = await _storage.read(key: 'refreshToken');
-
-    if (refreshToken == null) return false;
-
     try {
-      final response = await _dio.post(
-        '/user/reissue',
-        data: {"refreshToken": refreshToken},
-      );
+      final response = await _dio.post('/auth/reissue');
 
       if (response.statusCode == 200) {
         final data = response.data;
-        // ⭐️ 새로운 토큰들로 덮어쓰기
         await _storage.write(key: 'accessToken', value: data['accessToken']);
-        await _storage.write(key: 'refreshToken', value: data['refreshToken']);
         return true;
       }
       return false;
@@ -160,23 +187,28 @@ class AuthService {
     }
   }
 
-  // 저장된 토큰 가져오기 (API 호출 시 필요)
-  Future<String?> getAccessToken() async {
-    return await _storage.read(key: 'accessToken');
-  }
-
-  Future<Map<String, String>> getAuthHeaders() async {
-    final token = await getAccessToken(); // 👈 여기서 재사용!
-    final grantType = await _storage.read(key: 'grantType') ?? 'Bearer';
-
-    return {
-      "Content-Type": "application/json",
-      if (token != null) "Authorization": "$grantType $token",
-    };
-  }
-
-  // 로그아웃 시 토큰 삭제
   Future<void> logout() async {
-    await _storage.deleteAll();
+    try {
+      await _dio.post('/auth/logout');
+    } catch (e) {
+      print('로그아웃 서버 통신 에러: $e');
+    } finally {
+      await _storage.deleteAll();
+      await DioClient().cookieJar.deleteAll();
+    }
+  }
+
+  void goToLoginScreen(BuildContext context) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
+  }
+
+  void goToMainScreen(BuildContext context) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const MainScreen()),
+    );
   }
 }
