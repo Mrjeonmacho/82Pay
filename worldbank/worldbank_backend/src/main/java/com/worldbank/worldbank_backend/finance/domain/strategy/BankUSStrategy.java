@@ -1,6 +1,7 @@
 package com.worldbank.worldbank_backend.finance.domain.strategy;
 
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.History.HistoryResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.entity.us.AccountHistoryUS;
@@ -9,6 +10,9 @@ import com.worldbank.worldbank_backend.finance.domain.repository.us.AccountHisto
 import com.worldbank.worldbank_backend.finance.domain.repository.us.BankUSRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -41,7 +45,7 @@ public class BankUSStrategy implements BankStrategy {
 
     @Override
     public CheckResponseDto getAmountByUserId(Long userId) {
-        return bankRepository.findByUserId(userId)
+        return bankRepository.findByUser_UserId(userId)
                 .map(account -> CheckResponseDto.builder()
                         .message("사용자 계좌 조회가 성공했습니다.")
                         .amount(account.getAmount())
@@ -66,7 +70,7 @@ public class BankUSStrategy implements BankStrategy {
 
         AccountHistoryUS history = AccountHistoryUS.builder()
                 .bankId(account.getBankId())
-                .userId(account.getUserId())
+                .userId(account.getUser().getUserId())
                 .category(AccountHistoryUS.Category.OUTPUT)
                 .amount(request.getSenderAmount())
                 .otherAccountNumber(request.getTargetAccountNumber())
@@ -110,7 +114,7 @@ public class BankUSStrategy implements BankStrategy {
 
         AccountHistoryUS history = AccountHistoryUS.builder()
                 .bankId(account.getBankId())
-                .userId(account.getUserId())
+                .userId(account.getUser().getUserId())
                 .category(AccountHistoryUS.Category.INPUT)
                 .amount(request.getTargetAmount())
                 .otherAccountNumber(request.getSenderAccountNumber())
@@ -119,5 +123,20 @@ public class BankUSStrategy implements BankStrategy {
                 .build();
 
         historyRepository.save(history);
+    }
+
+    @Override
+    public List<HistoryResponseDto> getHistoryByUserId(Long userId) {
+        return historyRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(history -> HistoryResponseDto.builder()
+                        .historyId(history.getHistoryId())
+                        .category(history.getCategory().name())
+                        .amount(history.getAmount())
+                        .otherAccountNumber(history.getOtherAccountNumber())
+                        .otherAccountName(history.getOtherAccountName())
+                        .otherBankCode(history.getOtherBankCode())
+                        .createdAt(history.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

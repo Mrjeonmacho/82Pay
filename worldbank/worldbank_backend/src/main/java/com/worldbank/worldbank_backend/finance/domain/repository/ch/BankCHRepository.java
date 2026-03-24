@@ -15,7 +15,10 @@ public interface BankCHRepository
     @Lock(LockModeType.PESSIMISTIC_WRITE) //비관적 락
     Optional<BankCH> findByAccountNumber(String accountNumber);
 
-    Optional<BankCH> findByUserId(Long userId);
+    Optional<BankCH> findByUser_UserId(Long userId);
+
+    // 계좌번호 중복 확인용 (추가)
+    boolean existsByAccountNumber(String accountNumber);
 
     @Query("SELECT b FROM BankCH b WHERE b.accountNumber = :accountNumber")
     Optional<BankCH> findByAccountNumberNoLock(@Param("accountNumber") String accountNumber);

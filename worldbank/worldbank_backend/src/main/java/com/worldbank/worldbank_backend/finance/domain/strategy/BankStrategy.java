@@ -1,8 +1,11 @@
 package com.worldbank.worldbank_backend.finance.domain.strategy;
 
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.History.HistoryResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
+
+import java.util.List;
 
 public interface BankStrategy {
 
@@ -18,4 +21,6 @@ public interface BankStrategy {
     CheckResponseDto getAmountByUserId(Long userId);
 
     LinkResponseDto linkAccount(String accountNumber, String password);
+
+    List<HistoryResponseDto> getHistoryByUserId(Long userId);
 }
