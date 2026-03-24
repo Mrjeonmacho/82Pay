@@ -1,6 +1,7 @@
-from typing import Any, Dict, List
+from threading import Lock
+from typing import Any, Dict, List, Optional
+
 import cv2
-from paddleocr import PaddleOCR
 
 from .base import OCREngine
 from .preprocess import preprocess
@@ -49,14 +50,22 @@ class PaddleOCREngine(OCREngine):
     name = "paddle"
 
     def __init__(self):
-        self.ocr = PaddleOCR(
-            lang="korean",
-        )
+        self._ocr: Optional[Any] = None
+        self._ocr_lock = Lock()
+
+    def _get_ocr(self) -> Any:
+        if self._ocr is None:
+            with self._ocr_lock:
+                if self._ocr is None:
+                    from paddleocr import PaddleOCR
+
+                    self._ocr = PaddleOCR(lang="korean")
+        return self._ocr
 
     def _run_ocr(self, img_bgr, preprocess_mode: str) -> Dict[str, Any]:
         processed = preprocess(img_bgr, preprocess_mode)
         img_rgb = cv2.cvtColor(processed, cv2.COLOR_BGR2RGB)
-        result = self.ocr.ocr(img_rgb, cls=True)
+        result = self._get_ocr().ocr(img_rgb, cls=True)
 
         items: List[Dict[str, Any]] = []
         if result and len(result) > 0 and result[0]:
