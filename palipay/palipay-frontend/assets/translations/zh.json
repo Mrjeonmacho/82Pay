@@ -51,6 +51,18 @@
         "pin_auth": {
             "title_verify": "验证PIN码",
             "error_invalid": "PIN码错误，请重试。"
+        },
+        "delete_account": {
+            "title": "删除账户",
+            "description": "删除账户后，您的余额和账户信息将无法恢复。\n您确定要继续吗？",
+            "label_password": "密码",
+            "hint_password": "请输入密码",
+            "error_empty_password": "请输入密码。",
+            "error_failed": "您输入的密码不正确。",
+            "button": "删除账户",
+            "dialog_remaining_balance": "当前仍有可兑换余额。\n请先完成兑换。",
+            "dialog_success": "您的账户已成功删除。",
+            "dialog_failure": "删除账户失败。\n请稍后重试。"
         }
     },
     "languages": {

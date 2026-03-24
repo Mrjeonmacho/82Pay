@@ -104,52 +104,52 @@ class BankConstants {
       'countryName': 'South Korea',
       'banks': [
         {
-          'name': 'KB국민은행',
+          'name': 'KB국민',
           'bankCode': '004',
           'logo': 'assets/images/banks/kr/kr_kb.png',
         },
         {
-          'name': '신한은행',
+          'name': '신한',
           'bankCode': '088',
           'logo': 'assets/images/banks/kr/kr_shinhan.png',
         },
         {
-          'name': '우리은행',
+          'name': '우리',
           'bankCode': '020',
           'logo': 'assets/images/banks/kr/kr_woori.png',
         },
         {
-          'name': '하나은행',
+          'name': '하나',
           'bankCode': '081',
           'logo': 'assets/images/banks/kr/kr_hana.png',
         },
         {
-          'name': 'NH농협은행',
+          'name': 'NH농협',
           'bankCode': '011',
           'logo': 'assets/images/banks/kr/kr_nh.png',
         },
         {
-          'name': 'IBK기업은행',
+          'name': 'IBK기업',
           'bankCode': '003',
           'logo': 'assets/images/banks/kr/kr_ibk.png',
         },
         {
-          'name': '카카오뱅크',
+          'name': '카카오',
           'bankCode': '090',
           'logo': 'assets/images/banks/kr/kr_kakao.png',
         },
         {
-          'name': '토스뱅크',
+          'name': '토스',
           'bankCode': '092',
           'logo': 'assets/images/banks/kr/kr_toss.png',
         },
         {
-          'name': '케이뱅크',
+          'name': '케이',
           'bankCode': '089',
           'logo': 'assets/images/banks/kr/kr_kbank.png',
         },
         {
-          'name': 'sc제일은행',
+          'name': 'SC제일',
           'bankCode': '023',
           'logo': 'assets/images/banks/kr/kr_sc.png',
         },

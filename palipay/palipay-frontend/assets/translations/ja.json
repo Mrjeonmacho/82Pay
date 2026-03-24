@@ -51,6 +51,18 @@
         "pin_auth": {
             "title_verify": "PINを確認",
             "error_invalid": "PINが正しくありません。もう一度お試しください。"
+        },
+        "delete_account": {
+            "title": "アカウント削除",
+            "description": "アカウントを削除すると、残高およびアカウント情報は復元できません。\n本当に続行しますか？",
+            "label_password": "パスワード",
+            "hint_password": "パスワードを入力してください",
+            "error_empty_password": "パスワードを入力してください。",
+            "error_failed": "入力したパスワードが正しくありません。",
+            "button": "アカウント削除",
+            "dialog_remaining_balance": "現在、換金可能な残高が残っています。\n先に換金を完了してください。",
+            "dialog_success": "アカウントが正常に削除されました。",
+            "dialog_failure": "アカウントの削除に失敗しました。\nしばらくしてからもう一度お試しください。"
         }
     },
     "languages": {

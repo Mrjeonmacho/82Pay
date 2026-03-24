@@ -6,13 +6,14 @@ import 'package:dio/dio.dart';
 import 'package:palipay_app/core/network/dio_client.dart';
 import 'package:palipay_app/features/transfer/services/transfer_service.dart';
 import 'package:palipay_app/features/transfer/providers/transfer_provider.dart';
+import 'package:palipay_app/features/user/provider/delete_account_provider.dart';
+import 'package:palipay_app/features/user/provider/logout_provider.dart';
 
 import 'package:provider/provider.dart';
 import 'features/account/providers/account_provider.dart';
 import 'features/wallet/providers/wallet_provider.dart';
 import 'features/history/providers/history_provider.dart';
 import 'features/pin/providers/pin_provider.dart';
-import 'features/transfer/providers/transfer_provider.dart';
 import 'features/user/provider/sign_up_provider.dart';
 import 'features/profile/providers/profile_provider.dart';
 import 'features/user/provider/login_provider.dart';
@@ -66,6 +67,8 @@ class PaliPayApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => TransferProvider(TransferService()),
         ),
+        ChangeNotifierProvider(create: (_) => DeleteAccountProvider()),
+        ChangeNotifierProvider(create: (_) => LogoutProvider()),
       ],
       child: MaterialApp(
         title: 'PaliPay',
@@ -95,8 +98,8 @@ class PaliPayApp extends StatelessWidget {
             foregroundColor: Colors.white,
           ),
         ),
-        // home: const LoginScreen(), // 실제 배포 시 주석 해제
-        // test용으로 일단 홈화면 (로그인 패스)
+        // home: const LoginScreen(), // 혹은 시작 화면
+        // test
         home: const MainScreen(),
       ),
     );

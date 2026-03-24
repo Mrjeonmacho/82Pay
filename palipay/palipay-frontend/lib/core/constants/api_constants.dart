@@ -21,6 +21,8 @@ class ApiConstants {
   // 팁: Path Variable({walletId})은 보통 서비스단에서 문자열 치환하거나 아래처럼 함수로 관리합니다.
   static String accountDelete(String walletId) => '/users/accounts/$walletId';
 
+  static const String ocrScan = '/ocr';
+
   // TEST
   static const String pinSet = '/pin/set';
   static const String accountBalance = '/wallet/balance';

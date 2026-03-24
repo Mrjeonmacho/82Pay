@@ -51,6 +51,18 @@
         "pin_auth": {
             "title_verify": "Verify PIN",
             "error_invalid": "Invalid PIN. Please try again."
+        },
+        "delete_account": {
+            "title": "Delete Account",
+            "description": "If you delete your account, your balance and account information cannot be recovered.\nAre you sure you want to proceed?",
+            "label_password": "Password",
+            "hint_password": "Enter your password",
+            "error_empty_password": "Please enter your password.",
+            "error_failed": "The password you entered is incorrect.",
+            "button": "Delete Account",
+            "dialog_remaining_balance": "There is still an exchangeable balance available.\nPlease proceed with the exchange first.",
+            "dialog_success": "Your account has been deleted successfully.",
+            "dialog_failure": "Failed to delete account.\nPlease try again later."
         }
     },
     "languages": {
