@@ -4,13 +4,9 @@ import '../theme/app_text_styles.dart';
 
 class PaliBalanceCard extends StatelessWidget {
   final String krwAmount;
-  final String usdAmount;
+  // final String usdAmount;
 
-  const PaliBalanceCard({
-    super.key,
-    required this.krwAmount,
-    required this.usdAmount,
-  });
+  const PaliBalanceCard({super.key, required this.krwAmount});
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +29,12 @@ class PaliBalanceCard extends StatelessWidget {
             style: AppTextStyles.titleLarge.copyWith(color: Colors.white),
           ), //
           const SizedBox(height: 8),
-          Text(
-            '≈ \$$usdAmount',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: Colors.white.withOpacity(0.8),
-            ), //
-          ),
+          // Text(
+          //   // '≈ \$$usdAmount',
+          //   style: AppTextStyles.bodyMedium.copyWith(
+          //     color: Colors.white.withOpacity(0.8),
+          //   ), //
+          // ),
         ],
       ),
     );

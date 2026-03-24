@@ -53,5 +53,6 @@ app.*.map.json
 
 # 2. 민감한 보안 정보 (API 키 등)
 .env
+*.env
 *.keystore                       
 *.jks                            

@@ -1,22 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
 // Top Bar
 class PaliTopBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  const PaliTopBar({super.key, required this.title});
+  final List<Widget>? actions;
+  // 왼쪽 뒤로가기 넣기 위해 추가
+  final Widget? leading;
+
+  const PaliTopBar({super.key, required this.title, this.actions, this.leading,});
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       toolbarHeight: 64, //
       backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      elevation: 0,
       centerTitle: true,
+      leading: leading,
       title: Text(
         title,
         style: AppTextStyles.headlineLarge.copyWith(color: AppColors.mainBlue),
       ),
+      actions: actions,
     );
   }
 
@@ -56,9 +67,9 @@ class PaliBottomNavigationBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildNavItem(Icons.home_filled, 'Home', 0),
+              _buildNavItem(Icons.home_filled, 'common.home'.tr(), 0),
               const SizedBox(width: 80), // 중앙 Scan 버튼 자리를 위한 여백
-              _buildNavItem(Icons.person_outline, 'Profile', 1),
+              _buildNavItem(Icons.person_outline, 'common.profile'.tr(), 1),
             ],
           ),
         ),
@@ -95,7 +106,7 @@ class PaliBottomNavigationBar extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Scan',
+                'common.scan'.tr(),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: currentIndex == 2
                       ? AppColors.mainBlue
