@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Text(
-                'home_screen.recent_transactions'.tr(),
+                'home_screen.recent_transactions',
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.abledFont,
                 ),
