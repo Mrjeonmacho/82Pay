@@ -1,13 +1,23 @@
-from .paddle_engine import PaddleOCREngine
-from .easy_engine import EasyOCREngine
+from threading import Lock
+from typing import Dict, Type
 
-_ENGINES = {
-    "paddle": PaddleOCREngine(),
-    "easy": EasyOCREngine(),
-    # "clova": ClovaOCREngine(),  # 나중에 추가
+from .base import OCREngine
+from .paddle_engine import PaddleOCREngine
+
+_ENGINE_CLASSES: Dict[str, Type[OCREngine]] = {
+    "paddle": PaddleOCREngine,
+    # "clova": ClovaOCREngine,
 }
 
-def get_engine(name: str):
-    if name not in _ENGINES:
+_instances: Dict[str, OCREngine] = {}
+_lock = Lock()
+
+
+def get_engine(name: str) -> OCREngine:
+    if name not in _ENGINE_CLASSES:
         raise ValueError(f"Unknown engine: {name}")
-    return _ENGINES[name]
+    if name not in _instances:
+        with _lock:
+            if name not in _instances:
+                _instances[name] = _ENGINE_CLASSES[name]()
+    return _instances[name]

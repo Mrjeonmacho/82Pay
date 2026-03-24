@@ -25,6 +25,8 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # 1단계(builder)에서 완성된 웹 결과물만 Nginx 서빙 폴더로 복사
 COPY --from=builder /app/build/web /usr/share/nginx/html
 
+RUN chmod 644 /usr/share/nginx/html/assets/.env
+
 # 80번 포트 개방
 EXPOSE 80
 
