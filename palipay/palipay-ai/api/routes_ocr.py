@@ -8,7 +8,7 @@ from ocr.registry import get_engine
 
 router = APIRouter()
 
-@router.post("/ocr")
+@router.post("/api/ocr")
 async def ocr_image(
     file: UploadFile = File(...),
     engine: str = Query("paddle", description="paddle | easy | clova(추후)"),
@@ -25,7 +25,7 @@ async def ocr_image(
     result = ocr_engine.recognize(img_bgr, preprocess_mode=preprocess_mode)
 
     return {
-        "filename": file.filename,
-        "count": len(result["items"]),
-        **result
+        "full_text": result["full_text"],
+        "parsed": result["parsed"],
+        "meta": result["meta"],
     }
