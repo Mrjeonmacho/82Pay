@@ -8,7 +8,7 @@ from ocr.registry import get_engine
 
 router = APIRouter()
 
-@router.post("/api/ocr")
+@router.post("/api/ai/ocr")
 async def ocr_image(
     file: UploadFile = File(...),
     engine: str = Query("paddle", description="paddle (기본)"),
