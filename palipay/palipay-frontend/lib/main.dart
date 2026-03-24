@@ -95,9 +95,9 @@ class PaliPayApp extends StatelessWidget {
             foregroundColor: Colors.white,
           ),
         ),
-        // home: const LoginScreen(), // 혹은 시작 화면
+        home: const LoginScreen(), // 혹은 시작 화면
         // test
-        home: const MainScreen(),
+        // home: const MainScreen(),
       ),
     );
   }
