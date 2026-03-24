@@ -1,5 +1,6 @@
 package com.worldbank.worldbank_backend.finance.domain.entity.us;
 
+import com.worldbank.worldbank_backend.user.entity.us.UserBankUS;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,13 +20,14 @@ public class BankUS {
     @Column(name = "bank_id") // DB의 bank_id 컬럼과 매핑
     private Long bankId;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserBankUS user;
 
     @Column(name = "user_name")
     private String userName;
 
-    @Column(name = "account_number")
+    @Column(name = "account_number", unique = true, nullable = false)
     private String accountNumber;
 
     @Column(name = "amount")

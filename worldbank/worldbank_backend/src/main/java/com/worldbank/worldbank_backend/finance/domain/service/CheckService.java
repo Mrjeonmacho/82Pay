@@ -2,6 +2,7 @@ package com.worldbank.worldbank_backend.finance.domain.service;
 
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.History.HistoryResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.router.BankRouter;
@@ -9,6 +10,8 @@ import com.worldbank.worldbank_backend.finance.domain.strategy.BankStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,5 +35,11 @@ public class CheckService {
     public LinkResponseDto linkAccount(LinkRequestDto request){
         BankStrategy strategy = bankRouter.route(request.getTargetCurrency());
         return strategy.linkAccount(request.getTargetAccountNumber(), request.getTargetAccountPassword());
+    }
+
+    @Transactional(readOnly = true)
+    public List<HistoryResponseDto> getHistory(Long userId, String currency) {
+        BankStrategy strategy = bankRouter.route(currency);
+        return strategy.getHistoryByUserId(userId);
     }
 }

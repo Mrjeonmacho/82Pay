@@ -16,7 +16,10 @@ public interface BankKRRepository
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<BankKR> findByAccountNumber(String accountNumber);
 
-    Optional<BankKR> findByUserId(Long userId);
+    Optional<BankKR> findByUser_UserId(Long userId);
+
+    // 계좌번호 중복 확인용 (추가)
+    boolean existsByAccountNumber(String accountNumber);
 
     @Query("SELECT b FROM BankKR b WHERE b.accountNumber = :accountNumber")
     Optional<BankKR> findByAccountNumberNoLock(@Param("accountNumber") String accountNumber);
