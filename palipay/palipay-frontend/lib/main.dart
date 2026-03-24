@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';  // 환경변수
-import 'package:easy_localization/easy_localization.dart';  // 다국어
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // 환경변수
+import 'package:easy_localization/easy_localization.dart'; // 다국어
 
 import 'package:dio/dio.dart';
+import 'package:palipay_app/core/network/dio_client.dart';
 import 'package:palipay_app/features/transfer/services/transfer_service.dart';
 import 'package:palipay_app/features/transfer/providers/transfer_provider.dart';
 
@@ -26,12 +27,14 @@ import 'package:palipay_app/features/user/views/login_screen.dart';
 void main() async {
   // 1. 플러터 엔진과 통신 준비
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // 2. 다국어 설정 초기화 (이게 빠지면 null 에러 발생!)
   await EasyLocalization.ensureInitialized();
-  
+
   // 3. .env 설정 로드
   await dotenv.load(fileName: ".env");
+
+  await DioClient().init();
 
   runApp(
     // 4. 앱 전체를 EasyLocalization으로 감싸야 함
@@ -60,7 +63,9 @@ class PaliPayApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PinProvider()),
         ChangeNotifierProvider(create: (_) => ScanProvider()),
         ChangeNotifierProvider(create: (_) => LoginProvider()),
-        ChangeNotifierProvider(create: (_) => TransferProvider(TransferService())),
+        ChangeNotifierProvider(
+          create: (_) => TransferProvider(TransferService()),
+        ),
       ],
       child: MaterialApp(
         title: 'PaliPay',
