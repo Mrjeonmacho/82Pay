@@ -50,8 +50,9 @@ class DioClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final token = await _storage.read(key: 'accessToken');
+          final grantType = await _storage.read(key: 'grantType') ?? 'Bearer';
           if (token != null) {
-            options.headers['accesstoken'] = token;
+            options.headers['Authorization'] = '$grantType $token';
           }
           return handler.next(options);
         },
