@@ -16,7 +16,10 @@ public interface BankJPRepository
     @Lock(LockModeType.PESSIMISTIC_WRITE) //비관적 락
     Optional<BankJP> findByAccountNumber(String accountNumber);
 
-    Optional<BankJP> findByUserId(Long userId);
+    Optional<BankJP> findByUser_UserId(Long userId);
+
+    // 계좌번호 중복 확인용 (추가)
+    boolean existsByAccountNumber(String accountNumber);
 
     @Query("SELECT b FROM BankJP b WHERE b.accountNumber = :accountNumber")
     Optional<BankJP> findByAccountNumberNoLock(@Param("accountNumber") String accountNumber);

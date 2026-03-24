@@ -1,5 +1,6 @@
 package com.worldbank.worldbank_backend.finance.domain.entity.kr;
 
+import com.worldbank.worldbank_backend.user.entity.kr.UserBankKR;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +20,9 @@ public class BankKR {
     @Column(name = "bank_id") // DB의 bank_id 컬럼과 매핑
     private Long bankId;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserBankKR user;
 
     @Column(name = "user_name")
     private String userName;
@@ -56,5 +58,12 @@ public class BankKR {
 
     public void deposit(BigDecimal money) {
         amount = amount.add(money);
+    }
+
+    // 엔티티가 처음 저장될 때 시간 자동 설정 (Auditing을 사용하지 않을 경우)
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }

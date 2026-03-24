@@ -3,6 +3,7 @@ package com.worldbank.worldbank_backend.finance.domain.controller;
 import com.worldbank.worldbank_backend.finance.domain.dto.Business.BusinessResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.History.HistoryResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
@@ -12,6 +13,8 @@ import com.worldbank.worldbank_backend.finance.domain.service.CheckService;
 import com.worldbank.worldbank_backend.finance.domain.service.TransferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/finance")
@@ -53,12 +56,20 @@ public class Controller {
         return checkService.linkAccount(request);
     }
 
-    @GetMapping("/{userid}")
+    @GetMapping("/user/{userid}")
     public CheckResponseDto getAmountByUserId(
-            @RequestParam("userid") Long userId,
+            @PathVariable("userid") Long userId,
             @RequestParam("currency") String currency) {
         return checkService.getAmountByUserId(userId, currency);
     }
 
+    @GetMapping("/history/{userid}")
+    public List<HistoryResponseDto> getHistory(
+            @PathVariable("userid") Long userId,
+            @RequestParam("currency") String currency) {
+        return checkService.getHistory(userId, currency);
+    }
 
-}
+
+    }
+

@@ -47,6 +47,7 @@ public class WalletService {
         WalletPali initWalletPali = WalletPali
                 .builder()
                 .userId(userId)
+                .amount(BigDecimal.ZERO)
                 .build();
 
         walletPaliRepository.save(initWalletPali);
