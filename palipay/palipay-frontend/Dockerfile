@@ -25,6 +25,9 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # 1단계(builder)에서 완성된 웹 결과물만 Nginx 서빙 폴더로 복사
 COPY --from=builder /app/build/web /usr/share/nginx/html
 
+# 💡 핵심 추가: Nginx가 숨김 파일(.env)을 읽을 수 있도록 모든 사용자에게 읽기 권한(644) 부여
+RUN chmod 644 /usr/share/nginx/html/assets/.env
+
 # 80번 포트 개방
 EXPOSE 80
 
