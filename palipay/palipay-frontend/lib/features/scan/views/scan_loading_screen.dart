@@ -101,9 +101,15 @@ class _ScanLoadingScreenState extends State<ScanLoadingScreen>
         children: [
           // 배경 이미지
           Positioned.fill(
-            child: Image.file(
-              widget.imageFile,
-              fit: BoxFit.cover,
+            child: Container(
+              color: Colors.black,
+              alignment: Alignment.center,
+              child: Image.file(
+                widget.imageFile,
+                fit: BoxFit.contain,
+                width: double.infinity,
+                height: double.infinity,
+              ),
             ),
           ),
 
