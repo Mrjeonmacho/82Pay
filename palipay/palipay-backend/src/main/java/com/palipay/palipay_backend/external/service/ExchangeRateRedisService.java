@@ -1,6 +1,7 @@
 package com.palipay.palipay_backend.external.service;
 
 import com.palipay.palipay_backend.external.dto.ExchangeRateCacheDto;
+import com.palipay.palipay_backend.external.dto.response.ExchangeQuoteResponse;
 import com.palipay.palipay_backend.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
@@ -19,6 +21,19 @@ public class ExchangeRateRedisService {
 
     private final StringRedisTemplate redisTemplate;
 
+    public ExchangeQuoteResponse createExchangeQuote(String currency) {
+        validateCurrency(currency);
+
+        ExchangeRateCacheDto exchangeRate = getExchangeRate(currency+"KRW");
+
+        return new ExchangeQuoteResponse(
+                "환율 견적이 생성되었습니다.",
+                new ExchangeQuoteResponse.Data(
+                        exchangeRate.rate(),
+                        exchangeRate.fetchedAt().atOffset(ZoneOffset.ofHours(9)).toLocalDateTime()
+                )
+        );
+    }
 
     public ExchangeRateCacheDto getUsdKrwRate() {
         return getExchangeRate("USDKRW");
@@ -35,7 +50,7 @@ public class ExchangeRateRedisService {
 
         /// //////////////////////////////////////////////////////////////////////
         // FIXME 하드 코딩 삭제하기
-        setExchangeRate();
+        //setExchangeRate();
         /// /////////////////////////////////////////////////////////////////////
 
         String key = FX_KEY_PREFIX + currencyPair;
@@ -96,5 +111,21 @@ public class ExchangeRateRedisService {
         redisTemplate.expire(usdKey, Duration.ofMinutes(10));
         redisTemplate.expire(jpyKey, Duration.ofMinutes(10));
         redisTemplate.expire(cnyKey, Duration.ofMinutes(10));
+    }
+
+    private String validateCurrency(String currency) {
+        if (currency == null || currency.isBlank()) {
+            throw new IllegalArgumentException("통화 코드는 필수입니다.");
+        }
+
+        String normalizedCurrency = currency.trim().toUpperCase();
+
+        if (!normalizedCurrency.equals("USD")
+                && !normalizedCurrency.equals("JPY")
+                && !normalizedCurrency.equals("CNY")) {
+            throw new IllegalArgumentException("지원하지 않는 통화 코드입니다. currency=" + currency);
+        }
+
+        return normalizedCurrency;
     }
 }
