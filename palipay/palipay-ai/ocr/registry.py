@@ -3,11 +3,9 @@ from typing import Dict, Type
 
 from .base import OCREngine
 from .paddle_engine import PaddleOCREngine
-from .easy_engine import EasyOCREngine
 
 _ENGINE_CLASSES: Dict[str, Type[OCREngine]] = {
     "paddle": PaddleOCREngine,
-    "easy": EasyOCREngine,
     # "clova": ClovaOCREngine,
 }
 
