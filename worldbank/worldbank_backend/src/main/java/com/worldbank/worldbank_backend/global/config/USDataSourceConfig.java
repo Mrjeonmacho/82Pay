@@ -1,6 +1,7 @@
 package com.worldbank.worldbank_backend.global.config;
 
 import com.atomikos.jdbc.AtomikosDataSourceBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -17,20 +18,29 @@ import java.util.Properties;
 }, entityManagerFactoryRef = "usEntityManager", transactionManagerRef = "transactionManager")
 public class USDataSourceConfig {
 
+        // yml에서 값을 가져옵니다.
+
         @Bean(initMethod = "init", destroyMethod = "close")
-        public DataSource usDataSource() {
+        public DataSource usDataSource(
+                @Value("${spring.datasource.us.xa-data-source-class-name}") String xaClassName,
+                @Value("${spring.datasource.us.unique-resource-name}") String uniqueName,
+                @Value("${spring.datasource.us.xa-properties.url}") String url,
+                @Value("${spring.datasource.us.xa-properties.user}") String user,
+                @Value("${spring.datasource.us.xa-properties.password}") String password
+
+        ) {
                 AtomikosDataSourceBean ds = new AtomikosDataSourceBean();
-                ds.setUniqueResourceName("usDataSource");
-                ds.setXaDataSourceClassName("com.mysql.cj.jdbc.MysqlXADataSource");
+                ds.setUniqueResourceName(uniqueName);
+                ds.setXaDataSourceClassName(xaClassName);
 
                 ds.setMinPoolSize(5);
                 ds.setMaxPoolSize(20);
                 ds.setBorrowConnectionTimeout(60);
 
                 Properties p = new Properties();
-                p.setProperty("URL", "jdbc:mysql://localhost:3306/us_bank");
-                p.setProperty("user", "root");
-                p.setProperty("password", "root");
+                p.setProperty("URL", url);
+                p.setProperty("user", user);
+                p.setProperty("password", password);
                 p.setProperty("pinGlobalTxToPhysicalConnection", "true");
                 ds.setXaProperties(p);
 
@@ -39,9 +49,9 @@ public class USDataSourceConfig {
 
         @Bean(name = "usEntityManager")
         @DependsOn("transactionManager")
-        public LocalContainerEntityManagerFactoryBean usEntityManager() {
+        public LocalContainerEntityManagerFactoryBean usEntityManager(DataSource usDataSource) {
                 LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-                em.setJtaDataSource(usDataSource());
+                em.setJtaDataSource(usDataSource);
                 em.setPersistenceUnitName("usPersistenceUnit");
                 em.setPackagesToScan("com.worldbank.worldbank_backend.finance.domain.entity.us",
                                 "com.worldbank.worldbank_backend.user.entity.us");
