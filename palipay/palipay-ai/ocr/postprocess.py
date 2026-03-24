@@ -5,7 +5,12 @@ from difflib import SequenceMatcher
 from typing import Any, Dict, List, Optional, Tuple
 import re
 
-from .bank_patterns import score_account_pattern, get_pattern_match_info
+from .bank_patterns import (
+    BANK_NAME_ALIASES,
+    get_pattern_match_info,
+    resolve_bank_name,
+    score_account_pattern,
+)
 
 
 BANK_CANDIDATES = [
@@ -13,12 +18,10 @@ BANK_CANDIDATES = [
     "신한은행",
     "우리은행",
     "하나은행",
-    "농협",
     "농협은행",
     "기업은행",
     "IBK기업은행",
     "새마을금고",
-    "수협",
     "수협은행",
     "SC제일은행",
     "부산은행",
@@ -31,6 +34,38 @@ BANK_CANDIDATES = [
     "토스뱅크",
     "우체국",
 ]
+
+
+def _build_bank_substring_needles() -> List[Tuple[str, str]]:
+    pairs: List[Tuple[str, str]] = []
+    for bank in BANK_CANDIDATES:
+        pairs.append((bank, bank))
+    for alias, canonical in BANK_NAME_ALIASES.items():
+        pairs.append((alias, canonical))
+    pairs.sort(key=lambda x: len(x[0]), reverse=True)
+    return pairs
+
+
+_BANK_SUBSTRING_NEEDLES = _build_bank_substring_needles()
+
+
+def _build_fuzzy_bank_strings() -> List[str]:
+    seen: set[str] = set()
+    out: List[str] = []
+    for s in BANK_CANDIDATES:
+        cf = s.casefold()
+        if cf not in seen:
+            seen.add(cf)
+            out.append(s)
+    for alias in BANK_NAME_ALIASES:
+        cf = alias.casefold()
+        if cf not in seen:
+            seen.add(cf)
+            out.append(alias)
+    return out
+
+
+_FUZZY_BANK_STRINGS = _build_fuzzy_bank_strings()
 
 NOISE_WORDS = [
     "계좌이체",
@@ -200,9 +235,12 @@ def _similarity(a: str, b: str) -> float:
 
 
 def _best_bank_by_substring(text: str) -> Optional[str]:
-    for bank in sorted(BANK_CANDIDATES, key=len, reverse=True):
-        if bank in text:
-            return bank
+    if not text:
+        return None
+    tcf = text.casefold()
+    for needle, canonical in _BANK_SUBSTRING_NEEDLES:
+        if needle.casefold() in tcf:
+            return canonical
     return None
 
 
@@ -210,7 +248,7 @@ def _best_bank_by_fuzzy(text: str) -> Tuple[Optional[str], float]:
     best_bank = None
     best_score = 0.0
 
-    for bank in BANK_CANDIDATES:
+    for bank in _FUZZY_BANK_STRINGS:
         if len(text) < len(bank):
             score = _similarity(text, bank)
             if score > best_score:
@@ -226,7 +264,8 @@ def _best_bank_by_fuzzy(text: str) -> Tuple[Optional[str], float]:
                 best_score = score
                 best_bank = bank
 
-    return best_bank, best_score
+    resolved = resolve_bank_name(best_bank) if best_bank else None
+    return resolved, best_score
 
 
 def extract_bank_name(items_raw: List[Dict[str, Any]], full_text: str) -> Optional[str]:
@@ -234,13 +273,13 @@ def extract_bank_name(items_raw: List[Dict[str, Any]], full_text: str) -> Option
 
     direct = _best_bank_by_substring(full)
     if direct:
-        return direct
+        return resolve_bank_name(direct)
 
     item_texts = [_clean_for_bank(i["text"]) for i in items_raw if i.get("text")]
     for t in item_texts:
         direct = _best_bank_by_substring(t)
         if direct:
-            return direct
+            return resolve_bank_name(direct)
 
     text_for_match = full
     for noise in NOISE_WORDS:
@@ -248,7 +287,7 @@ def extract_bank_name(items_raw: List[Dict[str, Any]], full_text: str) -> Option
 
     fuzzy_bank, fuzzy_score = _best_bank_by_fuzzy(text_for_match)
     if fuzzy_bank and fuzzy_score >= 0.72:
-        return fuzzy_bank
+        return resolve_bank_name(fuzzy_bank)
 
     best_bank = None
     best_score = 0.0
@@ -264,7 +303,7 @@ def extract_bank_name(items_raw: List[Dict[str, Any]], full_text: str) -> Option
             best_score = candidate_score
 
     if best_bank and best_score >= 0.72:
-        return best_bank
+        return resolve_bank_name(best_bank)
 
     return None
 
@@ -371,7 +410,7 @@ def extract_account_number(
     return best_text.replace("-", "")
 
 def parse_ocr_fields(items_raw: List[Dict[str, Any]], full_text: str) -> Dict[str, Any]:
-    bank_name = extract_bank_name(items_raw, full_text)
+    bank_name = resolve_bank_name(extract_bank_name(items_raw, full_text))
     account_number = extract_account_number(items_raw, full_text, bank_name=bank_name)
 
     pattern_info = get_pattern_match_info(bank_name, account_number)
@@ -390,8 +429,8 @@ def _generate_bank_aware_variants(account_number: str, bank_name: Optional[str])
 
     digits = re.sub(r"[^0-9]", "", account_number)
 
-    # 농협/농협은행: 3-4-4-2 형식 강하게 시도
-    if bank_name in {"농협", "농협은행"}:
+    # 농협은행(별칭 농협): 3-4-4-2 형식 강하게 시도
+    if bank_name == "농협은행":
         if len(digits) >= 13:
             v = f"{digits[:3]}-{digits[3:7]}-{digits[7:11]}-{digits[11:13]}"
             variants.append(v)
