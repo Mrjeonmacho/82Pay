@@ -20,18 +20,34 @@ class ScanProvider extends ChangeNotifier {
   bool get isBusy => status == ScanStatus.scanning;
 
   Future<void> processImage(File imageFile) async {
-    status = ScanStatus.scanning;
-    result = null;
-    notifyListeners();
+  status = ScanStatus.scanning;
+  result = null;
+  notifyListeners();
 
-    // 실제 서버 붙일 때 아래 한 줄만 바꾸면 됨
-    final response = await _service.uploadDummy(imageFile);
-    // final response = await _service.uploadForOcr(imageFile);
+  final response = await _service.uploadForOcr(imageFile);
 
-    result = response;
-    status = response.success ? ScanStatus.success : ScanStatus.failure;
-    notifyListeners();
-  }
+  debugPrint('=== OCR PARSED RESULT ===');
+  debugPrint('success: ${response.success}');
+  debugPrint('bankName: ${response.bankName}');
+  debugPrint('accountNumber: ${response.accountNumber}');
+  debugPrint('errorMessage: ${response.errorMessage}');
+
+  result = response;
+  status = response.success ? ScanStatus.success : ScanStatus.failure;
+  notifyListeners();
+}
+
+//   Future<void> processImage(File imageFile) async {
+//     status = ScanStatus.scanning;
+//     result = null;
+//     notifyListeners();
+
+//     final response = await _service.uploadForOcr(imageFile);
+
+//     result = response;
+//     status = response.success ? ScanStatus.success : ScanStatus.failure;
+//     notifyListeners();
+//   }
 
   void toggleFlash() {
     flashOn = !flashOn;

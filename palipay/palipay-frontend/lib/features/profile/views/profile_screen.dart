@@ -1,5 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:palipay_app/features/user/provider/logout_provider.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -13,6 +15,8 @@ import '../views/change_passowrd_screen.dart';
 import '../views/linked_accounts_screen.dart';
 import '../../account/views/account_management_view.dart';
 import '../../pin/views/pin_screen.dart';
+import '../../user/views/delete_account_screen.dart';
+import '../../user/views/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -28,7 +32,23 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.mainBlue),
-            onPressed: () {},
+            onPressed: () async {
+              final logoutProvider =
+              context.read<LogoutProvider>();
+
+          await logoutProvider.logout();
+
+          if (!context.mounted) return;
+
+          // 로그인 화면으로 이동 (스택 초기화)
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const LoginScreen(),
+            ),
+            (route) => false,
+          );
+            },
           ),
         ],
       ),
@@ -110,7 +130,12 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.no_accounts,
                     title: 'account_management.unlink_account'.tr(), // 다국어 키 적용
                     onTap: () {
-                      // TODO: 탈퇴 로직
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const DeleteAccountScreen(),
+                        ),
+                      );
                     },
                   ),
                 ],
