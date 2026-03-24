@@ -262,5 +262,10 @@
             "memo_hint": "Add a live memo (optional)",
             "btn_back_home": "Back to Home"
         }
+    },
+    "gallery_crop": {
+        "title": "Select account area",
+        "done": "Done",
+        "guide": "Drag to select the account-number area.\nUse the bottom-right handle to resize."
     }
 }
