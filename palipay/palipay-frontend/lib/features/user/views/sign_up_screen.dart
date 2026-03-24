@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../../core/widgets/pali_nav_bars.dart';
 
 // 분리한 위젯 및 프로바이더 임포트
 import '../provider/sign_up_provider.dart';
@@ -127,89 +128,111 @@ class _SignUpScreenState extends State<SignUpScreen>
     // ⭐️ Provider 구독: 데이터 창고와 연결
     final provider = Provider.of<SignUpProvider>(context);
 
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final isKeyboardOpen = bottomInset > 0;
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: provider.currentIndex > 0
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  provider.setCurrentIndex(provider.currentIndex - 1);
-                  _pageController.previousPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
-              )
-            : null,
+      resizeToAvoidBottomInset: true,
+      appBar: PaliTopBar(
+        title: 'sign_up.create_your_account'.tr(),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.mainBlue,),
+          onPressed: () {
+            if (provider.currentIndex > 0) {
+              provider.setCurrentIndex(provider.currentIndex - 1);
+              _pageController.previousPage(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            } else {
+              Navigator.pop(context);
+            }
+          },
+        ),
       ),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // 1. 로고
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                child: Image.asset(
-                  'assets/images/logos/palilogo1.png',
-                  height: 100,
-                ),
-              ),
 
-              // 2. 타이틀 및 스텝 바
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Column(
-                  children: [
-                    Text(
-                      'sign_up.create_your_account'.tr(),
-                      style: AppTextStyles.titleLarge,
-                    ),
-                    const SizedBox(height: 25),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      // 버튼을 body 밖으로 분리
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: AnimatedPadding(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.fromLTRB(
+            30,
+            12,
+            30,
+            bottomInset > 0 ? 12 : 30,
+          ),
+          child: PaliButton(
+            text: provider.currentIndex == 3
+                ? 'sign_up.btn_sign_up'.tr()
+                : 'sign_up.btn_next'.tr(),
+            onPressed: () => _onNextPressed(provider),
+            backgroundColor: AppColors.mainBlue,
+          ),
+        ),
+      ),
+
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SafeArea(
+          top: false,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                // 1. 로고
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  padding: EdgeInsets.only(
+                    top: isKeyboardOpen ? 12 : 32,
+                    bottom: isKeyboardOpen ? 12 : 28,
+                  ),
+                  child: Image.asset(
+                    'assets/images/logos/palilogo1.png',
+                    height: isKeyboardOpen ? 72 : 100,
+                  ),
+                ),
+
+                // 2. 타이틀 및 스텝 바
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildStepItem(0, 'sign_up.step_email'.tr(), provider),
+                      _buildStepLine(0, provider),
+                      _buildStepItem(1, 'sign_up.step_confirm'.tr(), provider),
+                      _buildStepLine(1, provider),
+                      _buildStepItem(2, 'sign_up.step_profile'.tr(), provider),
+                      _buildStepLine(2, provider),
+                      _buildStepItem(3, 'sign_up.step_password'.tr(), provider),
+                    ],
+                  ),
+                ),
+                SizedBox(height: isKeyboardOpen ? 12 : 30),
+
+                // 3. 단계별 콘텐츠 (PageView)
+                Expanded(
+                  child:  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
                       children: [
-                        _buildStepItem(0, 'sign_up.step_email'.tr(), provider),
-                        _buildStepLine(0, provider),
-                        _buildStepItem(1, 'sign_up.step_confirm'.tr(), provider),
-                        _buildStepLine(1, provider),
-                        _buildStepItem(2, 'sign_up.step_profile'.tr(), provider),
-                        _buildStepLine(2, provider),
-                        _buildStepItem(3, 'sign_up.step_password'.tr(), provider),
+                        EmailStep(shakeController: _shakeController),
+                        EmailAuthStep(shakeController: _shakeController),
+                        ProfileStep(shakeController: _shakeController),
+                        PasswordStep(shakeController: _shakeController),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 30),
-
-              // 3. 단계별 콘텐츠 (PageView)
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    EmailStep(shakeController: _shakeController),
-                    EmailAuthStep(shakeController: _shakeController),
-                    ProfileStep(shakeController: _shakeController),
-                    PasswordStep(shakeController: _shakeController),
-                  ],
-                ),
-              ),
-
-              // 4. 하단 버튼
-              Padding(
-                padding: const EdgeInsets.all(30.0),
-                child: PaliButton(
-                  text: provider.currentIndex == 3 ? 'sign_up.btn_sign_up'.tr() : 'sign_up.btn_next'.tr(),
-                  onPressed: () => _onNextPressed(provider),
-                  backgroundColor: AppColors.mainBlue,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

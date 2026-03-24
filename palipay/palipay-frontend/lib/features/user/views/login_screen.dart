@@ -68,226 +68,238 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     final provider = context.watch<LoginProvider>();
     return Scaffold(
-      appBar: AppBar(title: Text('login.title'.tr())),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: EdgeInsets.zero,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 60),
-                Text(
-                  'login.welcome'.tr(),
-                  style: AppTextStyles.titleLarge.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.mainBlue, // 앱 기본 텍스트 색상
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
-
-                // 이메일 입력창
-                // 1. 이메일 입력 (Provider 연결)
-                StepLayout(
-                  title: '', // 또는 원하는 문구
-                  shakeController: _shakeController,
-                  child: Column(
-                    children: [
-                      PaliInputField(
-                        hintText: 'Email',
-                        controller: provider.emailController,
-                        keyboardType: TextInputType.emailAddress,
+      backgroundColor: AppColors.background,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(0),
+        child: AppBar(
+          backgroundColor: AppColors.background,
+          elevation: 0,
+        ),
+      ),
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Stack(
+          children: [
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 80),
+                    Text(
+                      'login.welcome'.tr(),
+                      style: AppTextStyles.titleLarge.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.mainBlue, // 앱 기본 텍스트 색상
                       ),
-                      const SizedBox(height: 16),
-                      PaliInputField(
-                        hintText: 'Password',
-                        controller: provider.passwordController,
-                        isPassword: true,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 30),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 24),
-
-                      // 에러 메시지
-                      if (provider.errorMessage != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: Text(
-                            provider.errorMessage!,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      Row(
+                    // 이메일 입력창
+                    // 1. 이메일 입력 (Provider 연결)
+                    StepLayout(
+                      title: '', // 또는 원하는 문구
+                      shakeController: _shakeController,
+                      child: Column(
                         children: [
-                          SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: Checkbox(
-                              value: provider.isAutoLogin, // Provider에 변수 추가 필요
-                              onChanged: (value) {
-                                provider.setAutoLogin(value ?? false);
-                              },
-                              activeColor: AppColors.mainBlue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
+                          PaliInputField(
+                            hintText: 'Email',
+                            controller: provider.emailController,
+                            keyboardType: TextInputType.emailAddress,
                           ),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () =>
-                                provider.setAutoLogin(!provider.isAutoLogin),
-                            child: Text(
-                              'Auto Login',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: Colors.grey[700],
-                              ),
-                            ),
+                          const SizedBox(height: 16),
+                          PaliInputField(
+                            hintText: 'Password',
+                            controller: provider.passwordController,
+                            isPassword: true,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      // 로그인 버튼
-                      ElevatedButton(
-                        onPressed: provider.isLoading
-                            ? null
-                            : () async {
-                                bool success = await provider.login();
-                                if (success && mounted) {
-                                  Navigator.pushReplacement(
+                    ),
+                    const SizedBox(height: 24),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 24),
+
+                          // 에러 메시지
+                          if (provider.errorMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: Text(
+                                provider.errorMessage!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Checkbox(
+                                  value: provider.isAutoLogin, // Provider에 변수 추가 필요
+                                  onChanged: (value) {
+                                    provider.setAutoLogin(value ?? false);
+                                  },
+                                  activeColor: AppColors.mainBlue,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () =>
+                                    provider.setAutoLogin(!provider.isAutoLogin),
+                                child: Text(
+                                  'Auto Login',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          // 로그인 버튼
+                          ElevatedButton(
+                            onPressed: provider.isLoading
+                                ? null
+                                : () async {
+                                    bool success = await provider.login();
+                                    if (success && mounted) {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const MainScreen(),
+                                        ),
+                                      );
+                                    } else {
+                                      _shake();
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.mainBlue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: provider.isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Login',
+                                    style: AppTextStyles.labelLarge,
+                                  ),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          // 구분선 (Or)
+                          const Row(
+                            children: [
+                              Expanded(child: Divider(color: AppColors.mainBlue)),
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 10,
+                                ),
+                                child: Text('Or', style: AppTextStyles.bodySmall),
+                              ),
+                              Expanded(child: Divider(color: AppColors.mainBlue)),
+                            ],
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          // 구글 로그인 버튼
+                          OutlinedButton(
+                            onPressed: () {},
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              side: const BorderSide(color: AppColors.mainBlue),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  'assets/images/logos/google.png',
+                                  height: 24,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Continue with Google',
+                                  style: AppTextStyles.bodyLarge.copyWith(
+                                    color: AppColors.mainBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // 회원가입 안내
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account?",
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const MainScreen(),
+                                      builder: (context) => const SignUpScreen(),
                                     ),
                                   );
-                                } else {
-                                  _shake();
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.mainBlue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: provider.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
+                                },
+                                child: Text(
+                                  'Sign Up',
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: AppColors.mainBlue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              )
-                            : const Text(
-                                'Login',
-                                style: AppTextStyles.labelLarge,
                               ),
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      // 구분선 (Or)
-                      const Row(
-                        children: [
-                          Expanded(child: Divider(color: AppColors.mainBlue)),
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 10,
-                            ),
-                            child: Text('Or', style: AppTextStyles.bodySmall),
-                          ),
-                          Expanded(child: Divider(color: AppColors.mainBlue)),
-                        ],
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      // 구글 로그인 버튼
-                      OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          side: const BorderSide(color: AppColors.mainBlue),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              'assets/images/logos/google.png',
-                              height: 24,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Continue with Google',
-                              style: AppTextStyles.bodyLarge.copyWith(
-                                color: AppColors.mainBlue,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // 회원가입 안내
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Don't have an account?",
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SignUpScreen(),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              'Sign Up',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.mainBlue,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-
-          if (provider.showOverlayMessage) _buildPasswordChangedOverlay(),
-        ],
+            if (provider.showOverlayMessage) _buildPasswordChangedOverlay(),
+          ],
+        ),
       ),
     );
   }
