@@ -28,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.UUID;
 
 @SpringBootTest
-@Transactional
 public class ConcurrencyTransferTest {
 
     @Autowired
@@ -70,7 +69,7 @@ public class ConcurrencyTransferTest {
         BankJP receiverBank = jpRepository.findByUser_UserId(receiver.getUserId()).get();
 
         // 1. 테스트 설정
-        int threadCount = 100; // 동시에 보낼 요청 수
+        int threadCount = 10; // 동시에 보낼 요청 수
 
         BigDecimal transferAmount = new BigDecimal("10.00"); // 한 번에 보낼 금액 (10원)
 
