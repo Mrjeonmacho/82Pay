@@ -1,13 +1,18 @@
 from threading import Lock
 from typing import Dict, Type
 
+from gpt_ocr.engine import GptOCREngine
+
 from .base import OCREngine
 from .paddle_engine import PaddleOCREngine
 
 _ENGINE_CLASSES: Dict[str, Type[OCREngine]] = {
     "paddle": PaddleOCREngine,
+    "gpt": GptOCREngine,
     # "clova": ClovaOCREngine,
 }
+
+ENGINES: tuple[str, ...] = tuple(sorted(_ENGINE_CLASSES.keys()))
 
 _instances: Dict[str, OCREngine] = {}
 _lock = Lock()
