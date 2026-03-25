@@ -11,28 +11,31 @@ class SignUpSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
               // 환영 아이콘 또는 이미지
-              const Icon(
+              Icon(
                 Icons.check_circle_rounded,
-                size: 100,
+                size: screenWidth * 0.25,
                 color: AppColors.mainBlue, // 혹은 Colors.green
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: screenHeight * 0.04),
 
               Text(
                 'sign_up_success.welcome'.tr(),
                 style: AppTextStyles.titleLarge.copyWith(fontSize: 28),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: screenHeight * 0.02),
 
               Text(
                 'sign_up_success.success_desc'.tr(),
@@ -55,7 +58,7 @@ class SignUpSuccessScreen extends StatelessWidget {
                 },
                 backgroundColor: AppColors.mainBlue,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: screenHeight * 0.025),
             ],
           ),
         ),

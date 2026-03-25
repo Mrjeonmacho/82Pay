@@ -8,10 +8,27 @@ import '../../wallet/views/wallet_refund_view.dart';
 import '../../wallet/views/wallet_topup_view.dart';
 import '../../account/views/account_management_view.dart';
 
-class WalletCard extends StatelessWidget {
+import 'package:provider/provider.dart';
+import '../../wallet/providers/wallet_provider.dart';
+
+class WalletCard extends StatefulWidget {
   final AccountProvider provider;
 
   const WalletCard({super.key, required this.provider});
+
+  @override
+  State<WalletCard> createState() => _WalletCardState();
+}
+
+class _WalletCardState extends State<WalletCard> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final walletId = int.tryParse(widget.provider.linkedAccount?.walletId ?? '0') ?? 0;
+      context.read<WalletProvider>().loadWalletBalance(walletId: walletId, amount: 0);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +69,10 @@ class WalletCard extends StatelessWidget {
 
   // 내부 컴포넌트들도 작은 메서드로 쪼개면 관리가 더 쉽습니다.
   Widget _buildHeader(BuildContext context) {
+    // 헤더는 연동된 계좌(Bank) 정보를 표시
+    final String accountName = widget.provider.linkedAccount?.accountUsername ?? 'Unknown';
+    final String accountNumber = widget.provider.linkedAccount?.accountNumber ?? '';
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,13 +91,21 @@ class WalletCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'ALEX JOHNSON', // 실제 데이터 연결 시 provider.name 등으로 교체
+                accountName.toUpperCase(),
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
                 overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _getMaskedAccountNumber(accountNumber),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Colors.white.withOpacity(0.8),
+                  letterSpacing: 2.0,
+                ),
               ),
             ],
           ),
@@ -86,9 +115,19 @@ class WalletCard extends StatelessWidget {
     );
   }
 
+  String _getMaskedAccountNumber(String number) {
+    if (number.isEmpty) return '****';
+    // 하이픈 제거 후 마지막 4자리만 추출
+    final cleanNum = number.replaceAll('-', '');
+    if (cleanNum.length <= 4) return '**** $cleanNum';
+    return '**** **** **** ${cleanNum.substring(cleanNum.length - 4)}';
+  }
+
   // 2. 잔액 표시 (중앙 유지)
   Widget _buildBalance(BuildContext context) {
-    final int amount = provider.linkedAccount?.amount ?? 0;
+    // 잔액은 지갑(Wallet)의 현재 잔액을 띄워줌
+    final walletProvider = context.watch<WalletProvider>();
+    final int amount = walletProvider.currentBalance ?? 0;
     final String formattedAmount = CurrencyInputFormatter.format(amount);
 
     return Text(

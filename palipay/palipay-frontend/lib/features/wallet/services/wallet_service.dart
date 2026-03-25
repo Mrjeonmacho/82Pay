@@ -45,7 +45,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        ApiConstants.accountBalance, // [수정] 상수 사용
+        ApiConstants.balanceCheck, // [수정] 상수 사용
         options: Options(headers: {'accesstoken': accessToken}),
         data: {'walletId': walletId, 'amount': amount},
       );
@@ -78,6 +78,91 @@ class WalletService {
         shortageAmount: null,
         message: e.response?.data?['message'] ?? 'error.network_issue'.tr(),
       );
+    }
+  }
+
+  // [FINANCE_CHARGE_002] 지갑 충전 (POST /api/finance/charges)
+  Future<Map<String, dynamic>> chargeWallet({
+    required int walletId,
+    required String pinNumber,
+    required String accountCurrency, // 사용자 통화 (결제 시 사용될 통화)
+    required num convertedAmount,    // 충전 반영 통화 금액 (KRW 등)
+    required num amount,             // 외국 은행 출금액 (해당 통화 기준)
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/finance/charges',
+        data: {
+          'walletId': walletId,
+          'pinNumber': pinNumber,
+          'accountCurrency': accountCurrency, // 외화
+          'convertedAmount': convertedAmount, // 원화
+          'amount': amount,
+        },
+      );
+      return response.data; // 명세에 나온대로 data(message, data)를 포함한 map 반환
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // [FINANCE_REFUND_002] 지갑 환급 (POST /api/finance/refunds)
+  Future<Map<String, dynamic>> refundWallet({
+    required int walletId,
+    required String pinNumber,
+    required String accountCurrency, // 사용자 통화
+    required num convertedAmount,    // 환급될 통화 금액 (KRW 기준)
+    required num amount,             // 외국 계좌로 입금될 통화 금액
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/finance/refunds',
+        data: {
+          'walletId': walletId,
+          'pinNumber': pinNumber,
+          'accountCurrency': accountCurrency,
+          'convertedAmount': convertedAmount,
+          'amount': amount,
+        },
+      );
+      return response.data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // [FINANCE_REFUND_001] 최대 환불 가능 금액 조회 (GET /api/finance/refunds/max)
+  Future<Map<String, dynamic>> getMaxRefundable({
+    required int walletId,
+  }) async {
+    try {
+      // API 명세서에 Body로 요구되어 있으나 Http GET 메서드이므로 data에 객체 전달
+      final response = await _dio.get(
+        '/finance/refunds/max',
+        data: {
+          'walletId': walletId,
+        },
+      );
+      return response.data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // [FINANCE_CHARGE_001] 환율 견적 조회 (GET /api/finance/quote)
+  Future<Map<String, dynamic>> getExchangeRateQuote({
+    required String currency,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/finance/quote',
+        data: {
+          'currency': currency,
+        },
+      );
+      return response.data;
+    } catch (e) {
+      rethrow;
     }
   }
 }

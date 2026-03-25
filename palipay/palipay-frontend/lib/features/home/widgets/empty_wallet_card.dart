@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Provider 임포트 추가
+import 'package:provider/provider.dart';
+import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_bank_selection_sheet.dart';
-import '../../pin/views/pin_screen.dart';
-import '../../pin/providers/pin_provider.dart';
+import '../../account/views/account_link_view.dart';
 import 'dashed_rect_painter.dart';
 
 class EmptyWalletCard extends StatelessWidget {
@@ -13,34 +13,11 @@ class EmptyWalletCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.locale; // 다국어 변경을 감지하여 Rebuild 되도록 의존성 주입
+    context.locale; // 다국어 반영
+
     return InkWell(
-      onTap: () async {
-        // 1. PinProvider를 읽어옵니다.
-        final pinProvider = context.read<PinProvider>();
-        
-        // 2. PIN 등록 여부를 확인합니다. 
-        // (참고: PinProvider에 해당 상태가 구현되어 있어야 합니다.)
-        // 만약 아직 구현 전이라면 임시로 true/false를 넣어 테스트해보세요.
-        final bool hasPin = pinProvider.status != PinStatus.idle; 
-
-        // 3. 상태에 따라 모드를 결정하여 이동합니다.
-        // 2. PIN 화면으로 이동하고 결과를 기다립니다.
-        final bool? isAuthenticated = await Navigator.push<bool>(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PinScreen(
-              mode: hasPin ? PinMode.auth : PinMode.create,
-            ),
-          ),
-        );
-
-        // 3. PIN 인증/생성이 성공적으로 완료되었다면?
-        if (isAuthenticated == true && context.mounted) {
-          // [기획 반영] 은행 선택 바텀시트를 바로 띄웁니다.
-          // TODO: 유저의 국가 정보를 받아오는 로직이 있다면 'KR' 대신 변수 사용
-          _openBankSelection(context, 'KR');
-        }
+      onTap: () {
+        _openBankSelection(context);
       },
       borderRadius: BorderRadius.circular(24),
       child: CustomPaint(
@@ -70,18 +47,31 @@ class EmptyWalletCard extends StatelessWidget {
     );
   }
 
-  // 은행 선택 바텀시트
-  void _openBankSelection(BuildContext context, String userCountry) {
+  // 실제 연동 로직을 위해 은행 선택 바텀시트를 엽니다.
+  void _openBankSelection(BuildContext context) {
+    final userCountry = context.read<UserProvider>().countryCode;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => BankSelectionSheet(
-        countryCode: userCountry, // 'US'면 미국, 'KR'이면 한국
+        countryCode: userCountry, // 유저의 실제 국가 코드 사용
         onSelect: (selectedBank) {
-          // 선택된 정보로 다음 화면 이동 또는 상태 업데이트
-          print("선택된 은행: ${selectedBank['name']}, 코드: ${selectedBank['bankCode']}");
+          // 1. BankSelectionSheet 내부에서 자동으로 pop() 하므로 생략
+          
+          // 2. 계좌번호 및 이름 입력(AccountLinkView) 화면으로 이동
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AccountLinkView(
+                bankName: selectedBank['name'] ?? '',
+                bankCode: selectedBank['bankCode'] ?? '',
+              ),
+            ),
+          );
         },
       ),
     );
   }
-}
+}

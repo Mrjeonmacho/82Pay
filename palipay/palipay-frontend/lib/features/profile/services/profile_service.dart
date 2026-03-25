@@ -1,13 +1,11 @@
 import 'package:dio/dio.dart';
 
-import '../../../core/config/env_config.dart';
+import '../../../core/network/dio_client.dart';
 import '../../../core/constants/api_constants.dart';
 import '../models/profile_user_model.dart';
 
 class ProfileService {
-  final Dio _dio = Dio(
-    BaseOptions(baseUrl: EnvConfig.baseUrl),
-  );
+  final Dio _dio = DioClient().dio;
 
   /// Fetch user profile
   Future<ProfileUserModel> getProfile() async {
@@ -50,31 +48,18 @@ class ProfileService {
   }
 
   /// Change password
-  Future<Response> changePassword({
-    required String oldPassword,
+  Future<void> changePassword({
+    required String currentPassword,
     required String newPassword,
+    required String confirmPassword,
   }) async {
-    try {
-      // TODO: Replace with actual API request when backend is ready
-      // return await _dio.patch(
-      //   ApiConstants.changePassword,
-      //   data: {
-      //     'oldPassword': oldPassword,
-      //     'newPassword': newPassword,
-      //   },
-      // );
-
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      return Response(
-        requestOptions: RequestOptions(path: ApiConstants.changePassword),
-        statusCode: 200,
-        data: {
-          'message': 'Password changed successfully (mock)',
-        },
-      );
-    } catch (e) {
-      rethrow;
-    }
+    await _dio.patch(
+      ApiConstants.changePassword,
+      data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+        'confirmPassword': confirmPassword,
+      },
+    );
   }
 }

@@ -3,6 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_keypad.dart'; // 우리가 만든 부품
@@ -56,50 +57,52 @@ class _BankPasswordViewState extends State<BankPasswordView> {
   Future<void> _handleFinalLink() async {
     setState(() => _isLoading = true);
 
-    final accountProvider = context.read<AccountProvider>();
-
-    // [테스트용 하드코딩] 비밀번호가 '1111'인지 확인
-    final bool isPasswordCorrect = (_inputPassword == "1111");
-
     if (mounted) {
-      if (isPasswordCorrect) {
-        // 3. 성공 시: Provider 상태를 '계좌 있음'으로 강제 업데이트
-        // (테스트를 위해 linkAccount 내부 로직도 성공을 반환하게 되어있어야 합니다)
-        final accountProvider = context.read<AccountProvider>();
+      final accountProvider = context.read<AccountProvider>();
 
-        // 실제 API 호출 대신 성공했다는 '가짜' 호출
-        await accountProvider.linkAccount(
-          walletId: "12345",
-          bankCode: widget.bankCode,
-          bankName: widget.bankName,
-          accountNumber: widget.accountNumber,
-          accountUsername: widget.accountUsername,
-          moneyCode: widget.currency,
-          token: "MOCK_TOKEN",
-        );
+      // 실제 입력받은 데이터로 API 요청 구성
+      final requestData = {
+        'walletId': 0, // 명세서 요구사항에 따름
+        'bankCode': widget.bankCode,
+        'accountNumber': widget.accountNumber,
+        'accountUsername': widget.accountUsername,
+        'accountPassword': _inputPassword, // 사용자가 입력한 실제 비밀번호
+        'moneyCode': widget.currency,
+      };
 
-        if (mounted) {
+      // 기기에 저장된 실제 토큰 가져오기
+      const storage = FlutterSecureStorage();
+      final realToken = await storage.read(key: 'accessToken') ?? '';
+
+      // API 연동 시도
+      final success = await accountProvider.linkAccount(
+        requestData: requestData,
+        token: realToken, // 실제 인증 토큰 연결
+      );
+
+      if (mounted) {
+        if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('bank_password.link_success_msg'.tr()),
+              content: Text('bank.pwd.link_success'.tr()),
               backgroundColor: AppColors.mainBlue,
             ),
           );
           // 홈 화면으로 돌아가기 (모든 스택 제거)
           Navigator.popUntil(context, (route) => route.isFirst);
+        } else {
+          // 실패 시: 에러 처리
+          setState(() {
+            _isLoading = false;
+            _inputPassword = ""; // 입력값 초기화
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('bank.pwd.invalid_msg'.tr()),
+              backgroundColor: AppColors.warningRed,
+            ),
+          );
         }
-      } else {
-        // 4. 실패 시: 흔들기 효과나 에러 메시지
-        setState(() {
-          _isLoading = false;
-          _inputPassword = ""; // 입력값 초기화
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('bank.pwd.invalid_msg'.tr()),
-            backgroundColor: AppColors.warningRed,
-          ),
-        );
       }
     }
   }
@@ -107,6 +110,7 @@ class _BankPasswordViewState extends State<BankPasswordView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false, // 이전 화면의 키보드가 남아있어 화면을 좁히는 문제(OVERFLOW) 방지
       backgroundColor: AppColors.background, // 앱 PIN과 다른 배경색
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -128,13 +132,13 @@ class _BankPasswordViewState extends State<BankPasswordView> {
           ),
           const SizedBox(height: 24),
           Text(
-            'bank_password.enter_password_title'.tr(),
+            'bank.pwd.title'.tr(),
             style: AppTextStyles.titleMedium.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          Text('bank_password.enter_password_desc'.tr()),
+          Text('bank.pwd.desc'.tr()),
           const SizedBox(height: 48),
 
           // 4자리 도트 (6자리가 아님!)

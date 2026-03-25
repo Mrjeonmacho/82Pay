@@ -18,64 +18,77 @@ class ProfileStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<SignUpProvider>(context);
-    return Column(
-      children: [
-        StepLayout(
-          title: 'sign_up.name'.tr(),
-          shakeController: shakeController,
-          child: PaliInputField(
-            hintText: 'sign_up.hint_name'.tr(),
-            controller: provider.nameController,
-            validator: (value) => value!.isEmpty ? 'sign_up.error_empty_name'.tr() : null,
+    final screenHeight = MediaQuery.of(context).size.height;
+    final spacing = screenHeight * 0.02;
+
+    return SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      child: Column(
+        children: [
+          StepLayout(
+            title: 'sign_up.name'.tr(),
+            shakeController: shakeController,
+            child: PaliInputField(
+              hintText: 'sign_up.hint_name'.tr(),
+              controller: provider.nameController,
+              validator: (value) => value!.isEmpty ? 'sign_up.error_empty_name'.tr() : null,
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        StepLayout(
-          title: 'sign_up.phone_number'.tr(),
-          shakeController: shakeController,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 55,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.disabledBackground),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: provider.selectedCountryCode,
-                    items: const [
-                      DropdownMenuItem(value: '+1', child: Text('🇺🇸 +1')),
-                      DropdownMenuItem(value: '+86', child: Text('🇨🇳 +86')),
-                      DropdownMenuItem(value: '+81', child: Text('🇯🇵 +81')),
-                    ],
-                    onChanged: (value) => provider.setCountryCode(value!),
+          SizedBox(height: spacing),
+          StepLayout(
+            title: 'sign_up.phone_number'.tr(),
+            shakeController: shakeController,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 3,
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 48),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.disabledBackground),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: provider.selectedCountryCode,
+                        items: const [
+                          DropdownMenuItem(value: '+1', child: Text('🇺🇸 +1')),
+                          DropdownMenuItem(value: '+86', child: Text('🇨🇳 +86')),
+                          DropdownMenuItem(value: '+81', child: Text('🇯🇵 +81')),
+                        ],
+                        onChanged: (value) => provider.setCountryCode(value!),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: PaliInputField(
-                  hintText: 'sign_up.hint_phone_number'.tr(),
-                  controller: provider.phoneController,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ], // 숫자만 입력 가능
-                  validator: (value) {
-                    if (value == null || value.isEmpty)
-                      return 'Enter phone number';
-                    if (value.length < 7) return 'Phone number is too short';
-                    return null;
-                  },
+                SizedBox(width: spacing),
+                Flexible(
+                  flex: 4,
+                  child: PaliInputField(
+                    hintText: 'sign_up.hint_phone_number'.tr(),
+                    controller: provider.phoneController,
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ], // 숫자만 입력 가능
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Enter phone number';
+                      }
+                      if (value.length < 7) return 'Phone number is too short';
+                      return null;
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+          SizedBox(height: screenHeight * 0.2),
+        ],
+      ),
     );
   }
 }

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:palipay_app/features/history/views/history_view.dart';
 import 'package:provider/provider.dart';
+import 'package:palipay_app/features/account/providers/account_provider.dart';
+import '../../../core/utils/currency_input_formatter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
@@ -16,6 +18,16 @@ class TransactionsSection extends StatefulWidget {
 
 class _TransactionsSectionState extends State<TransactionsSection> {
   String _selectedFilter = 'All';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final accountProvider = context.read<AccountProvider>();
+      final walletId = int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
+      context.read<HistoryProvider>().fetchHistory(walletId: walletId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,30 +137,30 @@ class _TransactionsSectionState extends State<TransactionsSection> {
       );
     }
 
-    // UI 디자인 확인을 위해 사진 속 데이터를 하드코딩으로 강제 표시 (4개)
-    final int demoCount = 4;
+    final items = provider.items.take(5).toList();
+
+    if (items.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(40),
+        child: Text(
+          'home_screen.no_transactions'.tr(),
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.disabledFont),
+        ),
+      );
+    }
 
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      itemCount: demoCount,
+      itemCount: items.length,
       separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
-        // 첨부해주신 사진과 완벽하게 동일한 하드코딩 텍스트
-        String title;
-        int amount;
-        bool isOutput;
-
-        if (index == 0) {
-          title = 'Starbucks Gangnam'; amount = 5500; isOutput = true;
-        } else if (index == 1) {
-          title = 'Wallet Top-up'; amount = 50000; isOutput = false;
-        } else if (index == 2) {
-          title = 'Shake Shack'; amount = 14500; isOutput = true;
-        } else {
-          title = 'Public Transport'; amount = 1250; isOutput = true;
-        }
+        final tx = items[index];
+        final String title = tx.otherAccountName ?? 'Unknown';
+        final int amount = tx.amount.toInt();
+        final bool isOutput = tx.category == 'OUTPUT';
+        final String dateText = DateFormat('yy.MM.dd HH:mm').format(tx.createdAt);
 
         final amountPrefix = isOutput ? '-' : '+';
 
@@ -212,7 +224,7 @@ class _TransactionsSectionState extends State<TransactionsSection> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Today, 2:30 PM', // 임시 표기
+                          dateText, // 포맷팅된 실제 날짜
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.disabledFont,
                             fontWeight: FontWeight.w500,
@@ -224,7 +236,7 @@ class _TransactionsSectionState extends State<TransactionsSection> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '$amountPrefix $amount ₩', // 원화 단일 굵게 표기
+                    '$amountPrefix ${CurrencyInputFormatter.format(amount)} ₩', // 원화 포맷 적용
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontWeight: FontWeight.w900,
                       fontSize: 16,

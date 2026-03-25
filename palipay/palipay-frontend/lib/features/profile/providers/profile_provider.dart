@@ -71,18 +71,20 @@ class ProfileProvider extends ChangeNotifier {
   Future<bool> changePassword({
     required String oldPassword,
     required String newPassword,
+    required String confirmPassword,
   }) async {
     _isChangingPassword = true;
     notifyListeners();
 
     try {
       await _service.changePassword(
-        oldPassword: oldPassword,
+        currentPassword: oldPassword,
         newPassword: newPassword,
+        confirmPassword: confirmPassword,
       );
       return true;
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint('비밀번호 변경 실패: $e');
       return false;
     } finally {
       _isChangingPassword = false;

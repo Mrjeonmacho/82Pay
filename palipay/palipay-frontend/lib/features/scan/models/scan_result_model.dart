@@ -12,7 +12,14 @@ class ScanResultModel {
   });
 
   factory ScanResultModel.fromJson(Map<String, dynamic> json) {
-    final parsed = json['parsed'] as Map<String, dynamic>?;
+    final parsed = json['parsed'];
+
+    if (parsed is! Map<String, dynamic>) {
+      return const ScanResultModel(
+        success: false,
+        errorMessage: '응답 형식이 올바르지 않습니다.',
+      );
+    }
 
     final rawBankName = parsed?['bank_name']?.toString().trim();
     final rawAccountNumber = parsed?['account_number']?.toString().trim();

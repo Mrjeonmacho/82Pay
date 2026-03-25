@@ -1,32 +1,49 @@
 import 'package:dio/dio.dart';
-import 'package:palipay_app/features/pin/models/pin_request_dto.dart'; // 혹은 http 패키지
+import 'package:palipay_app/features/pin/models/pin_request_dto.dart';
+import 'package:palipay_app/core/config/env_config.dart';
+import 'package:palipay_app/core/network/dio_client.dart';
 
 class AccountService {
-  // mock 서버 등록
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: 'http://localhost:3000',
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 3),
-    ),
-  );
 
-  // 모든 요청에 공통으로 들어갈 헤더 설정을 위한 인터셉터 추천
-  // 여기서는 명확성을 위해 각 메서드에 헤더를 직접 넣는 방식으로 작성
+  // final Dio _dio = Dio(
+  //   BaseOptions(
+  //     baseUrl: EnvConfig.baseUrl,
+  //     connectTimeout: const Duration(seconds: 15),
+  //     receiveTimeout: const Duration(seconds: 30),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     }
+  //   ),
+  // );
+  final Dio _dio = DioClient().dio;
 
   // 1. 계좌 등록 (POST /api/users/accounts)
-  Future<Response> linkAccount(Map<String, dynamic> data, String token) async {
-    try {
-      // 명세서 규격: walletId, bankCode, accountNumber, accountUsername, moneyCode
-      return await _dio.post(
-        '/api/users/accounts',
-        data: data,
-        options: Options(headers: {'accesstoken': token}),
-      );
-    } catch (e) {
-      rethrow;
-    }
+  Future<Response> linkAccount({
+  required Map<String, dynamic> accountData,
+  required String token,
+}) async {
+  try {
+    const String path = '/wallet/accounts'; // 👈 백엔드와 100% 일치해야 함
+    
+    // [디버깅] 진짜 어디로 쏘는지 터미널에서 눈으로 확인합시다.
+    print('📡 최종 전송 URL: ${_dio.options.baseUrl}$path');
+
+    final response = await _dio.post(
+      path,
+      data: accountData,
+      options: Options(
+        headers: {
+          'accesstoken': token, 
+        },
+      ),
+    );
+    return response;
+  } on DioException catch (e) {
+    // 404 에러 시 서버가 주는 상세 메시지가 있다면 출력
+    print('❌ 서버 응답 에러: ${e.response?.data}');
+    rethrow;
   }
+}
 
   // 2. 계좌 연동 해제(삭제) (DELETE /api/users/accounts/{accountId})
   Future<Response> unlinkAccount(int walletId, String token) async {

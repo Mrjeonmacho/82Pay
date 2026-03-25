@@ -11,6 +11,7 @@ class HistoryService {
     int page = 0,
     int size = 20,
     String? category,
+    int? walletId,
     String? token, // 실제로는 Interceptor에서 처리하는 것을 권장합니다.
   }) async {
     try {
@@ -21,6 +22,8 @@ class HistoryService {
           'size': size,
           if (category != null && category != 'All')
             'category': category.toUpperCase(),
+          if (walletId != null && walletId != 0)
+            'walletId': walletId,
         },
         options: Options(headers: {'accesstoken': token ?? 'TEMP_TOKEN'}),
       );

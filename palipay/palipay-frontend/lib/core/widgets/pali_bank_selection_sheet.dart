@@ -39,10 +39,9 @@ class BankSelectionSheet extends StatelessWidget {
           Text(
             'bank.selection.title'.tr(namedArgs: {
               'country': countryCode,
-              'currency': currency,
             }),
             style: AppTextStyles.titleMedium,
-          ),
+          ), 
 
           const SizedBox(height: 24),
 
@@ -69,8 +68,8 @@ class BankSelectionSheet extends StatelessWidget {
   Widget _buildBankItem(BuildContext context, Map<String, dynamic> bank) {
     return InkWell(
       onTap: () {
-        onSelect(bank); // 선택된 은행 전체 데이터를 부모에게 전달
-        Navigator.pop(context); // 시트 닫기
+        Navigator.pop(context); // 시트 먼저 닫기
+        onSelect(bank); // 선택된 은행 데이터를 전달하여 이후 로직(화면 이동 등) 실행
       },
       borderRadius: BorderRadius.circular(16),
       child: Column(

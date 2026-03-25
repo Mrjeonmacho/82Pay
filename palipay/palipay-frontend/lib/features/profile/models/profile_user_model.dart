@@ -17,10 +17,3 @@ class ProfileUserModel {
     );
   }
 }
-
-// 더미 데이터
-const dummyProfileUser = ProfileUserModel(
-  name: 'Ssafy Kim',
-  email: 'ssafy@email.com',
-  language: 'English',
-);

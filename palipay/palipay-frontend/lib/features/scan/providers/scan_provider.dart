@@ -15,34 +15,14 @@ class ScanProvider extends ChangeNotifier {
   bool get isBusy => status == ScanStatus.scanning;
 
   Future<void> processImage(File imageFile) async {
-    status = ScanStatus.scanning;
-    result = null;
-    notifyListeners();
+    _setScanning();
 
-    final response = await _service.uploadForOcr(imageFile);
+  final response = await _service.uploadForOcr(imageFile);
 
-    debugPrint('=== OCR PARSED RESULT ===');
-    debugPrint('success: ${response.success}');
-    debugPrint('bankName: ${response.bankName}');
-    debugPrint('accountNumber: ${response.accountNumber}');
-    debugPrint('errorMessage: ${response.errorMessage}');
-
-    result = response;
-    status = response.success ? ScanStatus.success : ScanStatus.failure;
-    notifyListeners();
-  }
-
-  //   Future<void> processImage(File imageFile) async {
-  //     status = ScanStatus.scanning;
-  //     result = null;
-  //     notifyListeners();
-
-  //     final response = await _service.uploadForOcr(imageFile);
-
-  //     result = response;
-  //     status = response.success ? ScanStatus.success : ScanStatus.failure;
-  //     notifyListeners();
-  //   }
+  result = response;
+  status = response.success ? ScanStatus.success : ScanStatus.failure;
+  notifyListeners();
+}
 
   void toggleFlash() {
     flashOn = !flashOn;
@@ -51,6 +31,11 @@ class ScanProvider extends ChangeNotifier {
 
   void reset() {
     status = ScanStatus.idle;
+    result = null;
+    notifyListeners();
+  }
+    void _setScanning() {
+    status = ScanStatus.scanning;
     result = null;
     notifyListeners();
   }

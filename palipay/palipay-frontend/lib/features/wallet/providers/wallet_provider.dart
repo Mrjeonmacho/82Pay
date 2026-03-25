@@ -17,11 +17,17 @@ class WalletProvider extends ChangeNotifier {
   String _selectedBankAccount = "US Account •••• 1234";
   double _krwAmount = 0; // 입력된 원화 금액
   double _foreignAmount = 0; // 환산된 외화 금액
-  final double _exchangeRate = 1472.70; // 실시간 환율 (임시)
-  final String _targetCurrency = "USD"; // 대상 통화
+  double _exchangeRate = 1472.70; // 실시간 환율 (임시, API 호출로 덮어씌워짐)
+  String _targetCurrency = "USD"; // 대상 통화
+  String? _quoteId; // 백엔드로부터 발급받은 환율 견적 ID
+  String? _rateTimestamp; // 환율 기준 시각
 
   int? get balance => wallet.currentBalance;
+  String? get quoteId => _quoteId;
+  String? get rateTimestamp => _rateTimestamp;
+  String get targetCurrency => _targetCurrency;
   String? _errorMessage; // "금액이 부족합니다" 등의 메시지
+  bool _isTopupView = false; // 현재 화면이 Topup인지 Refund인지 구분
 
   // Getters
   String get selectedBankName => _selectedBankName;
@@ -39,6 +45,35 @@ class WalletProvider extends ChangeNotifier {
     _selectedBankName = bankName;
     _selectedBankAccount = accountNumber;
     notifyListeners(); // UI에 즉시 반영 (TopupView의 카드 글자가 바뀜)
+  }
+
+  Future<void> initWalletData() async {
+  // 일단 테스트를 위해 고정값으로 호출하게 만듭니다.
+  await loadWalletBalance(
+    accessToken: '', // 인터셉터가 넣어줄 거라 비워둬도 됨
+    walletId: 1, 
+    amount: 0,
+  );
+}
+
+  // --- 화면 진입 시 상태 초기화 ---
+
+  
+  void initForTopup() {
+    _isTopupView = true;
+    _resetInputState();
+  }
+
+  void initForRefund() {
+    _isTopupView = false;
+    _resetInputState();
+  }
+
+  void _resetInputState() {
+    _krwAmount = 0;
+    _foreignAmount = 0;
+    _errorMessage = null;
+    notifyListeners();
   }
 
   // 1. 원화 기준 금액 업데이트 (퀵 버튼 누르거나 원화 입력 시)
@@ -88,12 +123,33 @@ class WalletProvider extends ChangeNotifier {
 
   // 4. 유효성 검사 (기획서 6번: 실시간 잔액 부족 알림)
   void _validateAmount() {
-    if (wallet.currentBalance != null && _krwAmount > wallet.currentBalance!) {
+    // 환급일 때만 가상 지갑 잔액 부족을 체크함 (충전 시에는 은행 잔고를 모르므로 무시)
+    if (!_isTopupView && wallet.currentBalance != null && _krwAmount > wallet.currentBalance!) {
       _errorMessage = 'wallet.error.insufficient_balance'.tr();
     } else if (_krwAmount > 2000000) {
       _errorMessage = 'wallet.error.max_limit'.tr();
     } else {
       _errorMessage = null;
+    }
+  }
+
+  // 5. 서버로부터 환율 정보 갱신 (GET /finance/quote)
+  Future<void> loadExchangeRateQuote() async {
+    try {
+      final response = await _service.getExchangeRateQuote(currency: _targetCurrency);
+      final data = response['data'];
+      if (data != null && data['exchangeRate'] != null) {
+        _exchangeRate = (data['exchangeRate'] as num).toDouble();
+        _quoteId = data['quoteId'];
+        _rateTimestamp = data['rateTimestamp'];
+        
+        // 환율 변동으로 인해 현재 입력되어 있는 원화, 외화 금액 다시 재계산
+        if (_krwAmount > 0) {
+          updateKrwAmount(_krwAmount);
+        }
+      }
+    } catch (e) {
+      debugPrint('환율 견적 생성 실패: $e');
     }
   }
 
@@ -106,22 +162,11 @@ class WalletProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      /// -----------------------------------------
-      /// 지금: 더미 데이터 사용
-      /// -----------------------------------------
-      final response = await _service.fetchWalletBalanceDummy(
+      final response = await _service.fetchWalletBalance(
+        accessToken: accessToken ?? '',
         walletId: walletId,
         amount: amount,
       );
-
-      /// -----------------------------------------
-      /// 나중에 서버 연결 시 아래로 교체
-      /// -----------------------------------------
-      // final response = await _service.fetchWalletBalance(
-      //   accessToken: accessToken ?? '',
-      //   walletId: walletId,
-      //   amount: amount,
-      // );
 
       wallet = response;
       status = WalletStatus.success;
@@ -137,5 +182,88 @@ class WalletProvider extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  // --- 서버 연동 API 메서드 추가 ---
+  int? _maxRefundableAmount;
+  int? get maxRefundableAmount => _maxRefundableAmount;
+
+  // 1. 충전 로직 (POST /finance/charges)
+  Future<bool> chargeWallet({
+    required int walletId,
+    required String pinNumber,
+  }) async {
+    status = WalletStatus.loading;
+    notifyListeners();
+
+    try {
+      final response = await _service.chargeWallet(
+        walletId: walletId,
+        pinNumber: pinNumber,
+        accountCurrency: _targetCurrency,
+        convertedAmount: _krwAmount,
+        amount: _foreignAmount,
+      );
+
+      final data = response['data'];
+      if (data != null && data['currentBalance'] != null) {
+        // 잔액 모델 업데이트
+        wallet = wallet.copyWith(currentBalance: (data['currentBalance'] as num).toInt());
+      }
+      status = WalletStatus.success;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      status = WalletStatus.failure;
+      _errorMessage = '충전에 실패했습니다.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // 2. 환불 로직 (POST /finance/refunds)
+  Future<bool> refundWallet({
+    required int walletId,
+    required String pinNumber,
+  }) async {
+    status = WalletStatus.loading;
+    notifyListeners();
+
+    try {
+      final response = await _service.refundWallet(
+        walletId: walletId,
+        pinNumber: pinNumber,
+        accountCurrency: _targetCurrency,
+        convertedAmount: _krwAmount,
+        amount: _foreignAmount,
+      );
+
+      final data = response['data'];
+      if (data != null && data['currentBalance'] != null) {
+        wallet = wallet.copyWith(currentBalance: (data['currentBalance'] as num).toInt());
+      }
+      status = WalletStatus.success;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      status = WalletStatus.failure;
+      _errorMessage = '환급에 실패했습니다.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // 3. 최대 환불 가능 금액 조회 (GET /finance/refunds/max)
+  Future<void> loadMaxRefundable(int walletId) async {
+    try {
+      final response = await _service.getMaxRefundable(walletId: walletId);
+      final data = response['data'];
+      if (data != null && data['maxRefundableAmount'] != null) {
+        _maxRefundableAmount = (data['maxRefundableAmount'] as num).toInt();
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('최대 환불 가능 금액 조회 실패: $e');
+    }
   }
 }

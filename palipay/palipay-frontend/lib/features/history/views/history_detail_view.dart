@@ -11,7 +11,7 @@ import 'package:palipay_app/features/history/models/transaction_model.dart';
 import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:palipay_app/core/utils/date_formatter_util.dart';
-
+import 'package:palipay_app/core/utils/currency_input_formatter.dart';
 class HistoryDetailView extends StatelessWidget {
   final Transaction transaction;
 
@@ -71,7 +71,7 @@ class HistoryDetailView extends StatelessWidget {
 
             // 3. 금액 및 대상
             Text(
-              '${isOutput ? '-' : '+'} ₩ ${NumberFormat('#,###').format(transaction.amount)}',
+              '${isOutput ? '-' : '+'} ₩ ${CurrencyInputFormatter.format(transaction.amount.toInt())}',
               style: AppTextStyles.headlineLarge.copyWith(
                 color: AppColors.mainBlue,
                 fontWeight: FontWeight.w900,

@@ -85,6 +85,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final success = await provider.changePassword(
       oldPassword: _oldPasswordController.text.trim(),
       newPassword: _newPasswordController.text.trim(),
+      confirmPassword: _confirmPasswordController.text.trim(),
     );
 
     if (!mounted) return;
@@ -141,97 +142,126 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<ProfileProvider>();
 
+    final size = MediaQuery.of(context).size;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final isKeyboardOpen = bottomInset > 0;
+
+    final horizontalPadding = size.width * 0.064; // 24 정도
+    final topPadding = size.height * 0.03;
+    final fieldTopGap = size.height * 0.012;
+    final sectionGap = size.height * 0.024;
+    final contentBottomPadding = size.height * 0.04;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FA),
+      resizeToAvoidBottomInset: true,
       appBar: PaliTopBar(title: 'profile.password.title_change'.tr()),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('profile.password.label_current'.tr(), style: AppTextStyles.bodyMedium),
-              const SizedBox(height: 10),
-              PaliInputField(
-                hintText: 'profile.password.hint_current'.tr(),
-                controller: _oldPasswordController,
-                isPassword: _obscureOldPassword,
-                onChanged: (_) => _validateFields(),
-                errorText: _oldPasswordError,
-                useExternalErrorText: true,
-                suffixIcon: _buildVisibilityIcon(
-                  obscure: _obscureOldPassword,
-                  onPressed: () {
-                    setState(() {
-                      _obscureOldPassword = !_obscureOldPassword;
-                    });
-                  },
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            12,
+            horizontalPadding,
+            28,
+          ),
+          child: provider.isChangingPassword
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              : PaliButton(
+                  text: 'profile.password.btn_change'.tr(),
+                  onPressed: _submit,
+                  backgroundColor: AppColors.mainBlue,
                 ),
-              ),
-              _buildErrorText(_oldPasswordError),
-
-              const SizedBox(height: 20),
-
-              Text('profile.password.label_new'.tr(), style: AppTextStyles.bodyMedium),
-              const SizedBox(height: 10),
-              PaliInputField(
-                hintText: 'profile.password.hint_new'.tr(),
-                controller: _newPasswordController,
-                isPassword: _obscureNewPassword,
-                onChanged: (_) => _validateFields(),
-                errorText: _newPasswordError,
-                useExternalErrorText: true,
-                suffixIcon: _buildVisibilityIcon(
-                  obscure: _obscureNewPassword,
-                  onPressed: () {
-                    setState(() {
-                      _obscureNewPassword = !_obscureNewPassword;
-                    });
-                  },
+        ),
+      ),
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              topPadding,
+              horizontalPadding,
+              contentBottomPadding,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('profile.password.label_current'.tr(), style: AppTextStyles.bodyMedium),
+                SizedBox(height: fieldTopGap),
+                PaliInputField(
+                  hintText: 'profile.password.hint_current'.tr(),
+                  controller: _oldPasswordController,
+                  isPassword: _obscureOldPassword,
+                  onChanged: (_) => _validateFields(),
+                  errorText: _oldPasswordError,
+                  useExternalErrorText: true,
+                  suffixIcon: _buildVisibilityIcon(
+                    obscure: _obscureOldPassword,
+                    onPressed: () {
+                      setState(() {
+                        _obscureOldPassword = !_obscureOldPassword;
+                      });
+                    },
+                  ),
                 ),
-              ),
-              _buildErrorText(_newPasswordError),
+                _buildErrorText(_oldPasswordError),
 
-              const SizedBox(height: 20),
+                SizedBox(height: sectionGap),
 
-              Text(
-                'profile.password.label_confirm'.tr(),
-                style: AppTextStyles.bodyMedium,
-              ),
-              const SizedBox(height: 10),
-              PaliInputField(
-                hintText: 'profile.password.hint_confirm'.tr(),
-                controller: _confirmPasswordController,
-                isPassword: _obscureConfirmPassword,
-                onChanged: (_) => _validateFields(),
-                errorText: _confirmPasswordError,
-                useExternalErrorText: true,
-                suffixIcon: _buildVisibilityIcon(
-                  obscure: _obscureConfirmPassword,
-                  onPressed: () {
-                    setState(() {
-                      _obscureConfirmPassword = !_obscureConfirmPassword;
-                    });
-                  },
+                Text('profile.password.label_new'.tr(), style: AppTextStyles.bodyMedium),
+                SizedBox(height: fieldTopGap),
+                PaliInputField(
+                  hintText: 'profile.password.hint_new'.tr(),
+                  controller: _newPasswordController,
+                  isPassword: _obscureNewPassword,
+                  onChanged: (_) => _validateFields(),
+                  errorText: _newPasswordError,
+                  useExternalErrorText: true,
+                  suffixIcon: _buildVisibilityIcon(
+                    obscure: _obscureNewPassword,
+                    onPressed: () {
+                      setState(() {
+                        _obscureNewPassword = !_obscureNewPassword;
+                      });
+                    },
+                  ),
                 ),
-              ),
-              _buildErrorText(_confirmPasswordError),
+                _buildErrorText(_newPasswordError),
 
-              const SizedBox(height: 36),
+                SizedBox(height: sectionGap),
 
-              provider.isChangingPassword
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  : PaliButton(
-                      text: 'profile.password.btn_change'.tr(),
-                      onPressed: _submit,
-                      backgroundColor: AppColors.mainBlue,
-                    ),
-            ],
+                Text(
+                  'profile.password.label_confirm'.tr(),
+                  style: AppTextStyles.bodyMedium,
+                ),
+                SizedBox(height: fieldTopGap),
+                PaliInputField(
+                  hintText: 'profile.password.hint_confirm'.tr(),
+                  controller: _confirmPasswordController,
+                  isPassword: _obscureConfirmPassword,
+                  onChanged: (_) => _validateFields(),
+                  errorText: _confirmPasswordError,
+                  useExternalErrorText: true,
+                  suffixIcon: _buildVisibilityIcon(
+                    obscure: _obscureConfirmPassword,
+                    onPressed: () {
+                      setState(() {
+                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                      });
+                    },
+                  ),
+                ),
+                _buildErrorText(_confirmPasswordError),
+
+                SizedBox(height: size.height * 0.12),
+              ],
+            ),
           ),
         ),
       ),

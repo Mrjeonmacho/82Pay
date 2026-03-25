@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // 환경변수
 import 'package:easy_localization/easy_localization.dart'; // 다국어
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 👈 이거 추가!
 
 import 'package:dio/dio.dart';
 import 'package:palipay_app/core/network/dio_client.dart';
+import 'package:palipay_app/core/providers/user_provider.dart';
 import 'package:palipay_app/features/transfer/services/transfer_service.dart';
 import 'package:palipay_app/features/transfer/providers/transfer_provider.dart';
 import 'package:palipay_app/features/user/provider/delete_account_provider.dart';
 import 'package:palipay_app/features/user/provider/logout_provider.dart';
 
 import 'package:provider/provider.dart';
+import 'core/providers/user_provider.dart';
 import 'features/account/providers/account_provider.dart';
 import 'features/wallet/providers/wallet_provider.dart';
 import 'features/history/providers/history_provider.dart';
@@ -37,25 +41,34 @@ void main() async {
 
   await DioClient().init();
 
+  // 2. [추가] 금고에서 토큰이 있는지 확인 (자동 로그인 여부 판단)
+  const storage = FlutterSecureStorage();
+  String? token = await storage.read(key: 'accessToken');
+  
+  // 토큰이 있다면 '이미 로그인된 상태'로 간주합니다.
+  bool isLoggedIn = token != null;
+
   runApp(
     // 4. 앱 전체를 EasyLocalization으로 감싸야 함
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ja'), Locale('zh')],
       path: 'assets/translations', // 번역 파일 경로 확인!
       fallbackLocale: const Locale('en'),
-      child: const PaliPayApp(),
+      child: PaliPayApp(isLoggedIn: isLoggedIn),
     ),
   );
 }
 
 class PaliPayApp extends StatelessWidget {
-  const PaliPayApp({super.key});
+  final bool isLoggedIn; // 👈 추가
+  const PaliPayApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         // 추후 생성할 Provider들을 여기에 등록하세요.
+        ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => AccountProvider()),
         ChangeNotifierProvider(create: (_) => HistoryProvider()),
         ChangeNotifierProvider(create: (_) => WalletProvider()),
@@ -99,7 +112,8 @@ class PaliPayApp extends StatelessWidget {
           ),
         ),
         // home: const LoginScreen(), // 혹은 시작 화면
-        // test
+        // 로그인 되어 있으면 메인 화면, 아니면 로그인 화면
+        // home: isLoggedIn ? const MainScreen() : const LoginScreen(),
         home: const MainScreen(),
       ),
     );
