@@ -49,7 +49,7 @@ class ScanResultModel {
       case '국민':
       case 'KB':
       case 'KB국민':
-      case '국민은행': 
+      case '국민은행':
       case 'KB국민은행':
       case 'KB은행':
         return 'KB국민';
@@ -65,7 +65,7 @@ class ScanResultModel {
       case '하나':
       case '하나은행':
         return '하나';
-      
+
       case '농협':
       case 'NH':
       case '농협은행':
@@ -89,11 +89,11 @@ class ScanResultModel {
       case '토스':
       case '토스뱅크':
         return '토스';
-      
+
       case '케이':
       case '케이뱅크':
         return '케이';
-      
+
       case '제일':
       case 'sc':
       case 'SC':

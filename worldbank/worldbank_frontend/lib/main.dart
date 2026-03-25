@@ -1,21 +1,20 @@
+// =============================================================================
+// main.dart
+// =============================================================================
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'core/theme/app_colors.dart';
-import 'core/theme/app_text_styles.dart';
-import 'features/home/views/home_screen.dart';
+import 'providers/bank_provider.dart';
+import 'views/main_screen.dart';
 
 void main() {
-  runApp(
-    const WorldBankApp(),
-    // 3인 협업을 위한 전역 상태 관리 세팅
-    // MultiProvider(
-    //   providers: [
-    //     // 추후 생성할 Provider들을 여기에 등록하세요.
-    //     // ChangeNotifierProvider(create: (_) => AuthProvider()),
-    //   ],
-    //   child: const PaliPayApp(),
-    // ),
-  );
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  runApp(const WorldBankApp());
 }
 
 class WorldBankApp extends StatelessWidget {
@@ -23,31 +22,29 @@ class WorldBankApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'WorldBank',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'SUIT', // 전역 폰트 설정
-        scaffoldBackgroundColor: AppColors.background, // #F5F5F8
-        // 상단바 공통 규격 (64h) 적용
-        appBarTheme: const AppBarTheme(
-          toolbarHeight: 64,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          titleTextStyle: AppTextStyles.headlineLarge,
-          iconTheme: IconThemeData(color: AppColors.abledFont),
-        ),
+    return ChangeNotifierProvider(
+      create: (_) => BankProvider(),
+      child: const _AppRoot(),
+    );
+  }
+}
 
-        // 하단바 돌출 버튼을 위한 전역 설정
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: AppColors.mainBlue,
-          foregroundColor: Colors.white,
-        ),
-      ),
-      // 시작 화면을 분리된 HomeScreen으로 설정
-      home: const HomeScreen(),
+class _AppRoot extends StatelessWidget {
+  const _AppRoot();
+
+  @override
+  Widget build(BuildContext context) {
+    // Provider에서 현재 nationality 감지 → MaterialApp theme 반응형 전환
+    final provider = context.watch<BankProvider>();
+    final isDark = provider.nationality.name == 'us';
+
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'World Bank',
+      theme: isDark
+          ? ThemeData.dark(useMaterial3: true)
+          : ThemeData.light(useMaterial3: true),
+      home: const MainScreen(),
     );
   }
 }

@@ -29,11 +29,11 @@ class BankConstants {
           'name': 'U.S. Bancorp',
           'bankCode': 'USBKUS44',
           'logo': 'assets/images/banks/us/us_usb.png',
-        },        
+        },
       ],
     },
     'CN': {
-      'defaultMoneyCode': 'CNY', 
+      'defaultMoneyCode': 'CNY',
       'countryName': 'China',
       'banks': [
         {
@@ -60,16 +60,16 @@ class BankConstants {
           'name': 'Bank of Communications',
           'bankCode': 'COMMCNSH',
           'logo': 'assets/images/banks/cn/cn_boc.png',
-        },        
+        },
         {
           'name': 'Postal Savings Bank of China',
           'bankCode': 'PSBCCNBJ',
           'logo': 'assets/images/banks/cn/cn_psbc.jpg',
-        },        
+        },
       ],
     },
     'JP': {
-      'defaultMoneyCode': 'JPY', 
+      'defaultMoneyCode': 'JPY',
       'countryName': 'Japan',
       'banks': [
         {
@@ -96,11 +96,11 @@ class BankConstants {
           'name': 'Resona Bank',
           'bankCode': 'DIWAJPJT',
           'logo': 'assets/images/banks/jp/jp_resona.png',
-        },             
+        },
       ],
     },
     'KR': {
-      'defaultMoneyCode': 'KRW', 
+      'defaultMoneyCode': 'KRW',
       'countryName': 'South Korea',
       'banks': [
         {

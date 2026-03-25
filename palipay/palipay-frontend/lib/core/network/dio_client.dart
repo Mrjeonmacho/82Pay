@@ -37,7 +37,7 @@ class DioClient {
     // 웹과 모바일 분기 처리 (getApplicationDocumentsDirectory을 사용하면 웹에서 오류 발생)
     if (kIsWeb) {
       // 1. 웹: 메모리 쿠키 저장소 사용 (파일 경로 필요 없음)
-      cookieJar = CookieJar(); 
+      cookieJar = CookieJar();
       print("Web 환경: 메모리 쿠키 저장소를 사용합니다.");
     } else {
       // 1. 저장 경로 설정

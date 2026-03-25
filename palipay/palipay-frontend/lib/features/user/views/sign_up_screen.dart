@@ -137,7 +137,10 @@ class _SignUpScreenState extends State<SignUpScreen>
       appBar: PaliTopBar(
         title: 'sign_up.create_your_account'.tr(),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.mainBlue,),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.mainBlue,
+          ),
           onPressed: () {
             if (provider.currentIndex > 0) {
               provider.setCurrentIndex(provider.currentIndex - 1);
@@ -158,12 +161,7 @@ class _SignUpScreenState extends State<SignUpScreen>
         child: AnimatedPadding(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
-          padding: EdgeInsets.fromLTRB(
-            30,
-            12,
-            30,
-            bottomInset > 0 ? 12 : 30,
-          ),
+          padding: EdgeInsets.fromLTRB(30, 12, 30, bottomInset > 0 ? 12 : 30),
           child: PaliButton(
             text: provider.currentIndex == 3
                 ? 'sign_up.btn_sign_up'.tr()
@@ -217,7 +215,7 @@ class _SignUpScreenState extends State<SignUpScreen>
 
                 // 3. 단계별 콘텐츠 (PageView)
                 Expanded(
-                  child:  Padding(
+                  child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 0),
                     child: PageView(
                       controller: _pageController,

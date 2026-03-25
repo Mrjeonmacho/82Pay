@@ -33,21 +33,18 @@ class ProfileScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.mainBlue),
             onPressed: () async {
-              final logoutProvider =
-              context.read<LogoutProvider>();
+              final logoutProvider = context.read<LogoutProvider>();
 
-          await logoutProvider.logout();
+              await logoutProvider.logout();
 
-          if (!context.mounted) return;
+              if (!context.mounted) return;
 
-          // 로그인 화면으로 이동 (스택 초기화)
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const LoginScreen(),
-            ),
-            (route) => false,
-          );
+              // 로그인 화면으로 이동 (스택 초기화)
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
             },
           ),
         ],
@@ -71,7 +68,9 @@ class ProfileScreen extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const AccountManagementView()),
+                        MaterialPageRoute(
+                          builder: (_) => const AccountManagementView(),
+                        ),
                       );
                     },
                   ),
@@ -84,7 +83,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
 
               // [Account/Security Section]
@@ -97,7 +96,9 @@ class ProfileScreen extends StatelessWidget {
                     onTap: () async {
                       final result = await Navigator.push<bool>(
                         context,
-                        MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const ChangePasswordScreen(),
+                        ),
                       );
                       if (result == true && context.mounted) {
                         _showSuccessBanner(context);
@@ -112,7 +113,10 @@ class ProfileScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const PinScreen(mode: PinMode.change, walletId: 12345),
+                          builder: (_) => const PinScreen(
+                            mode: PinMode.change,
+                            walletId: 12345,
+                          ),
                         ),
                       );
                     },
@@ -152,12 +156,12 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'profile.menu_language'.tr(),
-          style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold),
+          style: AppTextStyles.titleMedium.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         contentPadding: const EdgeInsets.only(top: 16, bottom: 8),
         content: Column(
@@ -205,7 +209,10 @@ class ProfileScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => messenger.hideCurrentMaterialBanner(),
-              child: Text('common.ok'.tr(), style: const TextStyle(color: Colors.white)),
+              child: Text(
+                'common.ok'.tr(),
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
