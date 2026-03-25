@@ -3,7 +3,8 @@ from __future__ import annotations
 import base64
 import json
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlparse
 
 import cv2
 
@@ -22,9 +23,15 @@ from .config import (
 from .prompts import build_developer_prompt
 
 
-def _bgr_to_data_url_jpeg(img_bgr: Any) -> str:
+def _log(msg: str) -> None:
+    print(f"[gpt-ocr] {msg}", flush=True)
+
+
+def _bgr_to_data_url_jpeg(img_bgr: Any) -> Tuple[str, Dict[str, Any]]:
     max_side = get_image_max_side()
-    h, w = img_bgr.shape[:2]
+    orig_h, orig_w = int(img_bgr.shape[0]), int(img_bgr.shape[1])
+    h, w = orig_h, orig_w
+    resized = False
     if max(h, w) > max_side:
         scale = max_side / float(max(h, w))
         img_bgr = cv2.resize(
@@ -32,6 +39,8 @@ def _bgr_to_data_url_jpeg(img_bgr: Any) -> str:
             (int(w * scale), int(h * scale)),
             interpolation=cv2.INTER_AREA,
         )
+        resized = True
+    out_h, out_w = int(img_bgr.shape[0]), int(img_bgr.shape[1])
     ok, buf = cv2.imencode(
         ".jpg",
         img_bgr,
@@ -39,8 +48,19 @@ def _bgr_to_data_url_jpeg(img_bgr: Any) -> str:
     )
     if not ok:
         raise RuntimeError("failed to encode image as JPEG")
+    jpeg_n = int(buf.size)
     b64 = base64.b64encode(buf.tobytes()).decode("ascii")
-    return f"data:image/jpeg;base64,{b64}"
+    data_url = f"data:image/jpeg;base64,{b64}"
+    info = {
+        "orig_wh": (orig_w, orig_h),
+        "out_wh": (out_w, out_h),
+        "max_side_cap": max_side,
+        "resized": resized,
+        "jpeg_bytes": jpeg_n,
+        "b64_chars": len(b64),
+        "data_url_chars": len(data_url),
+    }
+    return data_url, info
 
 
 def _extract_json_object(text: str) -> Dict[str, Any]:
@@ -89,16 +109,33 @@ class GptOCREngine(OCREngine):
     name = "gpt"
 
     def recognize(self, img_bgr, *, preprocess_mode: str = "basic") -> Dict[str, Any]:
-        _ = preprocess_mode
+        _log(
+            f"인식 시작 | engine={self.name} preprocess_mode={preprocess_mode!r} "
+            f"instruction_role={get_instruction_role()!r}"
+        )
 
         api_key = get_api_key()
         if not api_key:
+            _log("오류: API 키 없음 (GPT_OCR_API_KEY / GMS_KEY)")
             raise ValueError(
                 "GPT OCR API 키가 없습니다. 환경변수 GPT_OCR_API_KEY 또는 GMS_KEY를 설정하세요. "
                 "(로컬: backend/.env, 배포: 플랫폼 credential)"
             )
 
-        img_url = _bgr_to_data_url_jpeg(img_bgr)
+        img_url, enc_info = _bgr_to_data_url_jpeg(img_bgr)
+        _log(
+            f"이미지 JPEG 인코딩 | 원본WxH={enc_info['orig_wh']} "
+            f"전송WxH={enc_info['out_wh']} resized={enc_info['resized']} "
+            f"jpeg_bytes={enc_info['jpeg_bytes']} b64_chars={enc_info['b64_chars']}"
+        )
+
+        api_url = get_api_url()
+        host = urlparse(api_url).netloc or api_url[:48]
+        _log(
+            f"Chat Completions 요청 | model={get_model()!r} host={host!r} "
+            f"timeout_sec={get_timeout_sec()} api_key={'설정됨(***)' if api_key else '없음'}"
+        )
+
         role = get_instruction_role()
         messages = [
             {"role": role, "content": build_developer_prompt()},
@@ -107,13 +144,14 @@ class GptOCREngine(OCREngine):
 
         try:
             raw = chat_completions(
-                url=get_api_url(),
+                url=api_url,
                 api_key=api_key,
                 model=get_model(),
                 messages=messages,
                 timeout_sec=get_timeout_sec(),
             )
         except ChatCompletionsHttpError as e:
+            _log(f"API HTTP {e.status_code} | detail={e.detail!r}")
             alt = "system" if role == "developer" else "developer"
             hint = None
             if e.status_code == 400:
@@ -126,21 +164,40 @@ class GptOCREngine(OCREngine):
                 {"upstream": e.detail, "hint": hint, "request_role": role},
             ) from e
 
+        usage = raw.get("usage")
+        if usage is not None:
+            _log(f"응답 usage={usage}")
+
         choices = raw.get("choices") or []
         if not choices:
+            _log(f"오류: choices 비어 있음 | raw keys={list(raw.keys())}")
             raise RuntimeError(f"unexpected API response: {raw!r}")
 
         content = choices[0].get("message", {}).get("content")
         if not content:
+            _log(f"오류: message.content 없음 | choice0={choices[0]!r}")
             raise RuntimeError(f"no message content in response: {raw!r}")
 
-        extracted = _extract_json_object(content if isinstance(content, str) else str(content))
+        text_out = content if isinstance(content, str) else str(content)
+        _log(f"모델 텍스트 응답 길이={len(text_out)}자 (앞 240자) {text_out[:240]!r}")
+
+        extracted = _extract_json_object(text_out)
+        _log(f"파싱 JSON 키={list(extracted.keys())} 원본 bank_name={extracted.get('bank_name')!r} "
+             f"원본 account_number={extracted.get('account_number')!r}")
 
         bank_raw = extracted.get("bank_name")
         bank_name = resolve_bank_name(bank_raw) if bank_raw else None
 
         account_number = _normalize_account_digits(extracted.get("account_number"))
         pattern_info = get_pattern_match_info(bank_name, account_number)
+
+        if bank_raw is not None and bank_name != bank_raw:
+            _log(f"은행명 정규화 | {bank_raw!r} -> {bank_name!r}")
+        _log(
+            f"후처리 결과 | bank_name={bank_name!r} account_number={account_number!r} "
+            f"pattern_matched={pattern_info.get('matched')} best_score={pattern_info.get('best_score')} "
+            f"matched_rules={pattern_info.get('matched_rules')}"
+        )
 
         full_text = extracted.get("full_text") or ""
         if not isinstance(full_text, str):
@@ -156,6 +213,10 @@ class GptOCREngine(OCREngine):
             "account_number": account_number,
             "pattern_info": pattern_info,
         }
+
+        _log(
+            f"완료 | full_text 줄 수={len(lines)} items={len(items)}"
+        )
 
         return {
             "items": items,

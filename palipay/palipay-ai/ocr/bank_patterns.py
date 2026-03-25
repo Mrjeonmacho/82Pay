@@ -396,3 +396,47 @@ def get_pattern_match_info(bank_name: Optional[str], account_number: Optional[st
         "matched_rules": matched_rules,
         "best_score": best_score,
     }
+
+
+# 프롬프트용: rule name → 자연어 (BANK_ACCOUNT_PATTERNS 와 1:1 대응)
+_LLM_RULE_HINTS: Dict[str, str] = {
+    "digits_only_10_14": "연속 숫자 10~14자리",
+    "digits_only_11": "연속 숫자 11자리",
+    "digits_only_12": "연속 숫자 12자리",
+    "digits_only_13": "연속 숫자 13자리",
+    "digits_only_14": "연속 숫자 14자리",
+    "digits_only_11_14": "연속 숫자 11~14자리",
+    "digits_only_12_14": "연속 숫자 12~14자리",
+    "digits_only_13_14": "연속 숫자 13~14자리",
+    "hyphen_3part_general": "하이픈 3덩어리(각 구간 2~6,2~6,2~8자리); 최종 출력은 숫자만",
+    "hyphen_4_3_6": "하이픈 4-3-6 (총 13자리); 최종 출력은 숫자만 13자리",
+    "hyphen_general": "하이픈 3구간 일반형; 최종 출력은 숫자만",
+    "hyphen_3_6_5": "하이픈 3-6-5 (총 14자리); 최종 출력은 숫자만 14자리",
+    "hyphen_3_4_6": "하이픈 3-4-6 (총 13자리); 최종 출력은 숫자만",
+    "hyphen_3_4_4_2": "하이픈 3-4-4-2 (총 13자리, NH 흔한 형식); 최종 출력은 숫자만",
+    "hyphen_4part_general": "하이픈 4덩어리 일반형; 최종 출력은 숫자만",
+    "hyphen_4part": "하이픈 4-4-4-(1~2) (새마을금고 등); 최종 출력은 숫자만",
+    "hyphen_general_3or4part": "하이픈 3~4덩어리 일반형; 최종 출력은 숫자만",
+}
+
+
+def build_bank_account_rules_for_prompt() -> str:
+    """
+    BANK_ACCOUNT_PATTERNS 와 동기화된 LLM용 요약.
+    서버 후처리는 숫자만 사용하므로 ‘총 자릿수·형식’ 위주로 안내한다.
+    """
+    lines: List[str] = []
+    for bank in sorted(BANK_ACCOUNT_PATTERNS.keys()):
+        hints: List[str] = []
+        for rule in BANK_ACCOUNT_PATTERNS[bank]:
+            n = str(rule["name"])
+            hints.append(_LLM_RULE_HINTS.get(n, n))
+        # 동일 문구 제거, 순서 유지
+        seen: set[str] = set()
+        uniq = []
+        for h in hints:
+            if h not in seen:
+                seen.add(h)
+                uniq.append(h)
+        lines.append(f"- {bank}: " + "; ".join(uniq))
+    return "\n".join(lines)
