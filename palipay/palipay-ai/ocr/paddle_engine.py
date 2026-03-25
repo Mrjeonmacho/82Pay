@@ -3,11 +3,11 @@ from typing import Any, Dict, List, Optional
 
 import cv2
 
+from .bank_patterns import get_pattern_match_info
 from .base import OCREngine
 from .preprocess import preprocess
 from .postprocess import parse_ocr_fields
 from .roi_refine import build_numeric_roi
-
 
 
 def _pick_better_result(primary: Dict[str, Any], secondary: Dict[str, Any]) -> Dict[str, Any]:
@@ -44,6 +44,29 @@ def _pick_better_result(primary: Dict[str, Any], secondary: Dict[str, Any]) -> D
         return primary
 
     return secondary
+
+
+def _merge_bank_name_from_primary_if_roi_lost_it(
+    primary: Dict[str, Any],
+    secondary: Dict[str, Any],
+    better: Dict[str, Any],
+) -> None:
+    """If numeric ROI branch wins but bank_name is empty, copy bank_name from full-frame primary."""
+    if better is not secondary:
+        return
+    p_parsed = primary.get("parsed") or {}
+    b_parsed = better.get("parsed") or {}
+    p_bank = p_parsed.get("bank_name")
+    b_bank = b_parsed.get("bank_name")
+    if not p_bank or b_bank:
+        return
+    acc = b_parsed.get("account_number")
+    merged = dict(b_parsed)
+    merged["bank_name"] = p_bank
+    merged["pattern_info"] = get_pattern_match_info(p_bank, acc)
+    better["parsed"] = merged
+    meta = better.setdefault("meta", {})
+    meta["bank_name_filled_from_primary"] = True
 
 
 class PaddleOCREngine(OCREngine):
@@ -101,6 +124,7 @@ class PaddleOCREngine(OCREngine):
 
         secondary = self._run_ocr(roi, "numeric")
         better = _pick_better_result(primary, secondary)
+        _merge_bank_name_from_primary_if_roi_lost_it(primary, secondary, better)
 
         better["meta"]["retried_numeric_roi"] = True
         better["meta"]["primary_parsed"] = primary["parsed"]
@@ -110,5 +134,6 @@ class PaddleOCREngine(OCREngine):
         print("secondary full_text =", secondary["full_text"])
         print("primary parsed =", primary["parsed"])
         print("secondary parsed =", secondary["parsed"])
+        print("chosen parsed (API/result parsed) =", better["parsed"])
 
         return better
