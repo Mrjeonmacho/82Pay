@@ -71,9 +71,9 @@ BANK_ACCOUNT_PATTERNS: Dict[str, List[PatternRule]] = {
     ],
     "농협은행": [
         {
-            "name": "digits_only_13",
-            "regex": re.compile(r"^\d{13}$"),
-            "score": 3.0,
+            "name": "hyphen_3_4_4_2",
+            "regex": re.compile(r"^\d{3}-\d{4}-\d{4}-\d{2}$"),
+            "score": 6.0,
         },
         {
             "name": "hyphen_3_4_6",
@@ -81,9 +81,9 @@ BANK_ACCOUNT_PATTERNS: Dict[str, List[PatternRule]] = {
             "score": 5.0,
         },
         {
-            "name": "hyphen_3_4_4_2",
-            "regex": re.compile(r"^\d{3}-\d{4}-\d{4}-\d{2}$"),
-            "score": 6.0,
+            "name": "digits_only_13",
+            "regex": re.compile(r"^\d{13}$"),
+            "score": 3.0,
         },
         {
             "name": "hyphen_4part_general",
@@ -345,6 +345,28 @@ def get_bank_patterns(bank_name: Optional[str]) -> List[PatternRule]:
     return BANK_ACCOUNT_PATTERNS[resolved]
 
 
+def _nonghyup_pattern_match_variants(account_number: str) -> List[str]:
+    """
+    농협은행 우선 규칙 hyphen_3_4_4_2 는 하이픈 포함 문자열에 매칭된다.
+    저장값이 숫자-only 13자리면 3-4-4-2 형으로도 검사한다.
+    """
+    acc = account_number.strip()
+    out: List[str] = [acc]
+    digits = re.sub(r"[^0-9]", "", acc)
+    if len(digits) == 13:
+        hy = f"{digits[:3]}-{digits[3:7]}-{digits[7:11]}-{digits[11:13]}"
+        if hy not in out:
+            out.append(hy)
+    return out
+
+
+def _accounts_to_try_for_patterns(bank_name: Optional[str], account_number: str) -> List[str]:
+    resolved = resolve_bank_name(bank_name) if bank_name else None
+    if resolved == "농협은행":
+        return _nonghyup_pattern_match_variants(account_number)
+    return [account_number]
+
+
 def score_account_pattern(bank_name: Optional[str], account_number: Optional[str]) -> float:
     if not bank_name or not account_number:
         return 0.0
@@ -353,13 +375,16 @@ def score_account_pattern(bank_name: Optional[str], account_number: Optional[str
     if not patterns:
         return 0.0
 
+    candidates = _accounts_to_try_for_patterns(bank_name, account_number)
     best_score = 0.0
     for pattern in patterns:
         regex: Pattern[str] = pattern["regex"]  # type: ignore[assignment]
-        if regex.match(account_number):
-            score = float(pattern["score"])  # type: ignore[arg-type]
-            if score > best_score:
-                best_score = score
+        for cand in candidates:
+            if regex.match(cand):
+                score = float(pattern["score"])  # type: ignore[arg-type]
+                if score > best_score:
+                    best_score = score
+                break
 
     return best_score
 
@@ -376,13 +401,19 @@ def get_pattern_match_info(bank_name: Optional[str], account_number: Optional[st
         }
 
     patterns = get_bank_patterns(bank_name)
+    candidates = _accounts_to_try_for_patterns(bank_name, account_number)
 
     matched_rules: List[str] = []
     best_score = 0.0
 
     for pattern in patterns:
         regex: Pattern[str] = pattern["regex"]  # type: ignore[assignment]
-        if regex.match(account_number):
+        hit = False
+        for cand in candidates:
+            if regex.match(cand):
+                hit = True
+                break
+        if hit:
             rule_name = str(pattern["name"])
             rule_score = float(pattern["score"])  # type: ignore[arg-type]
             matched_rules.append(rule_name)
