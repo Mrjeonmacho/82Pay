@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Any, Dict, List
 
 import httpx
@@ -31,11 +32,18 @@ def chat_completions(
         "messages": messages,
     }
     with httpx.Client(timeout=timeout_sec) as client:
+        t0 = time.perf_counter()
         r = client.post(url, headers=headers, json=body)
+        elapsed = time.perf_counter() - t0
+        print(
+            f"[gpt-ocr] HTTP {r.status_code} elapsed={elapsed:.2f}s",
+            flush=True,
+        )
         if r.status_code >= 400:
             try:
                 detail = r.json()
             except Exception:
                 detail = r.text.strip() or r.reason_phrase
+            print(f"[gpt-ocr] HTTP 오류 본문(일부)={str(detail)[:500]!r}", flush=True)
             raise ChatCompletionsHttpError(r.status_code, detail)
         return r.json()
