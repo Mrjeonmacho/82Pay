@@ -12,10 +12,7 @@ import '../../transfer/views/account_input_screen.dart';
 class ScanLoadingScreen extends StatefulWidget {
   final File imageFile;
 
-  const ScanLoadingScreen({
-    super.key,
-    required this.imageFile,
-  });
+  const ScanLoadingScreen({super.key, required this.imageFile});
 
   @override
   State<ScanLoadingScreen> createState() => _ScanLoadingScreenState();
@@ -36,17 +33,11 @@ class _ScanLoadingScreenState extends State<ScanLoadingScreen>
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.35,
-      end: 1.0,
-    ).animate(
+    _fadeAnimation = Tween<double>(begin: 0.35, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
 
-    _progressAnimation = Tween<double>(
-      begin: 0.18,
-      end: 0.84,
-    ).animate(
+    _progressAnimation = Tween<double>(begin: 0.18, end: 0.84).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
 
@@ -115,9 +106,7 @@ class _ScanLoadingScreenState extends State<ScanLoadingScreen>
 
           // 기본 어두운 오버레이
           Positioned.fill(
-            child: Container(
-              color: Colors.black.withOpacity(0.48),
-            ),
+            child: Container(color: Colors.black.withOpacity(0.48)),
           ),
 
           // 상단 그라데이션
@@ -295,9 +284,7 @@ class _LoadingCard extends StatelessWidget {
                   minHeight: 9,
                   value: progressAnimation.value,
                   backgroundColor: const Color(0xFFE8EDF6),
-                  valueColor: const AlwaysStoppedAnimation(
-                    AppColors.mainBlue,
-                  ),
+                  valueColor: const AlwaysStoppedAnimation(AppColors.mainBlue),
                 ),
               );
             },

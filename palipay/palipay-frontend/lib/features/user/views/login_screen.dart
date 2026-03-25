@@ -71,10 +71,7 @@ class _LoginScreenState extends State<LoginScreen>
       backgroundColor: AppColors.background,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(0),
-        child: AppBar(
-          backgroundColor: AppColors.background,
-          elevation: 0,
-        ),
+        child: AppBar(backgroundColor: AppColors.background, elevation: 0),
       ),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
@@ -148,7 +145,8 @@ class _LoginScreenState extends State<LoginScreen>
                                 width: 24,
                                 height: 24,
                                 child: Checkbox(
-                                  value: provider.isAutoLogin, // Provider에 변수 추가 필요
+                                  value: provider
+                                      .isAutoLogin, // Provider에 변수 추가 필요
                                   onChanged: (value) {
                                     provider.setAutoLogin(value ?? false);
                                   },
@@ -160,8 +158,9 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                               const SizedBox(width: 8),
                               GestureDetector(
-                                onTap: () =>
-                                    provider.setAutoLogin(!provider.isAutoLogin),
+                                onTap: () => provider.setAutoLogin(
+                                  !provider.isAutoLogin,
+                                ),
                                 child: Text(
                                   'Auto Login',
                                   style: AppTextStyles.bodySmall.copyWith(
@@ -182,7 +181,8 @@ class _LoginScreenState extends State<LoginScreen>
                                       Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => const MainScreen(),
+                                          builder: (context) =>
+                                              const MainScreen(),
                                         ),
                                       );
                                     } else {
@@ -217,15 +217,22 @@ class _LoginScreenState extends State<LoginScreen>
                           // 구분선 (Or)
                           const Row(
                             children: [
-                              Expanded(child: Divider(color: AppColors.mainBlue)),
+                              Expanded(
+                                child: Divider(color: AppColors.mainBlue),
+                              ),
                               Padding(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: 20,
                                   vertical: 10,
                                 ),
-                                child: Text('Or', style: AppTextStyles.bodySmall),
+                                child: Text(
+                                  'Or',
+                                  style: AppTextStyles.bodySmall,
+                                ),
                               ),
-                              Expanded(child: Divider(color: AppColors.mainBlue)),
+                              Expanded(
+                                child: Divider(color: AppColors.mainBlue),
+                              ),
                             ],
                           ),
 
@@ -276,7 +283,8 @@ class _LoginScreenState extends State<LoginScreen>
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const SignUpScreen(),
+                                      builder: (context) =>
+                                          const SignUpScreen(),
                                     ),
                                   );
                                 },

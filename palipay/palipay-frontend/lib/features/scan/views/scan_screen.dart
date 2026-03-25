@@ -28,7 +28,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
   bool _isCameraReady = false;
 
-    // [수정] 촬영 중 중복 클릭 방지용
+  // [수정] 촬영 중 중복 클릭 방지용
   bool _isTakingPicture = false;
   bool _isPickingFromGallery = false;
 
@@ -43,7 +43,7 @@ class _ScanScreenState extends State<ScanScreen> {
       final cameras = await availableCameras();
 
       final selected = cameras.firstWhere(
-        ( camera ) => camera.lensDirection == CameraLensDirection.back,
+        (camera) => camera.lensDirection == CameraLensDirection.back,
         orElse: () => cameras.first,
       );
 
@@ -125,7 +125,8 @@ class _ScanScreenState extends State<ScanScreen> {
         context,
         PageRouteBuilder(
           opaque: true,
-          pageBuilder: (_, __, ___) => GalleryCropScreen(imageFile: selectedFile),
+          pageBuilder: (_, __, ___) =>
+              GalleryCropScreen(imageFile: selectedFile),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
         ),
@@ -265,9 +266,7 @@ class _ScanScreenState extends State<ScanScreen> {
           : '${originalPath}_cropped.jpg';
 
       final croppedFile = File(croppedPath);
-      await croppedFile.writeAsBytes(
-        img.encodeJpg(cropped, quality: 95),
-      );
+      await croppedFile.writeAsBytes(img.encodeJpg(cropped, quality: 95));
 
       return croppedFile;
     } catch (e) {
@@ -280,16 +279,11 @@ class _ScanScreenState extends State<ScanScreen> {
     await Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => ScanLoadingScreen(
-          imageFile: imageFile,
-          ),
+        pageBuilder: (_, __, ___) => ScanLoadingScreen(imageFile: imageFile),
         transitionDuration: const Duration(milliseconds: 220),
         reverseTransitionDuration: const Duration(milliseconds: 180),
         transitionsBuilder: (_, animation, __, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
       ),
     );
@@ -323,7 +317,8 @@ class _ScanScreenState extends State<ScanScreen> {
     // -> 상위(main.dart)에서 이미 제공받는 구조로 변경
     return Consumer<ScanProvider>(
       builder: (context, provider, _) {
-        final isDisabled = provider.isBusy || _isTakingPicture || _isPickingFromGallery;
+        final isDisabled =
+            provider.isBusy || _isTakingPicture || _isPickingFromGallery;
 
         return Scaffold(
           backgroundColor: Colors.black,
@@ -417,7 +412,9 @@ class _ScanScreenState extends State<ScanScreen> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          provider.isBusy ? 'scan.status_scanning'.tr() : 'scan.status_ready'.tr(),
+                          provider.isBusy
+                              ? 'scan.status_scanning'.tr()
+                              : 'scan.status_ready'.tr(),
                           style: AppTextStyles.headlineLarge.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
@@ -496,9 +493,7 @@ class _ScanOverlay extends StatelessWidget {
         return Stack(
           children: [
             Positioned.fill(
-              child: CustomPaint(
-                painter: _OverlayPainter(rect: rect,),
-              ),
+              child: CustomPaint(painter: _OverlayPainter(rect: rect)),
             ),
           ],
         );

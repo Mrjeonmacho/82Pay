@@ -34,17 +34,12 @@ class ScanService {
         ),
       });
 
-      final response = await _dio.post(
-        requestPath,
-        data: formData,
-      );
+      final response = await _dio.post(requestPath, data: formData);
 
       debugPrint('=== OCR RESPONSE STATUS === ${response.statusCode}');
       debugPrint('=== OCR RESPONSE DATA === ${response.data}');
 
-      return ScanResultModel.fromJson(
-        Map<String, dynamic>.from(response.data),
-      );
+      return ScanResultModel.fromJson(Map<String, dynamic>.from(response.data));
     } on DioException catch (e) {
       debugPrint('=== OCR DIO ERROR ===');
       debugPrint('request method: ${e.requestOptions.method}');
