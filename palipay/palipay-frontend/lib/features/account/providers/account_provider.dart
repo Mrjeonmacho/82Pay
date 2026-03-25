@@ -6,22 +6,10 @@ import '../services/account_service.dart';
 class AccountProvider extends ChangeNotifier {
   final AccountService _service = AccountService();
 
-  // BankAccount? _linkedAccount; // 계좌 데이터
-  // 테스트용 더미
-  BankAccount? _linkedAccount = BankAccount(
-    walletId: '1004',
-    bankCode: '088',
-    bankName: 'World',
-    accountNumber: '110-482-039201',
-    accountUsername: 'Ssafy Kim',
-    moneyCode: 'USD',
-    amount: 120000,
-  );
-
+  BankAccount? _linkedAccount;
   bool _isLoading = false;
-  // _linkedAccount가 null이 아니면 true를 반환합니다.
-  bool get hasWallet => _linkedAccount != null;
 
+  bool get hasWallet => _linkedAccount != null;
   BankAccount? get linkedAccount => _linkedAccount;
   bool get isLoading => _isLoading;
 
@@ -30,48 +18,50 @@ class AccountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // [USER_ACCOUNT_001] 계좌 등록 및 연동
   Future<bool> linkAccount({
-    required String walletId,
-    required String bankCode,
-    required String bankName, // UI 표시용
-    required String accountNumber,
-    required String accountUsername,
-    required String moneyCode,
-    required String token, // 인증 토큰
+    required Map<String, dynamic> requestData, 
+    required String token,
   }) async {
     _setLoading(true);
 
     try {
-      // 명세서 규격에 맞춘 데이터 전송 (camelCase)
-      final response = await _service.linkAccount({
-        'walletId': walletId,
-        'bankCode': bankCode,
-        'accountNumber': accountNumber,
-        'accountUsername': accountUsername,
-        'moneyCode': moneyCode,
-      }, token);
+      // 1. API 호출 (백엔드끼리 통신하여 계좌를 연동함)
+      final response = await _service.linkAccount(
+        accountData: requestData,
+        token: token,
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // 성공 시 로컬 상태 업데이트
+        // [핵심] 서버의 응답(response.data)을 그대로 믿고 모델을 생성합니다.
+        final data = response.data;
+
         _linkedAccount = BankAccount(
-          walletId: walletId,
-          bankCode: bankCode,
-          bankName: bankName,
-          accountNumber: accountNumber,
-          accountUsername: accountUsername,
-          moneyCode: moneyCode,
-          amount: response.data['data']['walletId'], // 응답 데이터 구조 확인 필요
+          walletId: data['walletId']?.toString() ?? '',
+          bankCode: requestData['bankCode'],
+          bankName: data['bankName'] ?? '연동계좌',
+          accountNumber: data['accountNumber'] ?? requestData['accountNumber'],
+          accountUsername: data['accountUsername'] ?? requestData['accountUsername'] ?? 'Unknown',
+          moneyCode: requestData['moneyCode'] ?? 'USD',
+          amount: (data['amount'] as num?)?.toInt() ?? 0, // 서버가 준 실시간 잔액!
         );
+        
         notifyListeners();
         return true;
       }
       return false;
     } catch (e) {
-      debugPrint('Error linking account: $e');
+      debugPrint('API 연동 실패: $e');
       return false;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  // 충전/환급 후 잔액을 업데이트하기 위한 메서드
+  void updateBalance(int newBalance) {
+    if (_linkedAccount != null) {
+      _linkedAccount = _linkedAccount!.copyWith(amount: newBalance);
+      notifyListeners();
     }
   }
 
@@ -169,19 +159,5 @@ class AccountProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
-  }
-
-  // 테스트 다시 하고 싶을 때 더미 계좌 복구용
-  void restoreDummyAccount() {
-    _linkedAccount = BankAccount(
-      walletId: '1004',
-      bankCode: '088',
-      bankName: 'World',
-      accountNumber: '110-482-039201',
-      accountUsername: 'Ssafy Kim',
-      moneyCode: 'USD',
-      amount: 120000,
-    );
-    notifyListeners();
   }
 }

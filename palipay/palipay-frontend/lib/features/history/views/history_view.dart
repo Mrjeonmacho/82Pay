@@ -6,10 +6,12 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
 import '../providers/history_provider.dart';
+import '../../account/providers/account_provider.dart';
 import '../models/transaction_model.dart';
 import 'history_detail_view.dart';
 import '../widgets/history_filter_bottom_sheet.dart';
 import '../../../core/utils/date_formatter_util.dart';
+import '../../../core/utils/currency_input_formatter.dart';
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
@@ -25,7 +27,11 @@ class _HistoryViewState extends State<HistoryView> {
   void initState() {
     super.initState();
     // 화면 진입 시 초기 데이터 로드
-    Future.microtask(() => context.read<HistoryProvider>().fetchHistory());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final accountProvider = context.read<AccountProvider>();
+      final walletId = int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
+      context.read<HistoryProvider>().fetchHistory(walletId: walletId);
+    });
   }
 
   @override
@@ -96,7 +102,7 @@ class _HistoryViewState extends State<HistoryView> {
           ),
           const SizedBox(height: 8),
           Text(
-            '${NumberFormat('#,###').format(totalSpent)} ₩',
+            '${CurrencyInputFormatter.format(totalSpent.toInt())} ₩',
             style: AppTextStyles.headlineLarge.copyWith(
               fontSize: 28,
               color: AppColors.mainBlue,
@@ -205,7 +211,7 @@ class _HistoryViewState extends State<HistoryView> {
               ],
             ),
             Text(
-              '${isOutput ? '-' : '+'} ${NumberFormat('#,###').format(tx.amount)} ₩',
+              '${isOutput ? '-' : '+'} ${CurrencyInputFormatter.format(tx.amount.toInt())} ₩',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

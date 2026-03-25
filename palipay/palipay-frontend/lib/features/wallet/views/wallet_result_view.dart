@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart'; // PaliButton 등
+import '../../../core/utils/currency_input_formatter.dart';
 
 class WalletResultView extends StatelessWidget {
   final bool isRecharge; // 충전인지 환불인지 구분

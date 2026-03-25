@@ -17,13 +17,19 @@ import '../../account/views/account_management_view.dart';
 import '../../pin/views/pin_screen.dart';
 import '../../user/views/delete_account_screen.dart';
 import '../../user/views/login_screen.dart';
+import '../../../../core/providers/user_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final user = dummyProfileUser;
+    // 1. UserProvider(또는 실제 유저 정보를 들고 있는 Provider)를 불러옵니다.
+    final userProvider = context.watch<UserProvider>(); 
+    
+    // 2. 유저 정보가 있는지 확인 (비어있을 경우를 대비한 가공)
+    final String userName = userProvider.userName ?? 'profile.user_name'.tr(); 
+    final String userEmail = userProvider.userEmail ?? 'profile.user_email'.tr();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FA),
@@ -55,7 +61,8 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ProfileCard(name: user.name, email: user.email),
+              // 3. [수정] 하드코딩된 dummyProfileUser 대신 실제 데이터를 넘깁니다!
+              ProfileCard(name: userName, email: userEmail), 
               const SizedBox(height: 24),
 
               // [Service Section]

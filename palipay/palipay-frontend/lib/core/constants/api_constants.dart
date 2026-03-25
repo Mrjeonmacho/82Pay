@@ -17,6 +17,8 @@ class ApiConstants {
   static const String login = '/auth/login';
   static const String signUp = '/auth/signup';
   static const String profile = '/users/profile';
+  static const String changePassword = '/auth/password';
+  static const String logout = '/auth/logout';
 
   // 4. 계좌 관리
   static const String accountLink = '/users/accounts';
@@ -29,7 +31,5 @@ class ApiConstants {
   static const String pinSet = '/pin/set';
   static const String accountBalance = '/wallet/balance';
   static const String language = '/user/language';
-  static const String logout = '/auth/logout';
   static const String deleteUser = '/user/delete';
-  static const String changePassword = '/user/change-password';
 }

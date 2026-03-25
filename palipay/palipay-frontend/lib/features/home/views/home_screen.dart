@@ -5,6 +5,7 @@ import 'package:palipay_app/features/home/widgets/transactions_section.dart';
 import 'package:palipay_app/features/home/widgets/wallet_card.dart';
 import 'package:provider/provider.dart';
 import 'package:palipay_app/features/account/providers/account_provider.dart';
+import 'package:palipay_app/features/wallet/providers/wallet_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
@@ -18,10 +19,30 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+    // [중요] 화면이 처음 그려질 때 서버에서 데이터를 동기화합니다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncWalletData();
+    });
+  }
+  
+  void _syncWalletData() {
+    // WalletProvider에게 "서버에 있는 내 정보를 가져와줘"라고 시킵니다.
+    // DioClient의 인터셉터가 이미 토큰을 넣어주므로, 여기선 호출만 하면 됩니다.
+    context.read<WalletProvider>().initWalletData(); 
+  }
+  
+  @override
   Widget build(BuildContext context) {
     context.locale; // 다국어 변경을 감지하여 Rebuild 되도록 의존성 주입
+    // context.watch가 상태 변화를 감지하므로, 
+    // 서버 응답이 오면 자동으로 EmptyWalletCard가 WalletCard로 바뀝니다!
+    final walletProvider = context.watch<WalletProvider>();
     final accountProvider = context.watch<AccountProvider>();
-    final bool hasWallet = accountProvider.hasWallet;
+
+    // 지갑 정보 유무 판단 (WalletProvider의 잔액이나 모델을 기준으로 설정)
+    final bool hasWallet = walletProvider.currentBalance != null;
 
     return Scaffold(
       extendBody: true,

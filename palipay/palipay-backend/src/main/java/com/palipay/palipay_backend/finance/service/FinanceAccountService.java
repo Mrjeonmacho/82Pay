@@ -20,8 +20,7 @@ public class FinanceAccountService {
 
     public FinanceAccountResponse connectWallet(
             Long userId,
-            FinanceAccountRequest request
-    ){
+            FinanceAccountRequest request) {
         Long walletId = request.walletId();
         String bankCode = request.bankCode();
         String accountNumber = request.accountNumber();
@@ -29,49 +28,45 @@ public class FinanceAccountService {
         String accountPassword = request.accountPassword();
         String moneyCode = request.moneyCode();
 
-        //TODO 지갑 없을 시 예외 처리
+        // TODO 지갑 없을 시 예외 처리
         WalletPali walletPali = walletService.getWalletPali(walletId);
         if (!walletPali.isOwnedBy(userId)) {
             throw new IllegalArgumentException("해당 사용자의 지갑이 아닙니다.");
         }
 
-        /*외부 계좌 인증*/
+        /* 외부 계좌 인증 */
         ExternalLinkRequest exRequest = new ExternalLinkRequest(
                 accountNumber,
                 accountPassword,
-                moneyCode
-        );
+                moneyCode);
 
         ExternalLinkResponse exResponse = externalBankClient.linkAccount(exRequest);
 
-        if(!exResponse.check()){
-            //TODO 예외 처리
+        if (!exResponse.check()) {
+            // TODO 예외 처리
             return new FinanceAccountResponse(
                     "fail",
-                    walletId
-            );
+                    walletId);
         }
 
-        //TODO 이거 해제
+        // TODO 이거 해제
 
-        /*wallet에 계좌 정보 업데이트*/
+        /* wallet에 계좌 정보 업데이트 */
         walletService.updateWalletPali(
                 walletId,
                 bankCode,
                 accountNumber,
                 accountUsername,
-                moneyCode
-        );
+                moneyCode);
 
         return new FinanceAccountResponse(
                 "success",
-                walletId
-        );
+                walletId);
     }
 
     public WalletResponse createPin(
             Long userId,
-            WalletPinRequest req){
+            WalletPinRequest req) {
 
         WalletPali walletPali = walletService.getWalletPaliByUserId(userId);
 
@@ -83,12 +78,11 @@ public class FinanceAccountService {
 
     public WalletResponse updatePin(
             Long userId,
-            WalletPinUpdateRequest req
-    ){
+            WalletPinUpdateRequest req) {
         WalletPali walletPali = walletService.getWalletPaliByUserId(userId);
 
-        if(!walletPali.matchesPin(req.oldPinNumber())){
-            //TODO 예외 발생
+        if (!walletPali.matchesPin(req.oldPinNumber())) {
+            // TODO 예외 발생
         }
 
         walletService.updatePin(walletPali.getWalletId(), req.newPinNumber());
@@ -97,7 +91,7 @@ public class FinanceAccountService {
                 .message("pin is updated!").build();
     }
 
-    public WalletResponse unconnectWallet(Long userId, Long walletId){
+    public WalletResponse unconnectWallet(Long userId, Long walletId) {
 
         WalletPali walletPali = walletService.getWalletPaliByUserId(userId);
 

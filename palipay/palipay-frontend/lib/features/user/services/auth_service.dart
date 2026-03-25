@@ -89,9 +89,10 @@ class AuthService {
         return false;
       }
     } on DioException catch (e) {
-      print("❌ [실패] 상태코드: ${e.response?.statusCode}");
-      print("❌ [실패] 에러내용: ${e.response?.data}");
-      return false;
+        print("❌ [실패] 상태코드: ${e.response?.statusCode}");
+        print("❌ [실패] 에러내용: ${e.response?.data}");
+        return false;
+
     } catch (e) {
       print("네트워크 에러: $e");
       return false;

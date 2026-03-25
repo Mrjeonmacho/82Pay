@@ -19,4 +19,24 @@ class BankAccount {
     required this.moneyCode,
     this.amount,
   });
+
+  BankAccount copyWith({
+    String? walletId,
+    String? bankCode,
+    String? bankName,
+    String? accountNumber,
+    String? accountUsername,
+    String? moneyCode,
+    int? amount,
+  }) {
+    return BankAccount(
+      walletId: walletId ?? this.walletId,
+      bankCode: bankCode ?? this.bankCode,
+      bankName: bankName ?? this.bankName,
+      accountNumber: accountNumber ?? this.accountNumber,
+      accountUsername: accountUsername ?? this.accountUsername,
+      moneyCode: moneyCode ?? this.moneyCode,
+      amount: amount ?? this.amount,
+    );
+  }
 }

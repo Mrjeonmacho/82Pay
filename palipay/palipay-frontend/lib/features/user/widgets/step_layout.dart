@@ -17,8 +17,11 @@ class StepLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -28,7 +31,7 @@ class StepLayout extends StatelessWidget {
               color: AppColors.abledFont,
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: screenHeight * 0.02),
           AnimatedBuilder(
             animation: shakeController,
             builder: (context, child) {

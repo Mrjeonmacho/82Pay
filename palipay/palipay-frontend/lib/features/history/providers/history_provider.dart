@@ -13,80 +13,21 @@ class HistoryProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   // 1. 거래 내역 목록 조회 (001 API)
-  Future<void> fetchHistory({int page = 0, String? category}) async {
+  Future<void> fetchHistory({int page = 0, String? category, int? walletId}) async {
     _isLoading = true;
     notifyListeners();
 
-    // TODO: API 연동 후 주석 제거
-    // try {
-    //   final data = await _service.getTransactions(
-    //     page: page,
-    //     category: category,
-    //   );
-    //   _items = (data['items'] as List)
-    //       .map((e) => Transaction.fromJson(e))
-    //       .toList();
-    // } finally {
-    //   _isLoading = false;
-    //   notifyListeners();
-    // }
-
     try {
-      // --- 실제 서버 대신 목 데이터를 넣어줍니다 ---
-      await Future.delayed(
-        const Duration(milliseconds: 500),
-      ); // 실제 통신 느낌을 위해 딜레이 추가
-
-      final List<Transaction> mockData = [
-        // 오늘 내역 (OUTPUT)
-        Transaction(
-          id: 9001,
-          category: 'OUTPUT',
-          amount: 5500,
-          otherAccountName: 'Starbucks Gangnam',
-          createdAt: DateTime.now(),
-          description: 'Morning Coffee',
-        ),
-        // 오늘 내역 (INPUT)
-        Transaction(
-          id: 9002,
-          category: 'INPUT',
-          amount: 50000,
-          otherAccountName: 'Wallet Top-up',
-          createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-          description: 'Weekly Allowance',
-        ),
-        // 어제 내역 (OUTPUT)
-        Transaction(
-          id: 9003,
-          category: 'OUTPUT',
-          amount: 14500,
-          otherAccountName: 'Shake Shack',
-          createdAt: DateTime.now().subtract(const Duration(days: 1)),
-          description: 'Dinner with friends',
-        ),
-        // 며칠 전 내역 (OUTPUT)
-        Transaction(
-          id: 9004,
-          category: 'OUTPUT',
-          amount: 1250,
-          otherAccountName: 'Public Transport',
-          createdAt: DateTime.now().subtract(const Duration(days: 3)),
-          description: 'Bus fare',
-        ),
-      ];
-
-      // 필터 로직이 잘 작동하는지 확인하기 위해 필터링 처리
-      if (category == 'INPUT') {
-        _items = mockData.where((e) => e.category == 'INPUT').toList();
-      } else if (category == 'OUTPUT') {
-        _items = mockData.where((e) => e.category == 'OUTPUT').toList();
-      } else {
-        _items = mockData;
-      }
+      final data = await _service.getTransactions(
+        page: page,
+        category: category,
+        walletId: walletId,
+      );
+      _items = (data['items'] as List)
+          .map((e) => Transaction.fromJson(e))
+          .toList();
     } catch (e) {
-      // 에러 처리 로직
-      debugPrint('Error: $e');
+      debugPrint('Error fetching history: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

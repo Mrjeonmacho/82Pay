@@ -14,6 +14,8 @@
         "cash_out": "出金"
     },
     "profile": {
+        "user_name": "ユーザー名",
+        "user_email": "メールアドレス",
         "change_language": "言語変更",
         "select_language": "言語を選択",
         "title": "プロフィール",
@@ -28,17 +30,17 @@
         "password": {
             "title_change": "パスワード変更",
             "btn_change": "パスワード変更",
-            "label_current": "현재パスワード",
-            "hint_current": "현재パスワードを入力してください",
-            "label_new": "새パスワード",
-            "hint_new": "새パスワードを入力してください",
-            "label_confirm": "새パスワードの確認",
-            "hint_confirm": "새パスワード를 다시 입력해 주세요",
-            "error_empty_current": "현재パスワードを入力してください。",
-            "error_empty_new": "새パスワードを入力してください。",
+            "label_current": "現在のパスワード",
+            "hint_current": "現在のパスワードを入力してください",
+            "label_new": "新しいパスワード",
+            "hint_new": "新しいパスワードを入力してください",
+            "label_confirm": "新しいパスワード（確認）",
+            "hint_confirm": "新しいパスワードをもう一度入力してください",
+            "error_empty_current": "現在のパスワードを入力してください。",
+            "error_empty_new": "新しいパスワードを入力してください。",
             "error_too_short": "パスワードは8文字以上で入力してください。",
-            "error_same_as_current": "현재のパスワードとは異なるものを入力してください。",
-            "error_empty_confirm": "パスワードの確認を入力してください。",
+            "error_same_as_current": "現在のパスワードとは異なるものを入力してください。",
+            "error_empty_confirm": "新しいパスワードを確認してください。",
             "error_mismatch": "パスワードが一致しません。",
             "error_failed": "パスワードの変更に失敗しました。もう一度お試しください。"
         },
@@ -73,11 +75,11 @@
     },
     "bank": {
         "selection": {
-            "title": "{countryCode}銀行を選択 ({currency})"
+            "title": "{country}銀行を選択"
         },
         "pwd": {
             "link_success": "口座の連携が完了しました！",
-            "invalid_msg": "パスワードが違います。テスト用 '1111' をお試しください。",
+            "invalid_msg": "パスワードが違います",
             "title": "銀行パスワード入力",
             "desc": "銀行の暗証番号4桁を入力してください"
         }
@@ -116,7 +118,8 @@
         }
     },
     "home_screen": {
-        "recent_transactions": "最近の取引"
+        "recent_transactions": "最近の取引",
+        "no_transactions": "まだ取引履歴がありません"
     },
     "linked_accounts": {
         "link_bank_account": "銀行口座を連携する"
@@ -245,6 +248,9 @@
     "wallet": {
         "refund": {
             "max": "最大"
+        },
+        "error": {
+            "insufficient_balance": "残高が不足しています"
         }
     },
     "transfer": {

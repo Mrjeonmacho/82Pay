@@ -22,4 +22,20 @@ class WalletBalanceModel {
       message: null,
     );
   }
+
+  WalletBalanceModel copyWith({
+    int? currentBalance,
+    bool? isSufficient,
+    int? requiredAmount,
+    int? shortageAmount,
+    String? message,
+  }) {
+    return WalletBalanceModel(
+      currentBalance: currentBalance ?? this.currentBalance,
+      isSufficient: isSufficient ?? this.isSufficient,
+      requiredAmount: requiredAmount ?? this.requiredAmount,
+      shortageAmount: shortageAmount ?? this.shortageAmount,
+      message: message ?? this.message,
+    );
+  }
 }
