@@ -10,6 +10,7 @@ import cv2
 
 from ocr.bank_patterns import get_pattern_match_info, resolve_bank_name
 from ocr.base import OCREngine
+from ocr.postprocess import extract_account_number
 
 from .client import ChatCompletionsHttpError, chat_completions
 from .config import (
@@ -25,6 +26,15 @@ from .prompts import build_developer_prompt
 
 def _log(msg: str) -> None:
     print(f"[gpt-ocr] {msg}", flush=True)
+
+
+# extract_account_number 가 OCRBoxItem 의 box 좌표를 쓰므로 GPT 줄 단위에 더미 박스 필요
+_GPT_LINE_PLACEHOLDER_BOX: List[List[float]] = [
+    [0.0, 0.0],
+    [400.0, 0.0],
+    [400.0, 40.0],
+    [0.0, 40.0],
+]
 
 
 def _bgr_to_data_url_jpeg(img_bgr: Any) -> Tuple[str, Dict[str, Any]]:
@@ -93,6 +103,38 @@ def _normalize_account_digits(raw: Optional[str]) -> Optional[str]:
     if len(digits) < 9 or len(digits) > 16:
         return None
     return digits
+
+
+def _merge_gpt_account_with_postprocess(
+    bank_name: Optional[str],
+    account_gpt: Optional[str],
+    items: List[Dict[str, Any]],
+    full_text: str,
+) -> tuple[Optional[str], str]:
+    """
+    GPT가 짧은 계좌만 줄 때 Paddle과 동일한 extract_account_number 로
+    full_text 에서 후보를 다시 뽑아 bank_patterns 에 더 잘 맞는 쪽을 선택한다.
+    """
+    ft = (full_text or "").strip()
+    if not bank_name or not ft or not items:
+        return account_gpt, "gpt_only"
+
+    refined = extract_account_number(items, ft, bank_name=bank_name)
+    pi_g = get_pattern_match_info(bank_name, account_gpt)
+    pi_r = get_pattern_match_info(bank_name, refined) if refined else None
+    matched_g = bool(pi_g.get("matched"))
+    matched_r = bool(pi_r.get("matched")) if pi_r else False
+
+    if refined and matched_r and not matched_g:
+        return refined, "postprocess_pattern_fix"
+    if refined and not account_gpt:
+        return refined, "postprocess_fill"
+    if refined and matched_r and matched_g:
+        sg = float(pi_g.get("best_score", 0))
+        sr = float(pi_r.get("best_score", 0))
+        if sr > sg:
+            return refined, "postprocess_higher_score"
+    return account_gpt, "gpt"
 
 
 def _message_content_with_image(img_data_url: str) -> List[Dict[str, Any]]:
@@ -188,25 +230,32 @@ class GptOCREngine(OCREngine):
         bank_raw = extracted.get("bank_name")
         bank_name = resolve_bank_name(bank_raw) if bank_raw else None
 
-        account_number = _normalize_account_digits(extracted.get("account_number"))
-        pattern_info = get_pattern_match_info(bank_name, account_number)
-
-        if bank_raw is not None and bank_name != bank_raw:
-            _log(f"은행명 정규화 | {bank_raw!r} -> {bank_name!r}")
-        _log(
-            f"후처리 결과 | bank_name={bank_name!r} account_number={account_number!r} "
-            f"pattern_matched={pattern_info.get('matched')} best_score={pattern_info.get('best_score')} "
-            f"matched_rules={pattern_info.get('matched_rules')}"
-        )
-
         full_text = extracted.get("full_text") or ""
         if not isinstance(full_text, str):
             full_text = str(full_text)
 
         lines = [ln.strip() for ln in full_text.splitlines() if ln.strip()]
         items: List[Dict[str, Any]] = [
-            {"text": ln, "score": 1.0, "box": []} for ln in lines
+            {"text": ln, "score": 1.0, "box": _GPT_LINE_PLACEHOLDER_BOX} for ln in lines
         ] if lines else []
+
+        account_gpt = _normalize_account_digits(extracted.get("account_number"))
+        account_number, account_source = _merge_gpt_account_with_postprocess(
+            bank_name, account_gpt, items, full_text.strip()
+        )
+        pattern_info = get_pattern_match_info(bank_name, account_number)
+
+        if bank_raw is not None and bank_name != bank_raw:
+            _log(f"은행명 정규화 | {bank_raw!r} -> {bank_name!r}")
+        if account_source != "gpt_only":
+            _log(
+                f"계좌 보정({account_source}) | gpt={account_gpt!r} -> 최종={account_number!r}"
+            )
+        _log(
+            f"후처리 결과 | bank_name={bank_name!r} account_number={account_number!r} "
+            f"pattern_matched={pattern_info.get('matched')} best_score={pattern_info.get('best_score')} "
+            f"matched_rules={pattern_info.get('matched_rules')}"
+        )
 
         parsed: Dict[str, Any] = {
             "bank_name": bank_name,
@@ -228,5 +277,7 @@ class GptOCREngine(OCREngine):
                 "preprocess_mode": preprocess_mode,
                 "api_url": get_api_url(),
                 "usage": raw.get("usage"),
+                "account_merge": account_source,
+                "account_gpt_raw": account_gpt,
             },
         }

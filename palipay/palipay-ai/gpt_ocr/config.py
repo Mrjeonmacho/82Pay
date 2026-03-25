@@ -4,7 +4,7 @@ import os
 DEFAULT_CHAT_COMPLETIONS_URL = (
     "https://gms.ssafy.io/gmsapi/api.openai.com/v1/chat/completions"
 )
-DEFAULT_MODEL = "gpt-4o-mini"
+DEFAULT_MODEL = "gpt-5.2"
 DEFAULT_TIMEOUT_SEC = 60.0
 DEFAULT_INSTRUCTION_ROLE = "developer"
 
