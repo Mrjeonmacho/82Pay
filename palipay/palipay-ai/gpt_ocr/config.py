@@ -7,6 +7,13 @@ DEFAULT_CHAT_COMPLETIONS_URL = (
 DEFAULT_MODEL = "gpt-5.2"
 DEFAULT_TIMEOUT_SEC = 60.0
 DEFAULT_INSTRUCTION_ROLE = "developer"
+DEFAULT_MAX_COMPLETION_TOKENS = 4096
+# GMS 프록시: 큰 data URL 요청이 오해된 400(예: Model not found)을 유발할 수 있어 별도 한도 사용
+DEFAULT_GPT_UPSTREAM_MAX_SIDE = 1024
+DEFAULT_GPT_UPSTREAM_JPEG_QUALITY = 75
+DEFAULT_GPT_UPSTREAM_FALLBACK_MAX_SIDE = 900
+DEFAULT_GPT_UPSTREAM_FALLBACK_JPEG_QUALITY = 70
+DEFAULT_GPT_UPSTREAM_B64_THRESHOLD = 120_000
 
 
 def get_api_url() -> str:
@@ -31,6 +38,71 @@ def get_timeout_sec() -> float:
         except ValueError:
             pass
     return DEFAULT_TIMEOUT_SEC
+
+
+def get_max_completion_tokens() -> int:
+    raw = (
+        os.environ.get("GPT_OCR_MAX_COMPLETION_TOKENS")
+        or os.environ.get("GPT_OCR_MAX_TOKENS")
+        or ""
+    )
+    if raw:
+        try:
+            v = int(raw)
+            return max(1, min(200_000, v))
+        except ValueError:
+            pass
+    return DEFAULT_MAX_COMPLETION_TOKENS
+
+
+def get_gpt_upstream_max_side() -> int:
+    raw = os.environ.get("GPT_OCR_UPSTREAM_MAX_SIDE", "")
+    if raw:
+        try:
+            return max(256, min(4096, int(raw)))
+        except ValueError:
+            pass
+    return DEFAULT_GPT_UPSTREAM_MAX_SIDE
+
+
+def get_gpt_upstream_jpeg_quality() -> int:
+    raw = os.environ.get("GPT_OCR_UPSTREAM_JPEG_QUALITY", "")
+    if raw:
+        try:
+            return max(40, min(95, int(raw)))
+        except ValueError:
+            pass
+    return DEFAULT_GPT_UPSTREAM_JPEG_QUALITY
+
+
+def get_gpt_upstream_fallback_max_side() -> int:
+    raw = os.environ.get("GPT_OCR_UPSTREAM_FALLBACK_MAX_SIDE", "")
+    if raw:
+        try:
+            return max(256, min(4096, int(raw)))
+        except ValueError:
+            pass
+    return DEFAULT_GPT_UPSTREAM_FALLBACK_MAX_SIDE
+
+
+def get_gpt_upstream_fallback_jpeg_quality() -> int:
+    raw = os.environ.get("GPT_OCR_UPSTREAM_FALLBACK_JPEG_QUALITY", "")
+    if raw:
+        try:
+            return max(40, min(95, int(raw)))
+        except ValueError:
+            pass
+    return DEFAULT_GPT_UPSTREAM_FALLBACK_JPEG_QUALITY
+
+
+def get_gpt_upstream_b64_threshold() -> int:
+    raw = os.environ.get("GPT_OCR_UPSTREAM_B64_THRESHOLD", "")
+    if raw:
+        try:
+            return max(10_000, min(500_000, int(raw)))
+        except ValueError:
+            pass
+    return DEFAULT_GPT_UPSTREAM_B64_THRESHOLD
 
 
 def get_instruction_role() -> str:

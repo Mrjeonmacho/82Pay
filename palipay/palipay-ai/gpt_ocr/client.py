@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import httpx
 
@@ -9,9 +9,16 @@ import httpx
 class ChatCompletionsHttpError(Exception):
     """Chat Completions 호출이 4xx/5xx일 때 upstream 상태·본문을 담는다."""
 
-    def __init__(self, status_code: int, detail: Any):
+    def __init__(
+        self,
+        status_code: int,
+        detail: Any,
+        *,
+        debug: Optional[Dict[str, Any]] = None,
+    ):
         self.status_code = status_code
         self.detail = detail
+        self.debug = debug if debug is not None else {}
         super().__init__(str(detail))
 
 
@@ -22,6 +29,7 @@ def chat_completions(
     model: str,
     messages: List[Dict[str, Any]],
     timeout_sec: float,
+    max_completion_tokens: int,
 ) -> Dict[str, Any]:
     headers = {
         "Content-Type": "application/json",
@@ -30,6 +38,7 @@ def chat_completions(
     body: Dict[str, Any] = {
         "model": model,
         "messages": messages,
+        "max_completion_tokens": max_completion_tokens,
     }
     with httpx.Client(timeout=timeout_sec) as client:
         t0 = time.perf_counter()
