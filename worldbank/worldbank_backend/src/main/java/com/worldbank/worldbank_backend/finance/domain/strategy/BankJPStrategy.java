@@ -2,6 +2,7 @@ package com.worldbank.worldbank_backend.finance.domain.strategy;
 
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.History.HistoryResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Info.InfoResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.entity.jp.AccountHistoryJP;
@@ -125,20 +126,33 @@ public class BankJPStrategy implements BankStrategy {
                 .build();
 
         historyRepository.save(history);
-        }
+    }
 
-        @Override
-        public List<HistoryResponseDto> getHistoryByUserId(Long userId) {
-        return historyRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
-                .map(history -> HistoryResponseDto.builder()
-                        .historyId(history.getHistoryId())
-                        .category(history.getCategory().name())
-                        .amount(history.getAmount())
-                        .otherAccountNumber(history.getOtherAccountNumber())
-                        .otherAccountName(history.getOtherAccountName())
-                        .otherBankCode(history.getOtherBankCode())
-                        .createdAt(history.getCreatedAt())
+    @Override
+    public List<HistoryResponseDto> getHistoryByUserId(Long userId) {
+    return historyRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+            .map(history -> HistoryResponseDto.builder()
+                    .historyId(history.getHistoryId())
+                    .category(history.getCategory().name())
+                    .amount(history.getAmount())
+                    .otherAccountNumber(history.getOtherAccountNumber())
+                    .otherAccountName(history.getOtherAccountName())
+                    .otherBankCode(history.getOtherBankCode())
+                    .createdAt(history.getCreatedAt())
+                    .build())
+            .collect(Collectors.toList());
+    }
+    @Override
+    public InfoResponseDto getInfoByUserId(Long userId) {
+        return bankRepository.findByUser_UserId(userId)
+                .map(bank -> InfoResponseDto.builder()
+                        .userName(bank.getUserName())
+                        .accountNumber(bank.getAccountNumber())
+                        .amount(bank.getAmount())
+                        .bankName(bank.getBankName())
+                        .currency(getBankCurrency())
                         .build())
-                .collect(Collectors.toList());
-        }
-        }
+                .orElseThrow(() -> new RuntimeException("해당 유저의 계좌 정보를 찾을 수 없습니다."));
+    }
+
+}

@@ -3,6 +3,7 @@ package com.worldbank.worldbank_backend.finance.domain.service;
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.History.HistoryResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Info.InfoResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.router.BankRouter;
@@ -41,5 +42,11 @@ public class CheckService {
     public List<HistoryResponseDto> getHistory(Long userId, String currency) {
         BankStrategy strategy = bankRouter.route(currency);
         return strategy.getHistoryByUserId(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public InfoResponseDto getInfo(Long userId, String currency) {
+        BankStrategy strategy = bankRouter.route(currency);
+        return strategy.getInfoByUserId(userId);
     }
 }
