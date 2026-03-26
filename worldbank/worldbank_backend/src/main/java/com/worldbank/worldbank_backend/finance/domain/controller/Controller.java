@@ -4,6 +4,7 @@ import com.worldbank.worldbank_backend.finance.domain.dto.Business.BusinessRespo
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.History.HistoryResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Info.InfoResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
@@ -70,6 +71,14 @@ public class Controller {
         return checkService.getHistory(userId, currency);
     }
 
-
+    @GetMapping("/info/{userid}")
+    public InfoResponseDto getInfo(
+            @PathVariable("userid") Long userId,
+            @RequestParam("currency") String currency) {
+        return checkService.getInfo(userId, currency);
     }
+
+
+
+}
 
