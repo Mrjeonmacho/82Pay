@@ -50,5 +50,8 @@
             "title": "交易记录"
         },
         "empty": "没有交易记录"
+    },
+    "splash": {
+        "get_started": "开始"
     }
 }

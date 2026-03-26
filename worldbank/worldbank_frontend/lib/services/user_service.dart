@@ -98,37 +98,13 @@ class UserService {
         print("DEBUG 1: 서버 응답 성공, 토큰 존재 여부: ${token != null}");
 
         if (token != null) {
-          // 1. AuthProvider에 토큰 전달 및 파싱
-          print("DEBUG 2: AuthProvider.login 호출 직전");
           final authProvider = Provider.of<AuthProvider>(
             context,
             listen: false,
           );
-          authProvider.login(token);
+          authProvider.login(token); // 토큰 저장 및 유저 정보 파싱까지만!
 
-          // 2. 파싱된 데이터 검증 (방어 코드)
-          // 느낌표(!) 대신 안전하게 null 체크를 하고 넘어갑니다.
-          final int? userId = authProvider.userId;
-          final String? country = authProvider.country;
-
-          print("DEBUG 3: 파싱 결과 -> ID: $userId, Country: $country");
-
-          if (userId == null || country == null) {
-            print("ERROR: 토큰 파싱 실패 또는 유저 정보 누락");
-            return 500; // 파싱 실패 시 에러 반환
-          }
-
-          // 3. BankProvider 초기화 (로딩 해제 및 데이터 조회)
-          print("DEBUG 4: BankProvider.init 호출");
-          final bankProvider = Provider.of<BankProvider>(
-            context,
-            listen: false,
-          );
-
-          // await를 붙여서 데이터 조회가 끝날 때까지 기다립니다.
-          await bankProvider.init(userId, country);
-
-          return 200;
+          return 200; // "인증 성공했으니 이제 화면 넘어가세요~"
         }
       }
 
