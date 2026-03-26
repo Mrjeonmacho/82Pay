@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.palipay.palipay_backend.global.utils.CookieUtil;
+import com.palipay.palipay_backend.user.domain.UserPali;
 import com.palipay.palipay_backend.user.dto.request.LoginRequest;
 import com.palipay.palipay_backend.user.dto.request.PasswordCheckRequest;
 import com.palipay.palipay_backend.user.dto.request.PasswordUpdateRequest;
@@ -36,8 +37,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
         TokenResponse tokenResponse = userAuthService.login(request);
+        UserPali user = userAuthService.findUserByEmail(request.email());
+        LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo(
+                user.getUserId(),
+                user.getName(),
+                user.getEmail(),
+                user.getCountryCode());
         cookieUtil.setRefreshTokenCookie(response, tokenResponse.refreshToken()); // 봉투에 쿠키 넣기
-        return ResponseEntity.ok(new LoginResponse(tokenResponse.accessToken(), "Bearer")); // 바디엔 AT만
+        return ResponseEntity.ok(new LoginResponse(tokenResponse.accessToken(), "Bearer", userInfo)); // 바디엔 AT만
     }
 
     // 로그아웃
