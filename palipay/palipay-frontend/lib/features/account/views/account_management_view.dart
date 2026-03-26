@@ -130,27 +130,6 @@ class AccountManagementView extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Container(
-                            width: 24,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.8),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Container(
-                            width: 24,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.4),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                   TextButton(
@@ -186,24 +165,6 @@ class AccountManagementView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        OutlinedButton.icon(
-          onPressed: () {
-            // TODO: 계좌 교체 플로우 연동
-          },
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(56),
-            side: BorderSide(color: AppColors.disabledFont.withOpacity(0.6)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            backgroundColor: Colors.white,
-          ),
-          icon: const Icon(Icons.add, color: AppColors.mainBlue),
-          label: Text(
-            'account_management.replace_account'.tr(),
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.mainBlue),
-          ),
-        ),
       ],
     );
   }

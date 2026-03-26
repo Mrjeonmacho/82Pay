@@ -7,16 +7,6 @@ import '../models/profile_user_model.dart';
 class ProfileService {
   final Dio _dio = DioClient().dio;
 
-  /// Fetch user profile
-  Future<ProfileUserModel> getProfile() async {
-    try {
-      final response = await _dio.get(ApiConstants.profile);
-      return ProfileUserModel.fromJson(response.data);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   /// Update language
   Future<Response> updateLanguage(String language) async {
     try {

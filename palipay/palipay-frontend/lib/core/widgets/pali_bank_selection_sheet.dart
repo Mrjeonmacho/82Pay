@@ -16,47 +16,86 @@ class BankSelectionSheet extends StatelessWidget {
     required this.onSelect,
   });
 
+  double _clamp(double value, double min, double max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+  }
+
   @override
   Widget build(BuildContext context) {
     // 1. 해당 국가의 은행 목록과 통화 정보 가져오기
     final banks = BankConstants.getBanks(countryCode);
-    final currency = BankConstants.getDefaultCurrency(countryCode);
+    
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+
+    final sheetHeight = _clamp(height * 0.72, 480, height * 0.82);
+    final horizontalPadding = _clamp(width * 0.05, 18, 24);
+
+    final sheetRadius = _clamp(width * 0.08, 24, 32);
+    final handleWidth = _clamp(width * 0.10, 36, 46);
+    final handleHeight = _clamp(height * 0.006, 4, 6);
+
+    final topGap = _clamp(height * 0.015, 10, 14);
+    final handleBottomGap = _clamp(height * 0.03, 20, 30);
+    final titleBottomGap = _clamp(height * 0.025, 18, 26);
+    final gridBottomPadding = safeBottom + _clamp(height * 0.02, 14, 22);
+
+    final titleFontSize = _clamp(width * 0.06, 24, 32);
+
+    final gridMainSpacing = _clamp(width * 0.03, 12, 16);
+    final gridCrossSpacing = _clamp(width * 0.03, 12, 16);
+    final childAspectRatio = width < 360 ? 0.82 : 0.88;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.7, // 화면 높이의 70%
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: const BoxDecoration(
+      height: sheetHeight,
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(sheetRadius)),
       ),
       child: Column(
         children: [
-          const SizedBox(height: 12),
+          SizedBox(height: topGap),
           // 핸들러 바
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 24),
+          Container(width: handleWidth, height: handleHeight, 
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          SizedBox(height: handleBottomGap),
           
           Text(
             'bank.selection.title'.tr(namedArgs: {
               'country': countryCode,
             }),
-            style: AppTextStyles.titleMedium,
+            style: AppTextStyles.titleMedium.copyWith(
+              fontSize: titleFontSize,
+              fontWeight: FontWeight.w800,
+              color: AppColors.abledFont,
+            ),
+            textAlign: TextAlign.center,
           ), 
 
-          const SizedBox(height: 24),
+          SizedBox(height: titleBottomGap),
 
           Expanded(
             child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              padding: EdgeInsets.only(bottom: gridBottomPadding),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 0.85,
+                mainAxisSpacing: gridMainSpacing,
+                crossAxisSpacing: gridCrossSpacing,
+                childAspectRatio: childAspectRatio,
               ),
               itemCount: banks.length,
               itemBuilder: (context, index) {
                 final bank = banks[index];
-                return _buildBankItem(context, bank);
+                return _buildBankItem(context, bank, width, height,);
               },
             ),
           ),
@@ -65,37 +104,58 @@ class BankSelectionSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildBankItem(BuildContext context, Map<String, dynamic> bank) {
+  Widget _buildBankItem(
+    BuildContext context, 
+    Map<String, dynamic> bank, 
+    double screenWidth,
+    double screenHeight,
+  ) {
+    final itemRadius = _clamp(screenWidth * 0.05, 16, 20);
+    final itemPaddingH = _clamp(screenWidth * 0.025, 8, 12);
+    final itemPaddingV = _clamp(screenHeight * 0.018, 12, 16);
+
+    final logoSize = _clamp(screenWidth * 0.10, 34, 44);
+    final logoTextGap = _clamp(screenHeight * 0.015, 10, 14);
+
+    final labelFontSize = _clamp(screenWidth * 0.05, 15, 18);
+    
     return InkWell(
       onTap: () {
-        Navigator.pop(context); // 시트 먼저 닫기
-        onSelect(bank); // 선택된 은행 데이터를 전달하여 이후 로직(화면 이동 등) 실행
+        Navigator.pop(context);
+        onSelect(bank);
       },
-      borderRadius: BorderRadius.circular(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // 2. 아까 정리한 영어 파일명 로고 적용
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              shape: BoxShape.circle,
-            ),
-            child: Image.asset(
+      borderRadius: BorderRadius.circular(itemRadius),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF6F6F8),
+          borderRadius: BorderRadius.circular(itemRadius),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: itemPaddingH, vertical: itemPaddingV,),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
               bank['logo'],
-              width: 32,
-              height: 32,
-              errorBuilder: (context, error, stackTrace) => const Icon(Icons.account_balance),
+              width: logoSize,
+              height: logoSize,
+              errorBuilder: (context, error, stackTrace) =>
+                  Icon(Icons.account_balance, size: logoSize),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            bank['name'],
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodySmall.copyWith(fontSize: 12, fontWeight: FontWeight.w500),
-          ),
-        ],
+            SizedBox(height: logoTextGap),
+            Text(
+              bank['name'],
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.bodySmall.copyWith(
+                fontSize: labelFontSize,
+                fontWeight: FontWeight.w600,
+                color: AppColors.abledFont,
+                height: 1.2,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

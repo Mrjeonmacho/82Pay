@@ -5,16 +5,6 @@ import 'package:palipay_app/core/network/dio_client.dart';
 
 class AccountService {
 
-  // final Dio _dio = Dio(
-  //   BaseOptions(
-  //     baseUrl: EnvConfig.baseUrl,
-  //     connectTimeout: const Duration(seconds: 15),
-  //     receiveTimeout: const Duration(seconds: 30),
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     }
-  //   ),
-  // );
   final Dio _dio = DioClient().dio;
 
   // 1. 계좌 등록 (POST /api/users/accounts)
@@ -40,7 +30,8 @@ class AccountService {
     return response;
   } on DioException catch (e) {
     // 404 에러 시 서버가 주는 상세 메시지가 있다면 출력
-    print('❌ 서버 응답 에러: ${e.response?.data}');
+    print('❌ 서버 응답 에러 코드: ${e.response?.statusCode}');
+    print('❌ 서버 응답 내용: ${e.response?.data}');
     rethrow;
   }
 }

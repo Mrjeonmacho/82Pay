@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // 환경변수
 import 'package:easy_localization/easy_localization.dart'; // 다국어
@@ -28,10 +29,18 @@ import 'core/theme/app_text_styles.dart';
 
 import 'package:palipay_app/main_screen.dart';
 import 'package:palipay_app/features/user/views/login_screen.dart';
+import 'package:palipay_app/features/wallet/views/wallet_topup_view.dart';
 
 void main() async {
   // 1. 플러터 엔진과 통신 준비
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 💡 [여기 추가] 앱 전체를 세로 모드로 고정합니다.
+  // portraitUp: 정방향 세로, portraitDown: 역방향 세로
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // 2. 다국어 설정 초기화 (이게 빠지면 null 에러 발생!)
   await EasyLocalization.ensureInitialized();
@@ -111,10 +120,12 @@ class PaliPayApp extends StatelessWidget {
             foregroundColor: Colors.white,
           ),
         ),
+
         // home: const LoginScreen(), // 혹은 시작 화면
         // 로그인 되어 있으면 메인 화면, 아니면 로그인 화면
-        // home: isLoggedIn ? const MainScreen() : const LoginScreen(),
-        home: const MainScreen(),
+        home: isLoggedIn ? const MainScreen() : const LoginScreen(),
+        // home: const MainScreen(),
+        // home: TopupView()
       ),
     );
   }

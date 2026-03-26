@@ -1,16 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:palipay_app/features/account/views/bank_password_view.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
 import '../providers/account_provider.dart';
+import '../../../core/providers/user_provider.dart'; 
+import 'bank_password_view.dart';
 
 class AccountLinkView extends StatefulWidget {
-  // 생성자를 통해 선택된 은행 정보를 직접 받습니다.
   final String bankName;
   final String bankCode;
+  
 
   const AccountLinkView({
     super.key,
@@ -23,49 +24,61 @@ class AccountLinkView extends StatefulWidget {
 }
 
 class _AccountLinkViewState extends State<AccountLinkView> {
-  // 이제 컨트롤러는 딱 두 개만 필요합니다.
   final _accountController = TextEditingController();
   final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   void dispose() {
     _accountController.dispose();
     _usernameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleNextStep() {
-    // 1. 유효성 검사
-    if (_usernameController.text.isEmpty || _accountController.text.isEmpty) {
-      _showErrorSnackBar('account_link.fill_all_fields'.tr());
-      return;
-    }
-
-    // 2. [기획 반영] 다음 페이지(계좌 비밀번호 입력)로 이동
-    // 여기서 입력된 정보들을 넘겨줍니다.
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BankPasswordView(
-          bankName: widget.bankName,
-          bankCode: widget.bankCode,
-          accountNumber: _accountController.text,
-          accountUsername: _usernameController.text,
-          // currency는 UserProvider 등에서 가져온다고 가정
-          currency: 'KRW',
-        ),
-      ),
+  // 1. 스낵바 메서드 정의 (클래스 내부)
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: AppColors.warningRed),
     );
   }
 
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
+    );
   }
+
+  // 2. 계좌 연동 처리 로직
+  Future<void> _handleNextStep() async {
+  if (_usernameController.text.isEmpty || _accountController.text.isEmpty) {
+    _showErrorSnackBar('모든 필드를 입력해주세요.');
+    return;
+  }
+
+  // 다음 화면으로 넘길 데이터 뭉치
+  final partialData = {
+    "bankCode": widget.bankCode,
+    "accountNumber": _accountController.text.trim(),
+    "accountUsername": _usernameController.text.trim(),
+    "moneyCode": "KRW",
+  };
+
+  // 💡 비밀번호 입력 화면으로 이동
+  if (mounted) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BankPasswordView(partialData: partialData, bankName: widget.bankName),
+      ),
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AccountProvider>().isLoading;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const PaliTopBar(title: 'Account Information'),
@@ -78,33 +91,28 @@ class _AccountLinkViewState extends State<AccountLinkView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 현재 선택된 은행을 시각적으로 명확히 보여줌 (수정 불가)
                     _buildFixedInfoTile(
                       'Selected Bank',
                       widget.bankName,
                       Icons.account_balance,
                     ),
                     const SizedBox(height: 32),
-
                     _buildSectionTitle('Account Holder'),
                     PaliInputField(
                       hintText: 'Enter full name',
                       controller: _usernameController,
                     ),
                     const SizedBox(height: 24),
-
                     _buildSectionTitle('account_input.account_number'.tr()),
                     PaliInputField(
-                      hintText: 'Enter account number (digits only)',
+                      hintText: 'Enter account number',
                       controller: _accountController,
                       keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: 12),
                     Text(
                       'account_link.currency_info'.tr(),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.exampleFont,
-                      ),
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.exampleFont),
                     ),
                   ],
                 ),
@@ -113,9 +121,9 @@ class _AccountLinkViewState extends State<AccountLinkView> {
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: PaliButton(
-                text: 'Next',
-                backgroundColor: AppColors.mainBlue,
-                onPressed: _handleNextStep,
+                text: isLoading ? 'Linking...' : 'Link Account',
+                backgroundColor: isLoading ? AppColors.disabledBackground : AppColors.mainBlue,
+                onPressed: isLoading ? null : _handleNextStep,
               ),
             ),
           ],
@@ -124,7 +132,7 @@ class _AccountLinkViewState extends State<AccountLinkView> {
     );
   }
 
-  // 고정된 정보를 보여주는 위젯 (은행 이름 등)
+  // 3. 헬퍼 위젯들 (클래스 내부)
   Widget _buildFixedInfoTile(String label, String value, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -139,18 +147,8 @@ class _AccountLinkViewState extends State<AccountLinkView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.exampleFont,
-                ),
-              ),
-              Text(
-                value,
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(label, style: AppTextStyles.bodySmall.copyWith(color: AppColors.exampleFont)),
+              Text(value, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
             ],
           ),
         ],
@@ -161,10 +159,7 @@ class _AccountLinkViewState extends State<AccountLinkView> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        title,
-        style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
-      ),
+      child: Text(title, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
     );
   }
 }

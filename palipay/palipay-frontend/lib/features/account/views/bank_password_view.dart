@@ -4,25 +4,21 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dio/dio.dart'; // 💡 Dio 임포트 확인!
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/pali_keypad.dart'; // 우리가 만든 부품
+import '../../../core/widgets/pali_keypad.dart'; 
 import '../providers/account_provider.dart';
 
+// 💡 1. 클래스 정의가 정확해야 합니다.
 class BankPasswordView extends StatefulWidget {
   final String bankName;
-  final String bankCode;
-  final String accountNumber;
-  final String accountUsername;
-  final String currency;
+  final Map<String, dynamic> partialData;
 
   const BankPasswordView({
     super.key,
     required this.bankName,
-    required this.bankCode,
-    required this.accountNumber,
-    required this.accountUsername,
-    required this.currency,
+    required this.partialData,
   });
 
   @override
@@ -44,127 +40,93 @@ class _BankPasswordViewState extends State<BankPasswordView> {
 
   void _onBackspace() {
     if (_inputPassword.isNotEmpty) {
-      setState(
-        () => _inputPassword = _inputPassword.substring(
-          0,
-          _inputPassword.length - 1,
-        ),
-      );
+      setState(() => _inputPassword = _inputPassword.substring(0, _inputPassword.length - 1));
     }
   }
 
-  // [핵심] 최종 계좌 연동 로직
   Future<void> _handleFinalLink() async {
     setState(() => _isLoading = true);
 
-    if (mounted) {
-      final accountProvider = context.read<AccountProvider>();
-
-      // 실제 입력받은 데이터로 API 요청 구성
-      final requestData = {
-        'walletId': 0, // 명세서 요구사항에 따름
-        'bankCode': widget.bankCode,
-        'accountNumber': widget.accountNumber,
-        'accountUsername': widget.accountUsername,
-        'accountPassword': _inputPassword, // 사용자가 입력한 실제 비밀번호
-        'moneyCode': widget.currency,
-      };
-
-      // 기기에 저장된 실제 토큰 가져오기
-      const storage = FlutterSecureStorage();
-      final realToken = await storage.read(key: 'accessToken') ?? '';
-
-      // API 연동 시도
-      final success = await accountProvider.linkAccount(
-        requestData: requestData,
-        token: realToken, // 실제 인증 토큰 연결
-      );
-
+    try {
       if (mounted) {
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('bank.pwd.link_success'.tr()),
-              backgroundColor: AppColors.mainBlue,
-            ),
-          );
-          // 홈 화면으로 돌아가기 (모든 스택 제거)
-          Navigator.popUntil(context, (route) => route.isFirst);
-        } else {
-          // 실패 시: 에러 처리
-          setState(() {
-            _isLoading = false;
-            _inputPassword = ""; // 입력값 초기화
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('bank.pwd.invalid_msg'.tr()),
-              backgroundColor: AppColors.warningRed,
-            ),
-          );
+        final accountProvider = context.read<AccountProvider>();
+
+        // 💡 2. 타입을 명시적으로 지정하여 'Map<dynamic, dynamic>' 에러 방지
+        final Map<String, dynamic> requestData = {
+          ...widget.partialData,
+          'accountPassword': _inputPassword,
+          'walletId': 0,
+        };
+
+        const storage = FlutterSecureStorage();
+        final realToken = await storage.read(key: 'accessToken') ?? '';
+
+        final String result = await accountProvider.linkAccount(
+          requestData: requestData,
+          token: realToken,
+        );
+
+        if (mounted) {
+          if (result == "SUCCESS") {
+            _showSnackBar('bank.pwd.link_success'.tr(), Colors.green);
+            Navigator.popUntil(context, (route) => route.isFirst);
+          } else {
+            String errorMessage = 'bank.pwd.invalid_msg'.tr();
+            if (result == "SERVER_ERROR") errorMessage = "서버 점검 중입니다.";
+            if (result == "TIMEOUT") errorMessage = "서버 연결 시간이 초과되었습니다.";
+
+            setState(() {
+              _isLoading = false;
+              _inputPassword = ""; 
+            });
+            _showSnackBar(errorMessage, AppColors.warningRed);
+          }
         }
       }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+      debugPrint("Final Link Error: $e");
     }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: color),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false, // 이전 화면의 키보드가 남아있어 화면을 좁히는 문제(OVERFLOW) 방지
-      backgroundColor: AppColors.background, // 앱 PIN과 다른 배경색
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(color: AppColors.mainBlue),
         title: Text(
           widget.bankName,
-          style: const TextStyle(color: AppColors.mainBlue),
+          style: const TextStyle(color: AppColors.mainBlue, fontWeight: FontWeight.bold),
         ),
       ),
       body: Column(
         children: [
           const SizedBox(height: 40),
-          // 은행 로고 혹은 아이콘
-          const Icon(
-            Icons.lock_person_outlined,
-            size: 64,
-            color: AppColors.mainBlue,
-          ),
+          const Icon(Icons.lock_person_outlined, size: 64, color: AppColors.mainBlue),
           const SizedBox(height: 24),
-          Text(
-            'bank.pwd.title'.tr(),
-            style: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('bank.pwd.title'.tr(), style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text('bank.pwd.desc'.tr()),
           const SizedBox(height: 48),
-
-          // 4자리 도트 (6자리가 아님!)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(4, (index) => _buildDot(index)),
           ),
-
           if (_isLoading) ...[
             const SizedBox(height: 32),
             const CircularProgressIndicator(color: AppColors.mainBlue),
           ],
-
           const Spacer(),
-
-          // [리팩토링의 힘] 부품만 가져다 쓰면 끝!
-          PaliKeypad(
-            onNumberTap: _onKeyTap,
-            onBackspace: _onBackspace,
-            // 왼쪽 버튼은 로고 대신 '지문'이나 '빈칸'으로 설정 가능
-            leftButton: const Icon(
-              Icons.fingerprint,
-              color: Colors.grey,
-              size: 32,
-            ),
-          ),
+          PaliKeypad(onNumberTap: _onKeyTap, onBackspace: _onBackspace),
           const SizedBox(height: 40),
         ],
       ),
@@ -175,15 +137,11 @@ class _BankPasswordViewState extends State<BankPasswordView> {
     bool isFilled = index < _inputPassword.length;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12),
-      width: 16,
-      height: 16,
+      width: 16, height: 16,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isFilled ? AppColors.mainBlue : Colors.white,
-        border: Border.all(
-          color: isFilled ? AppColors.mainBlue : Colors.grey.shade400,
-          width: 2,
-        ),
+        border: Border.all(color: isFilled ? AppColors.mainBlue : Colors.grey.shade400, width: 2),
       ),
     );
   }

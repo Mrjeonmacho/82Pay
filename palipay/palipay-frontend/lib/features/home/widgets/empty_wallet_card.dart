@@ -56,7 +56,7 @@ class EmptyWalletCard extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => BankSelectionSheet(
-        countryCode: userCountry, // 유저의 실제 국가 코드 사용
+        countryCode: userCountry ?? 'US', // 유저의 실제 국가 코드 사용
         onSelect: (selectedBank) {
           // 1. BankSelectionSheet 내부에서 자동으로 pop() 하므로 생략
           
@@ -74,4 +74,4 @@ class EmptyWalletCard extends StatelessWidget {
       ),
     );
   }
-}
+}

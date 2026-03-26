@@ -176,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen>
                             onPressed: provider.isLoading
                                 ? null
                                 : () async {
-                                    bool success = await provider.login();
+                                    bool success = await provider.login(context);
                                     if (success && mounted) {
                                       Navigator.pushReplacement(
                                         context,

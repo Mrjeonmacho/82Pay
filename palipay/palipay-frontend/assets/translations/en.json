@@ -129,10 +129,12 @@
         "card_holder": "CARD HOLDER"
     },
     "pin": {
-        "logo_text": "+82Pay",
+        "logo_text": "PaliPay",
         "error_incorrect": "Incorrect PIN. Please try again ({count}/5)",
         "error_registration_failed": "PIN registration failed. Please try again.",
         "error_mismatch": "PINs do not match. Please try again.",
+        "error_already_exists": "A PIN has already been set for this wallet.",
+        "locked_for": "Locked for {time}",
         "change": {
             "error_invalid_current": "The current PIN is incorrect.",
             "error_same_as_current": "Your new PIN must be different from the current PIN.",
@@ -179,7 +181,8 @@
     "account_input": {
         "scan_failed_msg": "Scan failed. Please enter manually.",
         "account_number": "Account Number",
-        "bank": "Bank"
+        "bank": "Bank",
+        "error_max_length": "Account number must be 20 digits or fewer."
     },
     "amount_input": {
         "from_my_wallet": "From My Wallet",
@@ -285,5 +288,8 @@
         "title": "Select account area",
         "done": "Done",
         "guide": "Drag to select the account-number area.\nUse the bottom-right handle to resize."
+    },
+    "error": {
+        "network_issue": "A network error occurred. Please try again."
     }
 }

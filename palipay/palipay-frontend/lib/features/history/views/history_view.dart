@@ -9,7 +9,6 @@ import '../providers/history_provider.dart';
 import '../../account/providers/account_provider.dart';
 import '../models/transaction_model.dart';
 import 'history_detail_view.dart';
-import '../widgets/history_filter_bottom_sheet.dart';
 import '../../../core/utils/date_formatter_util.dart';
 import '../../../core/utils/currency_input_formatter.dart';
 
@@ -47,25 +46,6 @@ class _HistoryViewState extends State<HistoryView> {
       backgroundColor: AppColors.background,
       appBar: PaliTopBar(
         title: 'history.view.title'.tr(),
-        actions: [
-          IconButton(
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                builder: (context) => const HistoryFilterBottomSheet(),
-              );
-            },
-            icon: const Icon(
-              Icons.calendar_month_outlined,
-              color: AppColors.mainBlue,
-            ),
-          ),
-        ],
       ),
       body: Column(
         children: [
