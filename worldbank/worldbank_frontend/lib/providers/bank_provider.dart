@@ -4,7 +4,6 @@ import '../services/bank_service.dart';
 
 class BankProvider with ChangeNotifier {
   final BankService _service = BankService();
-  Timer? _timer;
 
   Map<String, dynamic>? _accountData;
   List<dynamic> _historyList = [];
@@ -32,39 +31,44 @@ class BankProvider with ChangeNotifier {
       _isLoading = false; // 여기서 로딩이 꺼짐
       notifyListeners();
     }
-
-    _timer?.cancel();
-    _timer = Timer.periodic(
-      const Duration(seconds: 5),
-      (_) => refreshData(userId),
-    );
   }
 
   Future<void> refreshData(int userId) async {
-    String currency = (_userCountry == "KR")
-        ? "KRW"
-        : (_userCountry == "JP" ? "JPY" : "USD");
+    String currency = "USD"; // 기본값
+    if (_userCountry == "KR") {
+      currency = "KRW";
+    } else if (_userCountry == "JP") {
+      currency = "JPY";
+    } else if (_userCountry == "CN") {
+      currency = "CNY"; // 👈 중국 위안화 추가
+    }
 
     // 병렬 호출로 속도 최적화
-    final results = await Future.wait([
-      _service.getAccountInfo(userId, currency),
-      _service.getHistory(userId, currency),
-    ]);
+    try {
+      final results = await Future.wait([
+        _service.getAccountInfo(userId, currency),
+        _service.getHistory(userId, currency),
+      ]);
 
-    _accountData = results[0] as Map<String, dynamic>?;
+      _accountData = results[0] as Map<String, dynamic>?;
 
-    List<dynamic> newHistory = results[1] as List<dynamic>;
-    if (newHistory.length > _historyList.length) {
-      _listKey++;
+      List<dynamic> newHistory = (results[1] as List<dynamic>?) ?? [];
+
+      // 2. 번쩍거림 방지 로직
+      // 데이터가 하나라도 새로 들어왔거나(개수 변화), 첫 데이터의 ID가 달라졌을 때만 listKey 변경
+      if (_historyList.length != newHistory.length) {
+        _listKey++;
+      }
+
+      _historyList = newHistory;
+      notifyListeners();
+    } catch (e) {
+      print("Refresh Error: $e");
     }
-    _historyList = newHistory;
-
-    notifyListeners();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     super.dispose();
   }
 }
