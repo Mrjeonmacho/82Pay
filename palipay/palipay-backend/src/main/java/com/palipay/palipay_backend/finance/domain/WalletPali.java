@@ -112,7 +112,6 @@ public class WalletPali {
         this.accountNumber = null;
         this.bankCode = null;
         this.accountUsername = null;
-        this.amount = null;
         this.updatedAt = LocalDateTime.now();
     }
 
