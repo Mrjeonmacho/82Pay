@@ -1,0 +1,54 @@
+{
+    "signup": {
+        "labels": {
+            "title_account_info": "계정 정보를\n입력해주세요",
+            "title_detail_info": "상세 정보를\n입력해주세요",
+            "email_address": "이메일 주소",
+            "password": "비밀번호",
+            "name": "이름",
+            "select_country": "국가 선택",
+            "hint_country": "국가를 선택하세요",
+            "select_bank": "은행 선택",
+            "hint_bank": "은행을 선택하세요",
+            "bank_password": "계좌 비밀번호 (숫자 4자리)"
+        },
+        "buttons": {
+            "check_duplicate": "중복확인",
+            "check_done": "완료",
+            "next": "다음",
+            "complete_signup": "가입 완료"
+        },
+        "messages": {
+            "error_invalid_email": "올바른 이메일 형식이 아닙니다.",
+            "success_email_available": "사용 가능한 이메일입니다.",
+            "error_email_taken": "이미 사용 중인 이메일입니다.",
+            "error_need_verification": "이메일 중복 확인을 먼저 해주세요.",
+            "error_invalid_password_format": "비밀번호 형식이 올바르지 않습니다.\n(영문, 숫자, 특수문자 포함 8자 이상)",
+            "error_invalid_bank_pw": "계좌 비밀번호는 4자리 숫자여야 합니다.",
+            "error_select_required": "국가와 은행을 선택해주세요.",
+            "success_signup": "회원가입이 완료되었습니다!",
+            "error_signup_failed": "회원가입에 실패했습니다. 다시 시도해주세요."
+        }
+    },
+    "login": {
+        "labels": {
+            "id": "ID",
+            "pw": "PW",
+            "no_account": "계정이 없으신가요?"
+        },
+        "buttons": {
+            "login": "Login",
+            "signup": "회원가입"
+        },
+        "messages": {
+            "error_empty_fields": "ID와 비밀번호를 입력해주세요.",
+            "error_login_failed": "로그인 실패"
+        }
+    },
+    "history": {
+        "view": {
+            "title": "거래 내역"
+        },
+        "empty": "거래 내역이 없습니다"
+    }
+}

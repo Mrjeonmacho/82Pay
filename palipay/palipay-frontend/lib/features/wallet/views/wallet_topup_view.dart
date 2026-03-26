@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 // Theme & Widgets
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/widgets.dart'; 
+import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/currency_input_formatter.dart';
 
 // Providers
@@ -36,7 +36,7 @@ class _TopupViewState extends State<TopupView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final walletProvider = context.read<WalletProvider>();
       final accountProvider = context.read<AccountProvider>();
-      
+
       final linkedAccount = accountProvider.linkedAccount;
       final walletId = int.tryParse(linkedAccount?.walletId ?? '0') ?? 0;
       final currency = linkedAccount?.moneyCode ?? 'USD';
@@ -134,7 +134,10 @@ class _TopupViewState extends State<TopupView> {
               title: bankName,
               subtitle: '${account?.moneyCode ?? "Local"} Account $maskedAcc',
               icon: Icons.account_balance,
-              trailing: const Icon(Icons.keyboard_arrow_down, color: AppColors.abledFont),
+              trailing: const Icon(
+                Icons.keyboard_arrow_down,
+                color: AppColors.abledFont,
+              ),
             );
           },
         ),
@@ -144,7 +147,8 @@ class _TopupViewState extends State<TopupView> {
         ),
         WalletAccountCard(
           title: '+82Pay Wallet',
-          subtitle: 'Current Balance: ₩ ${CurrencyInputFormatter.format(provider.currentBalance ?? 0)}',
+          subtitle:
+              'Current Balance: ₩ ${CurrencyInputFormatter.format(provider.currentBalance ?? 0)}',
           icon: Icons.wallet,
           trailing: const Icon(Icons.check_circle, color: Color(0xFF94A3B8)),
         ),
@@ -153,7 +157,8 @@ class _TopupViewState extends State<TopupView> {
   }
 
   Widget _buildBottomBar(WalletProvider provider) {
-    final bool canSubmit = provider.errorMessage == null && provider.krwAmount > 0;
+    final bool canSubmit =
+        provider.errorMessage == null && provider.krwAmount > 0;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -168,7 +173,9 @@ class _TopupViewState extends State<TopupView> {
           QuickAmountRow(
             onAmountSelected: (amt) {
               provider.addQuickAmount(amt);
-              final newText = CurrencyInputFormatter.format(provider.krwAmount.toInt());
+              final newText = CurrencyInputFormatter.format(
+                provider.krwAmount.toInt(),
+              );
               _controller.value = TextEditingValue(
                 text: newText,
                 selection: TextSelection.collapsed(offset: newText.length),
@@ -177,7 +184,9 @@ class _TopupViewState extends State<TopupView> {
           ),
           const SizedBox(height: 24),
           PaliButton(
-            backgroundColor: canSubmit ? AppColors.mainBlue : AppColors.disabledBackground,
+            backgroundColor: canSubmit
+                ? AppColors.mainBlue
+                : AppColors.disabledBackground,
             text: 'common.add_money'.tr(),
             onPressed: canSubmit ? () => _handleTopup(provider) : null,
           ),
@@ -192,7 +201,8 @@ class _TopupViewState extends State<TopupView> {
 
     if (pinNumber != null && mounted) {
       final accountProvider = context.read<AccountProvider>();
-      final walletId = int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
+      final walletId =
+          int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
 
       // 1. 충전 요청
       final success = await provider.chargeWallet(
@@ -203,7 +213,9 @@ class _TopupViewState extends State<TopupView> {
       if (success && mounted) {
         // 2. 잔액 및 히스토리 갱신
         final currentBankBalance = accountProvider.linkedAccount?.amount ?? 0;
-        accountProvider.updateBalance(currentBankBalance - provider.krwAmount.toInt());
+        accountProvider.updateBalance(
+          currentBankBalance - provider.krwAmount.toInt(),
+        );
         context.read<HistoryProvider>().fetchHistory(walletId: walletId);
 
         // 3. 결과 화면 이동
@@ -212,7 +224,8 @@ class _TopupViewState extends State<TopupView> {
           MaterialPageRoute(
             builder: (context) => WalletResultView(
               isRecharge: true,
-              amount: '₩ ${CurrencyInputFormatter.format(provider.krwAmount.toInt())}',
+              amount:
+                  '₩ ${CurrencyInputFormatter.format(provider.krwAmount.toInt())}',
             ),
           ),
         );

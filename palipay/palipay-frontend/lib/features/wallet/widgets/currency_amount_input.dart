@@ -88,7 +88,10 @@ class CurrencyAmountInput extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                  ),
                 ],
               ),
               child: Row(
@@ -107,7 +110,7 @@ class CurrencyAmountInput extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            
+
             // (2) 실시간 기준 환율 및 가져온 시각 (서버 연동 표시)
             if (provider.rateTimestamp != null)
               Builder(
@@ -115,7 +118,9 @@ class CurrencyAmountInput extends StatelessWidget {
                   // 서버에서 오는 포맷 "2026-03-05T14:00:00+09:00" -> 이쁘게 변환
                   try {
                     final dt = DateTime.parse(provider.rateTimestamp!);
-                    final formattedTime = DateFormat('yyyy.MM.dd HH:mm').format(dt);
+                    final formattedTime = DateFormat(
+                      'yyyy.MM.dd HH:mm',
+                    ).format(dt);
                     return Text(
                       '1 ${provider.targetCurrency} = ${provider.exchangeRate.toStringAsFixed(2)} KRW\n($formattedTime 기준)',
                       textAlign: TextAlign.center,

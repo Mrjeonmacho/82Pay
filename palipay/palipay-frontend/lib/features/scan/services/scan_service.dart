@@ -21,10 +21,7 @@ class ScanService {
         ),
       });
 
-      final response = await _dio.post(
-        ApiConstants.ocrScan,
-        data: formData,
-      );
+      final response = await _dio.post(ApiConstants.ocrScan, data: formData);
 
       return ScanResultModel.fromJson(Map<String, dynamic>.from(response.data));
     } on DioException catch (e) {

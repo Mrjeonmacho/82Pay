@@ -6,11 +6,10 @@ import '../services/transfer_service.dart';
 import '../../../core/utils/currency_input_formatter.dart';
 import 'package:palipay_app/core/network/api_response.dart';
 
-
 class TransferProvider extends ChangeNotifier {
   final TransferService _service;
   final _uuid = const Uuid(); // 매번 생성하지 않도록 상수로 선언
-  
+
   TransferProvider(this._service); // 외부에서 주입받는 방식이 테스트에 유리합니다.
 
   bool _isLoading = false;
@@ -24,16 +23,19 @@ class TransferProvider extends ChangeNotifier {
     _setLoading(true);
     _errorMessage = null; // 에러 메시지 초기화
     try {
-    final response = await _service.checkBalance(walletId, amount);
-    
-    // API 자체가 실패했거나 잔액이 부족한 경우 처리
-    if (!response.isSuccess || response.data?.isSufficient == false) {
-      final formattedShortage = CurrencyInputFormatter.format(response.data?.shortageAmount?.toInt() ?? 0);
-      _errorMessage = response.message ?? "잔액이 부족합니다. (부족금액: $formattedShortage)";
-      return false;
-    }
-    return true;
-  } catch (e) {
+      final response = await _service.checkBalance(walletId, amount);
+
+      // API 자체가 실패했거나 잔액이 부족한 경우 처리
+      if (!response.isSuccess || response.data?.isSufficient == false) {
+        final formattedShortage = CurrencyInputFormatter.format(
+          response.data?.shortageAmount?.toInt() ?? 0,
+        );
+        _errorMessage =
+            response.message ?? "잔액이 부족합니다. (부족금액: $formattedShortage)";
+        return false;
+      }
+      return true;
+    } catch (e) {
       _errorMessage = e.toString();
       return false;
     } finally {
@@ -42,7 +44,9 @@ class TransferProvider extends ChangeNotifier {
   }
 
   // --- [Step 2 & 3: 송금 실행] ---
-  Future<TransferExecuteResponse?> performTransfer(TransferRequest request) async {
+  Future<TransferExecuteResponse?> performTransfer(
+    TransferRequest request,
+  ) async {
     _setLoading(true);
     _errorMessage = null;
 
@@ -50,14 +54,15 @@ class TransferProvider extends ChangeNotifier {
       // 1. 송금 전 최종 검증 (Validate)
       final validateResult = await _service.validateTransfer(request);
       if (validateResult.data?.isValid == false) {
-        _errorMessage = validateResult.data?.validationErrors?.first.reason ?? "검증 실패";
+        _errorMessage =
+            validateResult.data?.validationErrors?.first.reason ?? "검증 실패";
         return null;
       }
 
       // 2. 실제 송금 실행 (Execute)
       // 중복 결제 방지를 위해 유니크한 키 생성 (Idempotency)
-      final idempotencyKey = _uuid.v4(); 
-      
+      final idempotencyKey = _uuid.v4();
+
       final result = await _service.executeTransfer(request, idempotencyKey);
       if (result.isSuccess && result.data != null) {
         return result.data; // 성공 시 영수증 데이터 반환
@@ -65,7 +70,6 @@ class TransferProvider extends ChangeNotifier {
         _errorMessage = result.message ?? "송금 처리에 실패했습니다.";
         return null;
       }
-      
     } catch (e) {
       _errorMessage = e.toString();
       return null;

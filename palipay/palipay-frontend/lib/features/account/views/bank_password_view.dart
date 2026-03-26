@@ -7,7 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart'; // 💡 Dio 임포트 확인!
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/pali_keypad.dart'; 
+import '../../../core/widgets/pali_keypad.dart';
 import '../providers/account_provider.dart';
 
 // 💡 1. 클래스 정의가 정확해야 합니다.
@@ -40,7 +40,12 @@ class _BankPasswordViewState extends State<BankPasswordView> {
 
   void _onBackspace() {
     if (_inputPassword.isNotEmpty) {
-      setState(() => _inputPassword = _inputPassword.substring(0, _inputPassword.length - 1));
+      setState(
+        () => _inputPassword = _inputPassword.substring(
+          0,
+          _inputPassword.length - 1,
+        ),
+      );
     }
   }
 
@@ -77,7 +82,7 @@ class _BankPasswordViewState extends State<BankPasswordView> {
 
             setState(() {
               _isLoading = false;
-              _inputPassword = ""; 
+              _inputPassword = "";
             });
             _showSnackBar(errorMessage, AppColors.warningRed);
           }
@@ -90,9 +95,9 @@ class _BankPasswordViewState extends State<BankPasswordView> {
   }
 
   void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
   }
 
   @override
@@ -105,15 +110,27 @@ class _BankPasswordViewState extends State<BankPasswordView> {
         leading: const BackButton(color: AppColors.mainBlue),
         title: Text(
           widget.bankName,
-          style: const TextStyle(color: AppColors.mainBlue, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: AppColors.mainBlue,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: Column(
         children: [
           const SizedBox(height: 40),
-          const Icon(Icons.lock_person_outlined, size: 64, color: AppColors.mainBlue),
+          const Icon(
+            Icons.lock_person_outlined,
+            size: 64,
+            color: AppColors.mainBlue,
+          ),
           const SizedBox(height: 24),
-          Text('bank.pwd.title'.tr(), style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            'bank.pwd.title'.tr(),
+            style: AppTextStyles.titleMedium.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
           Text('bank.pwd.desc'.tr()),
           const SizedBox(height: 48),
@@ -137,11 +154,15 @@ class _BankPasswordViewState extends State<BankPasswordView> {
     bool isFilled = index < _inputPassword.length;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12),
-      width: 16, height: 16,
+      width: 16,
+      height: 16,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isFilled ? AppColors.mainBlue : Colors.white,
-        border: Border.all(color: isFilled ? AppColors.mainBlue : Colors.grey.shade400, width: 2),
+        border: Border.all(
+          color: isFilled ? AppColors.mainBlue : Colors.grey.shade400,
+          width: 2,
+        ),
       ),
     );
   }

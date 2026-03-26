@@ -47,10 +47,10 @@ class ProfileProvider extends ChangeNotifier {
 
       if (_user != null) {
         _user = ProfileUserModel(
-          userId: _user!.userId,    
+          userId: _user!.userId,
           name: _user!.name,
           email: _user!.email,
-          countryCode: _user!.countryCode, 
+          countryCode: _user!.countryCode,
           language: language,
         );
 
@@ -79,7 +79,7 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
-   /// 비밀번호 변경
+  /// 비밀번호 변경
   Future<bool> changePassword({
     required String oldPassword,
     required String newPassword,

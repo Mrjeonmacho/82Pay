@@ -23,7 +23,7 @@ class HistoryProvider with ChangeNotifier {
         page: page,
         walletId: walletId,
       );
-      
+
       _items = (data['items'] as List)
           .map((e) => Transaction.fromJson(e))
           .toList();

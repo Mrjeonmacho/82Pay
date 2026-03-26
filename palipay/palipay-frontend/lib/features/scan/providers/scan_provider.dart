@@ -17,12 +17,12 @@ class ScanProvider extends ChangeNotifier {
   Future<void> processImage(File imageFile) async {
     _setScanning();
 
-  final response = await _service.uploadForOcr(imageFile);
+    final response = await _service.uploadForOcr(imageFile);
 
-  result = response;
-  status = response.success ? ScanStatus.success : ScanStatus.failure;
-  notifyListeners();
-}
+    result = response;
+    status = response.success ? ScanStatus.success : ScanStatus.failure;
+    notifyListeners();
+  }
 
   void toggleFlash() {
     flashOn = !flashOn;
@@ -34,7 +34,8 @@ class ScanProvider extends ChangeNotifier {
     result = null;
     notifyListeners();
   }
-    void _setScanning() {
+
+  void _setScanning() {
     status = ScanStatus.scanning;
     result = null;
     notifyListeners();

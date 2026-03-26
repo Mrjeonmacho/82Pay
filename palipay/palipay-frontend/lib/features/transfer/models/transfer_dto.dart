@@ -8,10 +8,7 @@ class BalanceCheckRequest {
 
   BalanceCheckRequest({required this.walletId, required this.amount});
 
-  Map<String, dynamic> toJson() => {
-    'walletId': walletId,
-    'amount': amount,
-  };
+  Map<String, dynamic> toJson() => {'walletId': walletId, 'amount': amount};
 }
 
 // Response: 서버에서 받을 때
@@ -28,12 +25,15 @@ class BalanceCheckResponse {
     this.shortageAmount,
   });
 
-  factory BalanceCheckResponse.fromJson(Map<String, dynamic> json) => BalanceCheckResponse(
-    isSufficient: json['isSufficient'],
-    currentBalance: (json['currentBalance'] as num).toDouble(),
-    requiredAmount: (json['requiredAmount'] as num).toDouble(),
-    shortageAmount: json['shortageAmount'] != null ? (json['shortageAmount'] as num).toDouble() : null,
-  );
+  factory BalanceCheckResponse.fromJson(Map<String, dynamic> json) =>
+      BalanceCheckResponse(
+        isSufficient: json['isSufficient'],
+        currentBalance: (json['currentBalance'] as num).toDouble(),
+        requiredAmount: (json['requiredAmount'] as num).toDouble(),
+        shortageAmount: json['shortageAmount'] != null
+            ? (json['shortageAmount'] as num).toDouble()
+            : null,
+      );
 }
 
 // [송금 전 최종 검증 FINANCE/TRANSFER 001]
@@ -95,12 +95,12 @@ class TransferExecuteResponse {
   factory TransferExecuteResponse.fromJson(Map<String, dynamic> json) {
     // 💡 핵심: 'data' 계층 안에서 값을 꺼내야 함
     final data = json['data'] as Map<String, dynamic>? ?? {};
-    
+
     return TransferExecuteResponse(
       message: json['message']?.toString() ?? '',
       transferId: data['transferId']?.toString() ?? '',
-      transactionId: data['transactionId'] is int 
-          ? data['transactionId'] 
+      transactionId: data['transactionId'] is int
+          ? data['transactionId']
           : int.tryParse(data['transactionId']?.toString() ?? '0') ?? 0,
       status: data['status']?.toString() ?? '',
       currentBalance: (data['currentBalance'] as num?)?.toDouble() ?? 0.0,
@@ -147,7 +147,7 @@ class TransferFailResponse {
   factory TransferFailResponse.fromJson(Map<String, dynamic> json) {
     // 명세서 예시처럼 'data' 계층이 있는 경우를 대비한 안전한 파싱
     final data = json['data'] as Map<String, dynamic>? ?? json;
-    
+
     return TransferFailResponse(
       message: json['message']?.toString() ?? '',
       transferId: data['transferId']?.toString() ?? '',

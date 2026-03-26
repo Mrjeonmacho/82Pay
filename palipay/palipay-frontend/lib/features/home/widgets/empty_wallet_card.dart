@@ -59,7 +59,7 @@ class EmptyWalletCard extends StatelessWidget {
         countryCode: userCountry ?? 'US', // 유저의 실제 국가 코드 사용
         onSelect: (selectedBank) {
           // 1. BankSelectionSheet 내부에서 자동으로 pop() 하므로 생략
-          
+
           // 2. 계좌번호 및 이름 입력(AccountLinkView) 화면으로 이동
           Navigator.push(
             context,

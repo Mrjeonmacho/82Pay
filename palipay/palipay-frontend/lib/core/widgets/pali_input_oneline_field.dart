@@ -93,10 +93,7 @@ class _MaxLengthBlockFormatter extends TextInputFormatter {
   final int maxLength;
   final VoidCallback? onExceeded;
 
-  _MaxLengthBlockFormatter({
-    required this.maxLength,
-    this.onExceeded,
-  });
+  _MaxLengthBlockFormatter({required this.maxLength, this.onExceeded});
 
   @override
   TextEditingValue formatEditUpdate(

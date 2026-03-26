@@ -28,7 +28,8 @@ class _HistoryViewState extends State<HistoryView> {
     // 화면 진입 시 초기 데이터 로드
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final accountProvider = context.read<AccountProvider>();
-      final walletId = int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
+      final walletId =
+          int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
       context.read<HistoryProvider>().fetchHistory(walletId: walletId);
     });
   }
@@ -44,9 +45,7 @@ class _HistoryViewState extends State<HistoryView> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: PaliTopBar(
-        title: 'history.view.title'.tr(),
-      ),
+      appBar: PaliTopBar(title: 'history.view.title'.tr()),
       body: Column(
         children: [
           // 1. 상단 총 지출 요약 영역
@@ -98,7 +97,10 @@ class _HistoryViewState extends State<HistoryView> {
     // 날짜별 그룹화 로직
     Map<String, List<Transaction>> groups = {};
     for (var item in items) {
-      String dateKey = DateFormatterUtil.formatHistoryHeader(context, item.createdAt);
+      String dateKey = DateFormatterUtil.formatHistoryHeader(
+        context,
+        item.createdAt,
+      );
       groups.putIfAbsent(dateKey, () => []).add(item);
     }
 

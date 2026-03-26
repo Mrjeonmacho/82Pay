@@ -12,6 +12,7 @@ import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:palipay_app/core/utils/date_formatter_util.dart';
 import 'package:palipay_app/core/utils/currency_input_formatter.dart';
+
 class HistoryDetailView extends StatelessWidget {
   final Transaction transaction;
 
@@ -120,11 +121,16 @@ class HistoryDetailView extends StatelessWidget {
                     ),
                     _buildReceiptRow(
                       'Date',
-                      DateFormatterUtil.formatHistoryHeader(context, transaction.createdAt),
+                      DateFormatterUtil.formatHistoryHeader(
+                        context,
+                        transaction.createdAt,
+                      ),
                     ),
                     _buildReceiptRow(
                       'Time',
-                      DateFormat.jm(context.locale.toString()).format(transaction.createdAt),
+                      DateFormat.jm(
+                        context.locale.toString(),
+                      ).format(transaction.createdAt),
                     ),
 
                     // 환율 정보가 있을 경우 추가 표시 (기존 002 API 로직 유지)

@@ -33,7 +33,10 @@ class EmailAuthStep extends StatelessWidget {
               maxLength: 6,
               // 1. 타이머 표시 (우측 아이콘 자리에 배치)
               suffixIcon: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 15,
+                ),
                 child: Text(
                   provider.timerText, // 02:59 형식
                   style: const TextStyle(

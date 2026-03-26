@@ -5,24 +5,15 @@ class ApiResponse<T> {
   final String message;
   final T? data;
 
-  ApiResponse({
-    required this.status,
-    this.message = '',
-    this.data,
-  });
+  ApiResponse({required this.status, this.message = '', this.data});
 
   // 성공 시 호출하는 생성자
-  factory ApiResponse.success(T data, {String message = ''}) => ApiResponse(
-        status: true,
-        data: data,
-        message: message,
-      );
+  factory ApiResponse.success(T data, {String message = ''}) =>
+      ApiResponse(status: true, data: data, message: message);
 
   // 실패 시 호출하는 생성자
-  factory ApiResponse.error(String message) => ApiResponse(
-        status: false,
-        message: message,
-      );
+  factory ApiResponse.error(String message) =>
+      ApiResponse(status: false, message: message);
 
   bool get isSuccess => status;
 }

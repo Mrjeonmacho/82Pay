@@ -12,8 +12,6 @@ class DioClient {
   late Dio dio;
   final _storage = const FlutterSecureStorage();
 
-
-
   // 쿠키 저장소를 나중에 초기화하기 위해 late로 선언
   // 더 넓은 의미인 'CookieJar'로 변경
   late CookieJar cookieJar;
@@ -57,22 +55,22 @@ class DioClient {
 
       // 4. 기존 인터셉터 설정 (순서상 쿠키 매니저 뒤에 붙여도 무방함)
       // 2. [수정] 공통 인터셉터 - 여기서 '무조건 성공' 로직을 처리합니다.
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          // 일반 요청일 경우 토큰 주입
-          final token = await _storage.read(key: 'accessToken');
-          final grantType = await _storage.read(key: 'grantType') ?? 'Bearer';
-          if (token != null) {
-            options.headers['Authorization'] = '$grantType $token';
-          }
-          return handler.next(options);
-        },
-        onError: (DioException e, handler) async {
-          return handler.next(e);
-        },
-      ),
-    );
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) async {
+            // 일반 요청일 경우 토큰 주입
+            final token = await _storage.read(key: 'accessToken');
+            final grantType = await _storage.read(key: 'grantType') ?? 'Bearer';
+            if (token != null) {
+              options.headers['Authorization'] = '$grantType $token';
+            }
+            return handler.next(options);
+          },
+          onError: (DioException e, handler) async {
+            return handler.next(e);
+          },
+        ),
+      );
     }
   }
 }

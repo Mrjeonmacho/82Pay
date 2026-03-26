@@ -29,9 +29,11 @@ class PasswordStep extends StatelessWidget {
               hintText: 'sign_up.hint_set_password'.tr(),
               controller: provider.passwordController, // ✅ 올바른 컨트롤러 연결
               isPassword: true,
-              onChanged: (_) => provider.checkPasswordLogic(), // ✅ 입력할 때마다 로직 실행
+              onChanged: (_) =>
+                  provider.checkPasswordLogic(), // ✅ 입력할 때마다 로직 실행
               validator: (value) {
-                if (value == null || value.isEmpty) return 'sign_up.error_empty_password'.tr();
+                if (value == null || value.isEmpty)
+                  return 'sign_up.error_empty_password'.tr();
 
                 // 8자리 이상, 영문, 숫자, 특수문자 포함 여부 확인
                 if (!provider.isPasswordSecure) {
@@ -49,7 +51,8 @@ class PasswordStep extends StatelessWidget {
               hintText: 'sign_up.hint_confirm_password'.tr(),
               controller: provider.confirmPasswordController, // ✅ 올바른 컨트롤러 연결
               isPassword: true,
-              onChanged: (_) => provider.checkPasswordLogic(), // ✅ 입력할 때마다 로직 실행
+              onChanged: (_) =>
+                  provider.checkPasswordLogic(), // ✅ 입력할 때마다 로직 실행
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'sign_up.error_empty_confirm_password'.tr();
