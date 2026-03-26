@@ -26,23 +26,23 @@ class _HomeScreenState extends State<HomeScreen> {
       _syncWalletData();
     });
   }
-  
+
   void _syncWalletData() {
     // WalletProvider에게 "서버에 있는 내 정보를 가져와줘"라고 시킵니다.
     // DioClient의 인터셉터가 이미 토큰을 넣어주므로, 여기선 호출만 하면 됩니다.
-    context.read<WalletProvider>().initWalletData(); 
+    context.read<WalletProvider>().initWalletData();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     context.locale; // 다국어 변경을 감지하여 Rebuild 되도록 의존성 주입
-    // context.watch가 상태 변화를 감지하므로, 
+    // context.watch가 상태 변화를 감지하므로,
     // 서버 응답이 오면 자동으로 EmptyWalletCard가 WalletCard로 바뀝니다!
     final walletProvider = context.watch<WalletProvider>();
     final accountProvider = context.watch<AccountProvider>();
 
     // 지갑 정보 유무 판단 (WalletProvider의 잔액이나 모델을 기준으로 설정)
-    final bool hasWallet = walletProvider.currentBalance != null;
+    final bool hasWallet = accountProvider.hasWallet;
 
     return Scaffold(
       extendBody: true,
@@ -50,7 +50,6 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: const PaliTopBar(title: 'PaliPay'),
       body: Stack(
         children: [
-
           // 배경 글래스모피즘 효과를 극대화하기 위한 은은한 오로라 도형 1 (좌측 상단)  --. TEST용
           // Positioned(
           //   top: 180,
@@ -100,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: hasWallet
-                      ? WalletCard(provider: accountProvider) 
+                      ? WalletCard(provider: accountProvider)
                       : const EmptyWalletCard(),
                 ),
                 const TransactionsSection(),

@@ -5,13 +5,13 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
 import '../providers/account_provider.dart';
-import '../../../core/providers/user_provider.dart'; 
+import '../../../core/providers/user_provider.dart';
 import 'bank_password_view.dart';
+import 'package:flutter/services.dart';
 
 class AccountLinkView extends StatefulWidget {
   final String bankName;
   final String bankCode;
-  
 
   const AccountLinkView({
     super.key,
@@ -27,6 +27,9 @@ class _AccountLinkViewState extends State<AccountLinkView> {
   final _accountController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  bool get _isAccountValid =>
+      RegExp(r'^[A-Z]{2}-\d{4}-\d{4}-\d{4}$').hasMatch(_accountController.text);
 
   @override
   void dispose() {
@@ -51,29 +54,38 @@ class _AccountLinkViewState extends State<AccountLinkView> {
 
   // 2. 계좌 연동 처리 로직
   Future<void> _handleNextStep() async {
-  if (_usernameController.text.isEmpty || _accountController.text.isEmpty) {
-    _showErrorSnackBar('모든 필드를 입력해주세요.');
-    return;
-  }
+    // 💡 형식 체크 추가
+    if (!_isAccountValid) {
+      _showErrorSnackBar('계좌번호 형식이 올바르지 않습니다. (예: KR-1234-5678-9012)');
+      return;
+    }
 
-  // 다음 화면으로 넘길 데이터 뭉치
-  final partialData = {
-    "bankCode": widget.bankCode,
-    "accountNumber": _accountController.text.trim(),
-    "accountUsername": _usernameController.text.trim(),
-    "moneyCode": "KRW",
-  };
+    if (_usernameController.text.isEmpty || _accountController.text.isEmpty) {
+      _showErrorSnackBar('모든 필드를 입력해주세요.');
+      return;
+    }
 
-  // 💡 비밀번호 입력 화면으로 이동
-  if (mounted) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BankPasswordView(partialData: partialData, bankName: widget.bankName),
-      ),
-    );
+    // 다음 화면으로 넘길 데이터 뭉치
+    final partialData = {
+      "bankCode": widget.bankCode,
+      "accountNumber": _accountController.text.trim(),
+      "accountUsername": _usernameController.text.trim(),
+      "moneyCode": "KRW",
+    };
+
+    // 💡 비밀번호 입력 화면으로 이동
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BankPasswordView(
+            partialData: partialData,
+            bankName: widget.bankName,
+          ),
+        ),
+      );
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -104,15 +116,17 @@ class _AccountLinkViewState extends State<AccountLinkView> {
                     ),
                     const SizedBox(height: 24),
                     _buildSectionTitle('account_input.account_number'.tr()),
-                    PaliInputField(
-                      hintText: 'Enter account number',
+                    // 💡 공통 위젯 대신 여기서 만든 커스텀 필드 사용
+                    _CustomAccountInput(
                       controller: _accountController,
-                      keyboardType: TextInputType.number,
+                      onChanged: (val) => setState(() {}), // 버튼 활성화를 위해 상태 갱신
                     ),
                     const SizedBox(height: 12),
                     Text(
                       'account_link.currency_info'.tr(),
-                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.exampleFont),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.exampleFont,
+                      ),
                     ),
                   ],
                 ),
@@ -121,9 +135,14 @@ class _AccountLinkViewState extends State<AccountLinkView> {
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: PaliButton(
+                // 💡 형식이 맞을 때만 버튼 활성화 (선택 사항)
                 text: isLoading ? 'Linking...' : 'Link Account',
-                backgroundColor: isLoading ? AppColors.disabledBackground : AppColors.mainBlue,
-                onPressed: isLoading ? null : _handleNextStep,
+                backgroundColor: (isLoading || !_isAccountValid)
+                    ? AppColors.disabledBackground
+                    : AppColors.mainBlue,
+                onPressed: (isLoading || !_isAccountValid)
+                    ? null
+                    : _handleNextStep,
               ),
             ),
           ],
@@ -147,8 +166,18 @@ class _AccountLinkViewState extends State<AccountLinkView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: AppTextStyles.bodySmall.copyWith(color: AppColors.exampleFont)),
-              Text(value, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                label,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.exampleFont,
+                ),
+              ),
+              Text(
+                value,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ],
@@ -159,7 +188,81 @@ class _AccountLinkViewState extends State<AccountLinkView> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(title, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+      child: Text(
+        title,
+        style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
+class _CustomAccountInput extends StatelessWidget {
+  final TextEditingController controller;
+  final Function(String) onChanged;
+
+  const _CustomAccountInput({
+    required this.controller,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      onChanged: onChanged,
+      // 💡 문자2개-숫자12개 포매터 적용
+      inputFormatters: [
+        _AccountNumberFormatter(),
+        LengthLimitingTextInputFormatter(17), // AA-0000-0000-0000 총 17자
+      ],
+      decoration: InputDecoration(
+        hintText: 'KR-0000-0000-0000',
+        filled: true,
+        fillColor: const Color(0xFFF8F8FB),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+      ),
+    );
+  }
+}
+
+// 💡 하이픈 자동 삽입 포매터
+class _AccountNumberFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var text = newValue.text.toUpperCase();
+    if (text.length < oldValue.text.length) return newValue; // 백스페이스 허용
+
+    final cleanText = text.replaceAll(RegExp(r'[^A-Z0-9]'), '');
+    StringBuffer buffer = StringBuffer();
+
+    for (int i = 0; i < cleanText.length; i++) {
+      // 0~1번 인덱스는 문자만, 나머지는 숫자만 (정교한 제한)
+      if (i < 2) {
+        if (RegExp(r'[A-Z]').hasMatch(cleanText[i])) buffer.write(cleanText[i]);
+      } else {
+        if (RegExp(r'[0-9]').hasMatch(cleanText[i])) buffer.write(cleanText[i]);
+      }
+
+      // 하이픈 위치: 2자, 6자, 10자 뒤
+      if (cleanText.length > 2 && i == 1) buffer.write('-');
+      if (cleanText.length > 6 && i == 5) buffer.write('-');
+      if (cleanText.length > 10 && i == 9) buffer.write('-');
+    }
+
+    final result = buffer.toString();
+    return TextEditingValue(
+      text: result,
+      selection: TextSelection.collapsed(offset: result.length),
     );
   }
 }

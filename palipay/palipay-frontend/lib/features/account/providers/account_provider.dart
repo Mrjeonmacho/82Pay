@@ -20,58 +20,106 @@ class AccountProvider extends ChangeNotifier {
   }
 
   Future<String> linkAccount({
-    required Map<String, dynamic> requestData, 
+    required Map<String, dynamic> requestData,
     required String token,
   }) async {
     _setLoading(true);
 
-    try {
-      final response = await _service.linkAccount(
-        accountData: requestData,
-        token: token,
-      );
+    // try {
+    //   final response = await _service.linkAccount(
+    //     accountData: requestData,
+    //     token: token,
+    //   );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = response.data;
+    //   if (response.statusCode == 200 || response.statusCode == 201) {
+    //     final data = response.data;
+
+    //     _linkedAccount = BankAccount(
+    //       walletId: data['walletId']?.toString() ?? '',
+    //       bankCode: requestData['bankCode'],
+    //       bankName: data['bankName'] ?? '연동계좌',
+    //       accountNumber: data['accountNumber'] ?? requestData['accountNumber'],
+    //       accountUsername: data['accountUsername'] ?? requestData['accountUsername'] ?? 'Unknown',
+    //       accountPassword: requestData['accountPassword'],
+    //       moneyCode: requestData['moneyCode'] ?? 'USD',
+    //       amount: (data['amount'] as num?)?.toInt() ?? 0,
+    //     );
+
+    //     notifyListeners();
+    //     return "SUCCESS"; // 💡 성공
+    //   }
+
+    //   return "FAILED"; // 💡 일반적인 실패
+    // } catch (e) {
+    //   // 💡 여기가 핵심입니다! 에러 원인을 분석합니다.
+    //   debugPrint('API 연동 실패: $e');
+
+    //   if (e is DioException) {
+    //     // 1. 서버가 응답을 준 경우 (400, 401, 500 등)
+    //     if (e.response != null) {
+    //       int statusCode = e.response!.statusCode ?? 500;
+
+    //       if (statusCode == 401 || statusCode == 400) {
+    //         return "INVALID_PASSWORD"; // 💡 비밀번호 틀림
+    //       } else if (statusCode >= 500) {
+    //         return "SERVER_ERROR";    // 💡 서버 터짐
+    //       }
+    //     }
+
+    //     // 2. 응답조차 없는 경우 (타임아웃 등)
+    //     if (e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.connectionTimeout) {
+    //       return "TIMEOUT";           // 💡 서버 대답 없음
+    //     }
+    //   }
+
+    //   return "UNKNOWN_ERROR";
+    // } finally {
+    //   _setLoading(false);
+    // }
+    try {
+      // 💡 1. 실제 서버 통신은 잠시 주석 처리 (서버 에러 무시)
+      /*
+    final response = await _service.linkAccount(
+      accountData: requestData,
+      token: token,
+    );
+    */
+
+      // 💡 2. 통신하는 척 0.5초만 기다려줍니다 (UX를 위해)
+      await Future.delayed(const Duration(milliseconds: 500)); // 통신하는 척!
+
+      final inputPassword = requestData['accountPassword']; // 사용자가 입력한 비번
+
+      if (inputPassword == "1234") {
+        // 🟢 [성공] 비밀번호가 1234인 경우
+        final mockData = {
+          'walletId': '99999',
+          'bankName': '테스트은행',
+          'accountNumber': requestData['accountNumber'],
+          'accountUsername': requestData['accountUsername'],
+          'amount': 555000, // 테스트용 잔액
+        };
 
         _linkedAccount = BankAccount(
-          walletId: data['walletId']?.toString() ?? '',
+          walletId: mockData['walletId']!,
           bankCode: requestData['bankCode'],
-          bankName: data['bankName'] ?? '연동계좌',
-          accountNumber: data['accountNumber'] ?? requestData['accountNumber'],
-          accountUsername: data['accountUsername'] ?? requestData['accountUsername'] ?? 'Unknown',
-          accountPassword: requestData['accountPassword'],
-          moneyCode: requestData['moneyCode'] ?? 'USD',
-          amount: (data['amount'] as num?)?.toInt() ?? 0,
+          bankName: mockData['bankName']!,
+          accountNumber: mockData['accountNumber'],
+          accountUsername: mockData['accountUsername'],
+          accountPassword: inputPassword,
+          moneyCode: requestData['moneyCode'] ?? 'KRW',
+          amount: mockData['amount'] as int,
         );
-        
-        notifyListeners();
-        return "SUCCESS"; // 💡 성공
-      }
-      
-      return "FAILED"; // 💡 일반적인 실패
-    } catch (e) {
-      // 💡 여기가 핵심입니다! 에러 원인을 분석합니다.
-      debugPrint('API 연동 실패: $e');
 
-      if (e is DioException) {
-        // 1. 서버가 응답을 준 경우 (400, 401, 500 등)
-        if (e.response != null) {
-          int statusCode = e.response!.statusCode ?? 500;
-          
-          if (statusCode == 401 || statusCode == 400) {
-            return "INVALID_PASSWORD"; // 💡 비밀번호 틀림
-          } else if (statusCode >= 500) {
-            return "SERVER_ERROR";    // 💡 서버 터짐
-          }
-        }
-        
-        // 2. 응답조차 없는 경우 (타임아웃 등)
-        if (e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.connectionTimeout) {
-          return "TIMEOUT";           // 💡 서버 대답 없음
-        }
+        notifyListeners();
+        return "SUCCESS";
+      } else {
+        // 🔴 [실패] 비밀번호가 1234가 아닌 경우
+        return "INVALID_PASSWORD";
       }
-      
+    } catch (e) {
+      // 이 부분은 이제 실행될 일이 없겠지만 남겨둡니다.
+      debugPrint('Mocking 중 에러: $e');
       return "UNKNOWN_ERROR";
     } finally {
       _setLoading(false);
