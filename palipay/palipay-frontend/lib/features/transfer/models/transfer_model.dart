@@ -23,13 +23,13 @@ class TransferRequest {
 
   // API 전송을 위한 변환 로직
   Map<String, dynamic> toJson() => {
-    'walletId': walletId,
+    'walletId': walletId, // 백엔드 확인 후 필요시 int.parse() 혹은 타입 변경
     'otherBankCode': otherBankCode,
     'otherAccountNumber': otherAccountNumber,
     'otherAccountName': otherAccountName,
     'amount': amount,
-    'description': description,
-    'pinNumber': pinNumber,
+    if (description != null && description!.isNotEmpty) 'description': description,
+    if (pinNumber != null) 'pinNumber': pinNumber,
     if (workplaceId != null) 'workplaceId': workplaceId,
   };
 }

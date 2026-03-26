@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -29,18 +30,12 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
   late final TextEditingController _accountController;
   late final TextEditingController _bankController;
 
-  final List<String> _banks = const [
-    'KB 국민',
-    'IBK 기업',
-    'NH 농협',
-    '신한',
-    '우리',
-    '하나',
-  ];
+  String? _accountErrorText;
 
   bool get _canProceed =>
       _accountController.text.trim().isNotEmpty &&
-      _bankController.text.trim().isNotEmpty;
+      _bankController.text.trim().isNotEmpty &&
+      _accountController.text.trim().length <= 20;
 
   @override
   void initState() {
@@ -56,6 +51,24 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
     _accountController.dispose();
     _bankController.dispose();
     super.dispose();
+  }
+
+  double _clamp(double value, double min, double max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+  }
+
+  void _handleAccountChanged(String value) {
+    setState(() {
+      _accountErrorText = null;
+    });
+  }
+
+  void _handleAccountLengthExceeded() {
+    setState(() {
+      _accountErrorText = 'account_input.error_max_length'.tr();
+    });
   }
 
   Future<void> _showBankSheet() async {
@@ -78,14 +91,29 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
   }
 
   void _onNext() {
-    if (!_canProceed) return;
+    final account = _accountController.text.trim();
+    final bank = _bankController.text.trim();
+
+    setState(() {
+      if (account.isEmpty) {
+        _accountErrorText = null;
+      } else if (account.length > 20) {
+        _accountErrorText = 'account_input.error_max_length'.tr();
+      } else {
+        _accountErrorText = null;
+      }
+    });
+
+    if (account.isEmpty || bank.isEmpty || account.length > 20) {
+      return;
+    }
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => AmountInputScreen(
-          bankName: _bankController.text.trim(),
-          accountNumber: _accountController.text.trim(),
+          bankName: bank,
+          accountNumber: account,
         ),
       ),
     );
@@ -93,91 +121,112 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F8FB),
-      appBar: PaliTopBar(
-        title: 'transfer.title'.tr(),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.mainBlue,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (widget.scanFailed) ...[
-                Text(
-                  'account_input.scan_failed_msg'.tr(),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.warningRed,
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = constraints.maxHeight;
+        final safeBottom = MediaQuery.of(context).padding.bottom;
 
-              Text(
-                'account_input.account_number'.tr(),
-                style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.abledFont,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 6),
-              PaliInputOnelineField(
-                hintText: 'transfer.input.hint_account_number'.tr(),
-                controller: _accountController,
-                keyboardType: TextInputType.number,
-                onChanged: (_) {
-                  setState(() {});
-                },
-              ),
-              const SizedBox(height: 36),
-              Text(
-                'account_input.bank'.tr(),
-                style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.abledFont,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 6),
-              GestureDetector(
-                onTap: _showBankSheet,
-                child: AbsorbPointer(
-                  child: Stack(
-                    alignment: Alignment.centerRight,
-                    children: [
-                      PaliInputOnelineField(
-                        hintText: 'transfer.input.hint_select_bank'.tr(),
-                        controller: _bankController,
-                        onChanged: (_) {},
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(right: 4),
-                        child: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: AppColors.exampleFont,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const Spacer(),
-              PaliButton(
-                text: 'transfer.btn_next'.tr(),
-                onPressed: _canProceed ? _onNext : null,
-                backgroundColor: AppColors.mainBlue,
-              ),
-            ],
+        final horizontalPadding = _clamp(width * 0.06, 18, 24);
+        final topPadding = _clamp(height * 0.035, 20, 28);
+        final bottomPadding = safeBottom + _clamp(height * 0.025, 16, 28);
+
+        final sectionGap = _clamp(height * 0.04, 24, 36);
+        final labelToFieldGap = _clamp(height * 0.008, 6, 8);
+        final warningGap = _clamp(height * 0.02, 12, 16);
+
+        final labelFontSize = _clamp(width * 0.042, 16, 18);
+        final warningFontSize = _clamp(width * 0.034, 12, 14);
+        final arrowSize = _clamp(width * 0.065, 22, 26);
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F8FB),
+          appBar: PaliTopBar(
+            title: 'transfer.title'.tr(),
           ),
-        ),
-      ),
+          body: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(horizontalPadding, topPadding, horizontalPadding, bottomPadding,),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.scanFailed) ...[
+                    Text(
+                      'account_input.scan_failed_msg'.tr(),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.warningRed,
+                        fontSize: warningFontSize,
+                      ),
+                    ),
+                    SizedBox(height: warningGap),
+                  ],
+
+                  Text(
+                    'account_input.account_number'.tr(),
+                    style: AppTextStyles.titleMedium.copyWith(
+                      color: AppColors.abledFont,
+                      fontWeight: FontWeight.bold,
+                      fontSize: labelFontSize,
+                    ),
+                  ),
+                  SizedBox(height: labelToFieldGap),
+                  PaliInputOnelineField(
+                    hintText: 'transfer.input.hint_account_number'.tr(),
+                    controller: _accountController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 20,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    errorText: _accountErrorText,
+                    onChanged: _handleAccountChanged,
+                    onMaxLengthExceeded: _handleAccountLengthExceeded,
+                  ),
+                  SizedBox(height: sectionGap),
+                  Text(
+                    'account_input.bank'.tr(),
+                    style: AppTextStyles.titleMedium.copyWith(
+                      color: AppColors.abledFont,
+                      fontWeight: FontWeight.bold,
+                      fontSize: labelFontSize,
+                    ),
+                  ),
+                  SizedBox(height: labelToFieldGap),
+                  GestureDetector(
+                    onTap: _showBankSheet,
+                    child: AbsorbPointer(
+                      child: Stack(
+                        alignment: Alignment.centerRight,
+                        children: [
+                          PaliInputOnelineField(
+                            hintText: 'transfer.input.hint_select_bank'.tr(),
+                            controller: _bankController,
+                            onChanged: (_) {},
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(right: _clamp(width * 0.01, 4, 8),),
+                            child: Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: AppColors.exampleFont,
+                              size: arrowSize,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  PaliButton(
+                    text: 'transfer.btn_next'.tr(),
+                    onPressed: _canProceed ? _onNext : null,
+                    backgroundColor: AppColors.mainBlue,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

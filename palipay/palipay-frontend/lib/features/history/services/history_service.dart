@@ -1,18 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
-
 import 'package:palipay_app/core/network/dio_client.dart';
 
 class HistoryService {
   final Dio _dio = DioClient().dio;
 
-  // 1. 거래 내역 목록 조회 (FINANCE_HISTORY_001)
+  // 1. 거래 내역 목록 조회 (FINANCE_HISTORY_001) - 필터 로직 제거
   Future<Map<String, dynamic>> getTransactions({
     int page = 0,
     int size = 20,
-    String? category,
     int? walletId,
-    String? token, // 실제로는 Interceptor에서 처리하는 것을 권장합니다.
+    String? token, 
   }) async {
     try {
       final response = await _dio.get(
@@ -20,8 +18,7 @@ class HistoryService {
         queryParameters: {
           'page': page,
           'size': size,
-          if (category != null && category != 'All')
-            'category': category.toUpperCase(),
+          // category 관련 조건문 제거
           if (walletId != null && walletId != 0)
             'walletId': walletId,
         },
@@ -56,6 +53,7 @@ class HistoryService {
 
   // 공통 에러 핸들링
   String _handleError(DioException e) {
+    // 서버에서 내려주는 에러 메시지가 있으면 우선 사용하고, 없으면 공통 메시지 출력
     return e.response?.data['message'] ?? 'error.network_issue'.tr();
   }
 }

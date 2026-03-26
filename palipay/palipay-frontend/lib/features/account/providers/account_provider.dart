@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:palipay_app/features/pin/models/pin_request_dto.dart';
 import '../models/bank_account_model.dart';
 import '../services/account_service.dart';
@@ -18,21 +19,19 @@ class AccountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> linkAccount({
+  Future<String> linkAccount({
     required Map<String, dynamic> requestData, 
     required String token,
   }) async {
     _setLoading(true);
 
     try {
-      // 1. API 호출 (백엔드끼리 통신하여 계좌를 연동함)
       final response = await _service.linkAccount(
         accountData: requestData,
         token: token,
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // [핵심] 서버의 응답(response.data)을 그대로 믿고 모델을 생성합니다.
         final data = response.data;
 
         _linkedAccount = BankAccount(
@@ -41,17 +40,39 @@ class AccountProvider extends ChangeNotifier {
           bankName: data['bankName'] ?? '연동계좌',
           accountNumber: data['accountNumber'] ?? requestData['accountNumber'],
           accountUsername: data['accountUsername'] ?? requestData['accountUsername'] ?? 'Unknown',
+          accountPassword: requestData['accountPassword'],
           moneyCode: requestData['moneyCode'] ?? 'USD',
-          amount: (data['amount'] as num?)?.toInt() ?? 0, // 서버가 준 실시간 잔액!
+          amount: (data['amount'] as num?)?.toInt() ?? 0,
         );
         
         notifyListeners();
-        return true;
+        return "SUCCESS"; // 💡 성공
       }
-      return false;
+      
+      return "FAILED"; // 💡 일반적인 실패
     } catch (e) {
+      // 💡 여기가 핵심입니다! 에러 원인을 분석합니다.
       debugPrint('API 연동 실패: $e');
-      return false;
+
+      if (e is DioException) {
+        // 1. 서버가 응답을 준 경우 (400, 401, 500 등)
+        if (e.response != null) {
+          int statusCode = e.response!.statusCode ?? 500;
+          
+          if (statusCode == 401 || statusCode == 400) {
+            return "INVALID_PASSWORD"; // 💡 비밀번호 틀림
+          } else if (statusCode >= 500) {
+            return "SERVER_ERROR";    // 💡 서버 터짐
+          }
+        }
+        
+        // 2. 응답조차 없는 경우 (타임아웃 등)
+        if (e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.connectionTimeout) {
+          return "TIMEOUT";           // 💡 서버 대답 없음
+        }
+      }
+      
+      return "UNKNOWN_ERROR";
     } finally {
       _setLoading(false);
     }

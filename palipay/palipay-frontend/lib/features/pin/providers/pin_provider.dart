@@ -1,6 +1,7 @@
+import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 import '../services/pin_service.dart';
 import '../models/pin_request_dto.dart';
 
@@ -125,7 +126,12 @@ class PinProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final isSuccess = await _service.verifyPin(walletId, targetPin);
+      final request = PinVerifyRequest(
+        walletId: walletId,
+        pinNumber: targetPin,
+      );
+
+      final isSuccess = await _service.verifyPin(request);
 
       if (isSuccess) {
         _status = PinStatus.success;
@@ -138,7 +144,12 @@ class PinProvider extends ChangeNotifier {
       }
       notifyListeners();
       return isSuccess;
-    } catch (e) {
+    } on DioException catch (_) {
+      _status = PinStatus.failure;
+      _errorMessage = 'error.network_issue'.tr();
+      notifyListeners();
+      return false;
+    } catch (_) {
       _status = PinStatus.failure;
       _errorMessage = 'error.network_issue'.tr();
       notifyListeners();
@@ -147,19 +158,45 @@ class PinProvider extends ChangeNotifier {
   }
 
   /// 5. PIN 생성 요청 (최초 설정 시)
-  Future<bool> createPin(int walletId) async {
+  Future<bool> createPin(int walletId, {String? pinNumber}) async {
+    final targetPin = (pinNumber ?? _inputPin).trim();
+
     _status = PinStatus.loading;
+    _errorMessage = null;
     notifyListeners();
 
-    final request = PinCreateRequest(walletId: walletId, pinNumber: _inputPin);
-    final isSuccess = await _service.createPin(request);
+    try {
+      final request = PinCreateRequest(
+        walletId: walletId,
+        pinNumber: targetPin,
+      );
 
-    _status = isSuccess ? PinStatus.success : PinStatus.failure;
-    if (!isSuccess) _errorMessage = 'pin.error_registration_failed'.tr();
+      final isSuccess = await _service.createPin(request);
 
+       _status = isSuccess ? PinStatus.success : PinStatus.failure;
+      if (!isSuccess) {
+        _errorMessage = 'pin.error_registration_failed'.tr();
+      }
 
-    notifyListeners();
-    return isSuccess;
+      notifyListeners();
+      return isSuccess;
+    } on DioException catch (e) {
+      _status = PinStatus.failure;
+
+      if (e.response?.statusCode == 409) {
+        _errorMessage = 'pin.error_already_exists'.tr();
+      } else {
+        _errorMessage = 'error.network_issue'.tr();
+      }
+
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _status = PinStatus.failure;
+      _errorMessage = 'error.network_issue'.tr();
+      notifyListeners();
+      return false;
+    }    
   }
 
   // 6. PIN 수정 요청
@@ -190,7 +227,18 @@ class PinProvider extends ChangeNotifier {
 
       notifyListeners();
       return isSuccess;
-    } catch (e) {
+    } on DioException catch (e) {
+      _status = PinStatus.failure;
+
+      if (e.response?.statusCode == 400) {
+        _errorMessage = 'pin.change.error_invalid_current'.tr();
+      } else {
+        _errorMessage = 'error.network_issue'.tr();
+      }
+
+      notifyListeners();
+      return false;
+    } catch (_) {
       _status = PinStatus.failure;
       _errorMessage = 'error.network_issue'.tr();
       notifyListeners();

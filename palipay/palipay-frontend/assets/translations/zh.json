@@ -129,10 +129,12 @@
         "card_holder": "持卡人"
     },
     "pin": {
-        "logo_text": "+82Pay",
+        "logo_text": "PaliPay",
         "error_incorrect": "PIN码错误。请重试 ({count}/5)",
         "error_registration_failed": "PIN码注册失败，请重试。",
         "error_mismatch": "PIN码不匹配，请重试。",
+        "error_already_exists": "该钱包已设置 PIN。",
+        "locked_for": "已锁定 {time}",
         "change": {
             "error_invalid_current": "当前PIN码错误。",
             "error_same_as_current": "新PIN码不能与当前PIN码相同。",
@@ -179,7 +181,8 @@
     "account_input": {
         "scan_failed_msg": "扫描失败。请手动输入。",
         "account_number": "账号",
-        "bank": "银行"
+        "bank": "银行",
+        "error_max_length": "账号最多只能输入20位数字。"
     },
     "amount_input": {
         "from_my_wallet": "从我的钱包",
@@ -285,5 +288,8 @@
         "title": "选择账号区域",
         "done": "完成",
         "guide": "拖动选框以覆盖账号区域。\n可使用右下角的控制点调整大小。"
+    },
+    "error": {
+        "network_issue": "发生网络错误，请重试。"
     }
 }

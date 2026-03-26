@@ -3,7 +3,7 @@
 // [잔액 확인 FINANCE/CHECK 001]
 // Request: 서버로 보낼 때
 class BalanceCheckRequest {
-  final String walletId;
+  final int walletId; // String -> int 로 수정 (명세서 0 기준)
   final double amount;
 
   BalanceCheckRequest({required this.walletId, required this.amount});
@@ -79,7 +79,7 @@ class TransferExecuteResponse {
   final String message;
   final String transferId;
   final int transactionId;
-  final String status; // SUCCESS, FAILED, PENDING
+  final String status;
   final double currentBalance;
   final String createdAt;
 
@@ -92,16 +92,21 @@ class TransferExecuteResponse {
     required this.createdAt,
   });
 
-  factory TransferExecuteResponse.fromJson(Map<String, dynamic> json) => TransferExecuteResponse(
-    message: json['message']?.toString() ?? '',
-    transferId: json['transferId']?.toString() ?? '',
-    transactionId: json['transactionId'] is int 
-        ? json['transactionId'] 
-        : int.tryParse(json['transactionId']?.toString() ?? '0') ?? 0,
-    status: json['status']?.toString() ?? '',
-    currentBalance: (json['currentBalance'] as num?)?.toDouble() ?? 0.0,
-    createdAt: json['createdAt']?.toString() ?? '',
-  );
+  factory TransferExecuteResponse.fromJson(Map<String, dynamic> json) {
+    // 💡 핵심: 'data' 계층 안에서 값을 꺼내야 함
+    final data = json['data'] as Map<String, dynamic>? ?? {};
+    
+    return TransferExecuteResponse(
+      message: json['message']?.toString() ?? '',
+      transferId: data['transferId']?.toString() ?? '',
+      transactionId: data['transactionId'] is int 
+          ? data['transactionId'] 
+          : int.tryParse(data['transactionId']?.toString() ?? '0') ?? 0,
+      status: data['status']?.toString() ?? '',
+      currentBalance: (data['currentBalance'] as num?)?.toDouble() ?? 0.0,
+      createdAt: data['createdAt']?.toString() ?? '',
+    );
+  }
 }
 
 // --- [이체 실패 처리 FINANCE/TRANSFER 003] ---

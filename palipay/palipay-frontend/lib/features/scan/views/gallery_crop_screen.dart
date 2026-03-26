@@ -20,9 +20,7 @@ class GalleryCropScreen extends StatefulWidget {
 }
 
 class _GalleryCropScreenState extends State<GalleryCropScreen> {
-  final GlobalKey _imageAreaKey = GlobalKey();
-
-  Rect _selectionRect = const Rect.fromLTWH(60, 180, 240, 100);
+  Rect _selectionRect = Rect.zero;
 
   Size? _displayedImageSize;
   double _displayedImageLeft = 0;
@@ -32,12 +30,19 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
 
   bool _isMoving = false;
   bool _isResizing = false;
+  bool _isSelectionInitailized = false;
   Offset? _lastFocalPoint;
 
   @override
   void initState() {
     super.initState();
     _loadImage();
+  }
+
+  double _clamp(double value, double min, double max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
   }
 
   Future<void> _loadImage() async {
@@ -84,22 +89,45 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
     _displayedImageLeft = left;
     _displayedImageTop = top;
 
-    // selection rect가 이미지 밖으로 나가지 않게 1회 보정
-    _selectionRect = _clampRectToImageBounds(_selectionRect);
+    if (!_isSelectionInitailized) {
+      final rectWidth = _clamp(drawWidth * 0.72, 160, drawWidth);
+      final rectHeight = _clamp(drawHeight * 0.22, 70, drawHeight * 0.45);
+      final rectLeft = left + (drawWidth - rectWidth) / 2;
+      final rectTop = top + (drawHeight - rectHeight) / 2;
+
+      _selectionRect = Rect.fromLTWH(
+        rectLeft,
+        rectTop,
+        rectWidth,
+        rectHeight,
+      );
+      _isSelectionInitailized = true;
+    } else {
+      _selectionRect = _clampRectToImageBounds(_selectionRect);
+    }
   }
 
   Rect _clampRectToImageBounds(Rect rect) {
     if (_displayedImageSize == null) return rect;
+
+    final minWidth = _clamp(_displayedImageSize!.width * 0.18, 80, 180);
+    final minHeight = _clamp(_displayedImageSize!.height * 0.10, 50, 120);
 
     final minLeft = _displayedImageLeft;
     final minTop = _displayedImageTop;
     final maxRight = _displayedImageLeft + _displayedImageSize!.width;
     final maxBottom = _displayedImageTop + _displayedImageSize!.height;
 
-    double left = rect.left.clamp(minLeft, maxRight - 40);
-    double top = rect.top.clamp(minTop, maxBottom - 40);
+    double left = rect.left;
+    double top = rect.top;
     double width = rect.width;
     double height = rect.height;
+
+    width = width.clamp(minWidth, _displayedImageSize!.width);
+    height = height.clamp(minHeight, _displayedImageSize!.height);
+
+    left = left.clamp(minLeft, maxRight - width);
+    top = top.clamp(minTop, maxBottom - height);
 
     if (left + width > maxRight) {
       width = maxRight - left;
@@ -108,18 +136,20 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
       height = maxBottom - top;
     }
 
-    width = width.clamp(60, _displayedImageSize!.width);
-    height = height.clamp(40, _displayedImageSize!.height);
-
     return Rect.fromLTWH(left, top, width, height);
   }
 
   bool _isOnResizeHandle(Offset point) {
+    if (_displayedImageSize == null) return false;
+
+    final handleTouchRadius =
+        _clamp(_displayedImageSize!.width * 0.07, 24, 32);
+
     final handleCenter = Offset(
       _selectionRect.right,
       _selectionRect.bottom,
     );
-    return (point - handleCenter).distance <= 28;
+    return (point - handleCenter).distance <= handleTouchRadius;
   }
 
   void _onPanStart(DragStartDetails details) {
@@ -145,11 +175,14 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
 
     Rect next = _selectionRect;
 
+    final minWidth = _clamp(_displayedImageSize!.width * 0.18, 80, 180);
+    final minHeight = _clamp(_displayedImageSize!.height * 0.10, 50, 120);
+
     if (_isMoving) {
       next = _selectionRect.shift(Offset(dx, dy));
     } else if (_isResizing) {
-      final newWidth = (_selectionRect.width + dx).clamp(60.0, _displayedImageSize!.width);
-      final newHeight = (_selectionRect.height + dy).clamp(40.0, _displayedImageSize!.height);
+      final newWidth = (_selectionRect.width + dx).clamp(minWidth, _displayedImageSize!.width);
+      final newHeight = (_selectionRect.height + dy).clamp(minHeight, _displayedImageSize!.height);
 
       next = Rect.fromLTWH(
         _selectionRect.left,
@@ -242,6 +275,19 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
             builder: (context, constraints) {
               _updateDisplayedImageRect(constraints);
 
+              final width = constraints.maxWidth;
+              final height = constraints.maxHeight;
+              final safeBottom = MediaQuery.of(context).padding.bottom;
+
+              final horizontalPadding = _clamp(width * 0.045, 14, 22);
+              final topGuide = _clamp(height * 0.02, 12, 20);
+              final bottomButton = safeBottom + _clamp(height * 0.02, 10, 18);
+
+              final handleSize = _clamp(width * 0.075, 24, 30);
+              final handleIconSize = _clamp(handleSize * 0.58, 14, 18);
+              final borderRadius = _clamp(width * 0.03, 10, 14);
+              final guideFontSize = _clamp(width * 0.037, 13, 15);
+
               return Stack(
                 children: [
                   GestureDetector(
@@ -267,6 +313,7 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
                           child: CustomPaint(
                             painter: _CropOverlayPainter(
                               rect: _selectionRect,
+                              borderRadius: borderRadius,
                             ),
                           ),
                         ),
@@ -285,18 +332,18 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
                         ),
 
                         Positioned(
-                          left: _selectionRect.right - 14,
-                          top: _selectionRect.bottom - 14,
+                          left: _selectionRect.right - handleSize / 2,
+                          top: _selectionRect.bottom - handleSize / 2,
                           child: Container(
-                            width: 28,
-                            height: 28,
+                            width: handleSize,
+                            height: handleSize,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(handleSize / 2),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.open_in_full,
-                              size: 16,
+                              size: handleIconSize,
                               color: Colors.black,
                             ),
                           ),
@@ -306,13 +353,13 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
                   ),
 
                   Positioned(
-                    top: 16,
-                    left: 16,
-                    right: 16,
+                    top: topGuide,
+                    left: horizontalPadding,
+                    right: horizontalPadding,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: _clamp(width * 0.04, 12, 16),
+                        vertical: _clamp(height * 0.012, 8, 10),
                       ),
                       child: Text(
                         'gallery_crop.guide'.tr(),
@@ -349,8 +396,9 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
 
 class _CropOverlayPainter extends CustomPainter {
   final Rect rect;
+  final double borderRadius;
 
-  _CropOverlayPainter({required this.rect});
+  _CropOverlayPainter({required this.rect, required this.borderRadius,});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -359,7 +407,7 @@ class _CropOverlayPainter extends CustomPainter {
     final fullPath = Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
     final holePath = Path()
       ..addRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(12)),
+        RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)),
       );
 
     final overlayPath = Path.combine(

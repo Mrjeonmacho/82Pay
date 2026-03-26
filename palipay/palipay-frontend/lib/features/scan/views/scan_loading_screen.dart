@@ -84,99 +84,129 @@ class _ScanLoadingScreenState extends State<ScanLoadingScreen>
     super.dispose();
   }
 
+  double _clamp(double value, double min, double max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          // 배경 이미지
-          Positioned.fill(
-            child: Container(
-              color: Colors.black,
-              alignment: Alignment.center,
-              child: Image.file(
-                widget.imageFile,
-                fit: BoxFit.contain,
-                width: double.infinity,
-                height: double.infinity,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = constraints.maxHeight;
+
+        final topGradientHeight = _clamp(height * 0.28, 180, 260);
+        final bottomGradientHeight = _clamp(height * 0.32, 200, 300);
+        final pagePaddingH = _clamp(width * 0.055, 16, 24);
+        final pagePaddingV = _clamp(height * 0.022, 14, 20);
+
+        final titleFontSize = _clamp(width * 0.08, 26, 32);
+        final descFontSize = _clamp(width * 0.04, 14, 16);
+
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            // 배경 이미지
+            Positioned.fill(
+              child: Container(
+                color: Colors.black,
+                alignment: Alignment.center,
+                child: Image.file(
+                  widget.imageFile,
+                  fit: BoxFit.contain,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
               ),
             ),
-          ),
 
-          // 기본 어두운 오버레이
-          Positioned.fill(
-            child: Container(color: Colors.black.withOpacity(0.48)),
-          ),
+            // 기본 어두운 오버레이
+            Positioned.fill(
+              child: Container(color: Colors.black.withOpacity(0.48)),
+            ),
 
-          // 상단 그라데이션
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: IgnorePointer(
-              child: Container(
-                height: 240,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.38),
-                      Colors.transparent,
-                    ],
+            // 상단 그라데이션
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                child: Container(
+                  height: topGradientHeight,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.38),
+                        Colors.transparent,
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // 하단 그라데이션
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: IgnorePointer(
-              child: Container(
-                height: 280,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.22),
-                      Colors.transparent,
-                    ],
+            // 하단 그라데이션
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: IgnorePointer(
+                child: Container(
+                  height: bottomGradientHeight,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.22),
+                        Colors.transparent,
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _LoadingHeader(),
-                  const Spacer(),
-                  _LoadingCard(
-                    fadeAnimation: _fadeAnimation,
-                    progressAnimation: _progressAnimation,
-                  ),
-                ],
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: pagePaddingH, vertical: pagePaddingV,),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _LoadingHeader(
+                      titleFontSize: titleFontSize,
+                      descFontSize: descFontSize,
+                    ),
+                    const Spacer(),
+                    _LoadingCard(
+                      fadeAnimation: _fadeAnimation,
+                      progressAnimation: _progressAnimation,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      );
+    },
     );
   }
 }
 
 class _LoadingHeader extends StatelessWidget {
-  const _LoadingHeader();
+  final double titleFontSize;
+  final double descFontSize;
+
+  const _LoadingHeader({
+    required this.titleFontSize,
+    required this.descFontSize,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -187,18 +217,18 @@ class _LoadingHeader extends StatelessWidget {
           'scan_loading.scanning'.tr(),
           style: AppTextStyles.headlineLarge.copyWith(
             color: Colors.white,
-            fontSize: 30,
+            fontSize: titleFontSize,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.3,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: (descFontSize * 0.5).clamp(6, 10)),
         Text(
           'scan_loading.analyzing_image_desc'.tr(),
           style: AppTextStyles.bodyMedium.copyWith(
             color: Colors.white.withOpacity(0.84),
             height: 1.45,
-            fontSize: 15,
+            fontSize: descFontSize,
           ),
         ),
       ],
@@ -215,14 +245,34 @@ class _LoadingCard extends StatelessWidget {
     required this.progressAnimation,
   });
 
+  double _clamp(double value, double min, double max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
+    final cardPaddingH = _clamp(width * 0.05, 16, 20);
+    final cardPaddingTop = _clamp(width * 0.05, 16, 20);
+    final cardPaddingBottom = _clamp(width * 0.045, 14, 18);
+    final cardRadius = _clamp(width * 0.075, 24, 30);
+
+    final iconBoxSize = _clamp(width * 0.10, 36, 42);
+    final iconSize = _clamp(width * 0.055, 20, 22);
+    final titleFontSize = _clamp(width * 0.047, 16, 18);
+    final descFontSize = _clamp(width * 0.036, 13, 14);
+    final miniFontSize = _clamp(width * 0.033, 12, 13);
+    final progressHeight = _clamp(width * 0.022, 8, 10);
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+      padding: EdgeInsets.fromLTRB(cardPaddingH, cardPaddingTop, cardPaddingH, cardPaddingBottom,),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.96),
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(cardRadius),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.16),
@@ -242,39 +292,41 @@ class _LoadingCard extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.mainBlue.withOpacity(0.10),
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.mainBlue.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(
+                      _clamp(iconBoxSize * 0.30, 10, 12),
+                    ),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.document_scanner_outlined,
                     color: AppColors.mainBlue,
-                    size: 22,
+                    size: iconSize,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: _clamp(width * 0.03, 10, 12)),
               Expanded(
                 child: Text(
                   'scan_loading.scanning_account_info'.tr(),
                   style: AppTextStyles.headlineLarge.copyWith(
                     color: AppColors.logo,
-                    fontSize: 18,
+                    fontSize: titleFontSize,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: _clamp(width * 0.035, 12, 14)),
           Text(
             'scan_loading.scanning_account_desc'.tr(),
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.abledFont,
               height: 1.45,
-              fontSize: 14,
+              fontSize: descFontSize,
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: _clamp(width * 0.045, 14, 18)),
           AnimatedBuilder(
             animation: progressAnimation,
             builder: (context, child) {
@@ -289,26 +341,28 @@ class _LoadingCard extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: _clamp(width * 0.035, 12, 14)),
           Row(
             children: [
               FadeTransition(
                 opacity: fadeAnimation,
                 child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
+                  width: _clamp(width * 0.02, 7, 8),
+                  height: _clamp(width * 0.02, 7, 8),
+                  decoration: const BoxDecoration(
                     color: AppColors.mainBlue,
                     shape: BoxShape.circle,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                'scan_loading.may_take_a_few_seconds'.tr(),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.abledFont,
-                  fontSize: 13,
+              SizedBox(width: _clamp(width * 0.02, 7, 8)),
+              Expanded(
+                child: Text(
+                  'scan_loading.may_take_a_few_seconds'.tr(),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.abledFont,
+                    fontSize: miniFontSize,
+                  ),
                 ),
               ),
             ],

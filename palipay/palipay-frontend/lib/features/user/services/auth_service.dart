@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:palipay_app/core/network/dio_client.dart';
 import 'package:palipay_app/main_screen.dart';
 import 'package:palipay_app/features/user/views/login_screen.dart';
+import '../../../core/providers/user_provider.dart';
+
+import '../../profile/providers/profile_provider.dart'; // 추가 (경로 확인!)
+import '../../profile/models/profile_user_model.dart';
 
 class AuthService {
   final Dio _dio = DioClient().dio;
@@ -99,8 +105,8 @@ class AuthService {
     }
   }
 
-  // 로그인
-  Future<int> login(String email, String password) async {
+  // 로그
+  Future<int> login(BuildContext context, String email, String password) async {
     try {
       final response = await _dio.post(
         '/auth/login',
@@ -109,9 +115,30 @@ class AuthService {
 
       final data = response.data;
 
+
+
       if (response.statusCode == 200) {
-        await _storage.write(key: 'accessToken', value: data['accessToken']);
+        final token = data['accessToken'];
+        await _storage.write(key: 'accessToken', value: token);
         await _storage.write(key: 'grantType', value: data['grantType']);
+
+        final userInfo = data['userInfo'];
+
+        // 2. 💡 [핵심 추가] UserProvider에도 토큰을 꽂아줌
+        if (context.mounted) {
+          context.read<UserProvider>().setUserInfo(
+          token: token,
+          userId: userInfo['userId'],
+          name: userInfo['name'],
+          email: userInfo['email'],
+          countryCode: userInfo['countryCode'],
+          );
+
+          // 2. 프로필 정보 업데이트 (ProfileProvider) 💡 추가!
+          context.read<ProfileProvider>().setUser(
+            ProfileUserModel.fromJson(userInfo)
+          );
+        }
         return 200;
       }
       return data['status'] ?? 500;
@@ -157,6 +184,7 @@ class AuthService {
 
     if (at != null) {
       // 토큰이 있다면 메인으로 (인터셉터가 알아서 검증하거나 첫 API 호출 시 판가름 남)
+      context.read<UserProvider>().setUserInfo(token: at);
       goToMainScreen(context);
     } else {
       // 3. AT가 없거나 만료되었다면 Refresh 시도
@@ -166,9 +194,14 @@ class AuthService {
       if (!context.mounted) return;
 
       if (success) {
+        // 재발급 성공 시에도 새로운 토큰을 Provider에 넣어줘야 안전합니다.
+        String? newAt = await _storage.read(key: 'accessToken');
+        if (newAt != null) {
+          context.read<UserProvider>().setUserInfo(token: newAt);
+        }
         goToMainScreen(context);
       } else {
-        goToLoginScreen(context); // RT도 만료되었으면 결국 다시 로그인
+        goToLoginScreen(context);
       }
     }
   }

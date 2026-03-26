@@ -27,8 +27,7 @@ class _ScanScreenState extends State<ScanScreen> {
   final ImagePicker _picker = ImagePicker();
 
   bool _isCameraReady = false;
-
-  // [수정] 촬영 중 중복 클릭 방지용
+  // 촬영 중 중복 클릭 방지용
   bool _isTakingPicture = false;
   bool _isPickingFromGallery = false;
 
@@ -61,7 +60,7 @@ class _ScanScreenState extends State<ScanScreen> {
         return;
       }
 
-      // [수정] 기존 controller 먼저 정리 후 새 controller 할당
+      // 기존 controller 먼저 정리 후 새 controller 할당
       await _cameraController?.dispose();
 
       setState(() {
@@ -73,6 +72,7 @@ class _ScanScreenState extends State<ScanScreen> {
       setState(() {
         _isCameraReady = false;
       });
+      debugPrint('카메라 초기화 실패: $e');
     }
   }
 
@@ -82,20 +82,26 @@ class _ScanScreenState extends State<ScanScreen> {
     super.dispose();
   }
 
+  double _clamp(double value, double min, double max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+  }
+
   Rect _getGuideRect(Size size) {
     final width = size.width;
     final height = size.height;
 
-    final guideWidth = width * 0.76;
-    final guideHeight = height * 0.34;
+    final guideWidth = _clamp(width * 0.76, 260, 420);
+    final guideHeight = _clamp(height * 0.34, 150, 280);
     final left = (width - guideWidth) / 2;
-    final top = height * 0.24;
+    final top = _clamp(height * 0.24, 120, 250);
 
     return Rect.fromLTWH(left, top, guideWidth, guideHeight);
   }
 
   Future<void> _pickFromGallery() async {
-    // [수정] ScanProvider는 이제 상위(main.dart)에서 주입받도록 변경
+    // ScanProvider는 상위(main.dart)에서 주입받도록 변경
     final provider = context.read<ScanProvider>();
 
     if (_isPickingFromGallery) return;
@@ -313,165 +319,185 @@ class _ScanScreenState extends State<ScanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // [수정] build 안에서 ChangeNotifierProvider 만들지 않음
+    // build 안에서 ChangeNotifierProvider 만들지 않음
     // -> 상위(main.dart)에서 이미 제공받는 구조로 변경
     return Consumer<ScanProvider>(
       builder: (context, provider, _) {
         final isDisabled =
             provider.isBusy || _isTakingPicture || _isPickingFromGallery;
 
-        return Scaffold(
-          backgroundColor: Colors.black,
-          appBar: PaliTopBar(
-            title: 'common.scan'.tr(),
-            leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: AppColors.mainBlue,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: IconButton(
-                  iconSize: 28,
-                  splashRadius: 24,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AccountInputScreen(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.edit_outlined,
-                    color: AppColors.mainBlue,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          body: Stack(
-            children: [
-              Positioned.fill(
-                child: _isCameraReady && _cameraController != null
-                    ? CameraPreview(_cameraController!)
-                    : Container(
-                        color: Colors.black,
-                        alignment: Alignment.center,
-                        child: const CircularProgressIndicator(),
-                      ),
-              ),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final height = constraints.maxHeight;
+              final safeBottom = MediaQuery.of(context).padding.bottom;
 
-              _ScanOverlay(getGuideRect: _getGuideRect),
+              final guideTextTop = _clamp(height * 0.045, 24, 40);
+              final guideHorizontal = _clamp(width * 0.06, 18, 28);
+              final guideInnerHorizontal = _clamp(width * 0.045, 14, 20);
+              final guideInnerVertical = _clamp(height * 0.012, 8, 12);
 
-              Positioned(
-                top: 36,
-                left: 24,
-                right: 24,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 10,
-                    ),
-                    child: Text(
-                      'scan.align_account_number'.tr(),
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.buttonFont,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              final roundButtonSize = _clamp(width * 0.14, 52, 58);
+              final captureButtonSize = _clamp(width * 0.20, 74, 82);
 
-              Positioned(
-                bottom: 138,
-                left: 0,
-                right: 0,
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: provider.isBusy
-                                ? AppColors.warningRed
-                                : Colors.white70,
-                            shape: BoxShape.circle,
-                          ),
+              final guideRect = _getGuideRect(Size(width, height));
+              final guideBottom = guideRect.bottom;
+
+              final buttonsBottom = safeBottom + _clamp(height * 0.04, 24, 40);
+              final buttonAreaTop = height - buttonsBottom - captureButtonSize;
+              final statusTop = guideBottom + ((buttonAreaTop - guideBottom) * 0.10);
+
+              final statusDotSize = _clamp(width * 0.025, 8, 10);
+              final statusGap = _clamp(width * 0.025, 8, 10);
+
+              return Scaffold(
+                backgroundColor: Colors.black,
+                appBar: PaliTopBar(
+                  title: 'common.scan'.tr(),
+                  actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: IconButton(
+                        iconSize: 28,
+                        splashRadius: 24,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AccountInputScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.edit_outlined,
+                          color: AppColors.mainBlue,
                         ),
-                        const SizedBox(width: 10),
-                        Text(
-                          provider.isBusy
-                              ? 'scan.status_scanning'.tr()
-                              : 'scan.status_ready'.tr(),
-                          style: AppTextStyles.headlineLarge.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      provider.isBusy
-                          ? 'scan.desc_recognizing'.tr()
-                          : 'scan.desc_steady'.tr(),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white70,
-                        fontSize: 14,
                       ),
                     ),
                   ],
                 ),
-              ),
-
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 42,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                body: Stack(
                   children: [
-                    _RoundActionButton(
-                      icon: Icons.photo_library_outlined,
-                      onTap: provider.isBusy ? null : _pickFromGallery,
+                    Positioned.fill(
+                      child: _isCameraReady && _cameraController != null
+                          ? CameraPreview(_cameraController!)
+                          : Container(
+                              color: Colors.black,
+                              alignment: Alignment.center,
+                              child: const CircularProgressIndicator(),
+                            ),
                     ),
-                    _CaptureButton(
-                      onTap: provider.isBusy ? null : _takePicture,
+
+                    _ScanOverlay(getGuideRect: _getGuideRect),
+
+                    Positioned(
+                      top: guideTextTop,
+                      left: guideHorizontal,
+                      right: guideHorizontal,
+                      child: Center(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: guideInnerHorizontal,
+                            vertical: guideInnerVertical,
+                          ),
+                          child: Text(
+                            'scan.align_account_number'.tr(),
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.buttonFont,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                    _RoundActionButton(
-                      icon: provider.flashOn
-                          ? Icons.flash_on_rounded
-                          : Icons.flash_off_rounded,
-                      onTap: provider.isBusy ? null : _toggleFlash,
+
+                    Positioned(
+                      top: statusTop,
+                      left: guideHorizontal,
+                      right: guideHorizontal,
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                width: statusDotSize,
+                                height: statusDotSize,
+                                decoration: BoxDecoration(
+                                  color: provider.isBusy
+                                      ? AppColors.warningRed
+                                      : Colors.white70,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              SizedBox(width: statusGap),
+                              Text(
+                                provider.isBusy
+                                    ? 'scan.status_scanning'.tr()
+                                    : 'scan.status_ready'.tr(),
+                                style: AppTextStyles.headlineLarge.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: _clamp(height * 0.01, 6, 10)),
+                          Text(
+                            provider.isBusy
+                                ? 'scan.desc_recognizing'.tr()
+                                : 'scan.desc_steady'.tr(),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: buttonsBottom,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _RoundActionButton(
+                            icon: Icons.photo_library_outlined,
+                            onTap: provider.isBusy ? null : _pickFromGallery,
+                            size: roundButtonSize,
+                          ),
+                          _CaptureButton(
+                            onTap: provider.isBusy ? null : _takePicture,
+                            size: captureButtonSize,
+                          ),
+                          _RoundActionButton(
+                            icon: provider.flashOn
+                                ? Icons.flash_on_rounded
+                                : Icons.flash_off_rounded,
+                            onTap: provider.isBusy ? null : _toggleFlash,
+                            size: roundButtonSize,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    if (isDisabled)
+                      Positioned.fill(
+                        child: Container(
+                          color: _isPickingFromGallery
+                              ? Colors.black
+                              : Colors.black.withOpacity(0.18),
+                        ),
+                      ),
                   ],
                 ),
-              ),
-
-              if (isDisabled)
-                Positioned.fill(
-                  child: Container(
-                    color: _isPickingFromGallery
-                        ? Colors.black
-                        : Colors.black.withOpacity(0.18),
-                  ),
-                ),
-            ],
-          ),
-        );
+              );
+            },
+          );
       },
     );
   }
@@ -531,19 +557,22 @@ class _OverlayPainter extends CustomPainter {
 class _RoundActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
+  final double size;
 
-  const _RoundActionButton({required this.icon, required this.onTap});
+  const _RoundActionButton({required this.icon, required this.onTap, required this.size,});
 
   @override
   Widget build(BuildContext context) {
+    final iconSize = (size * 0.44).clamp(22.0, 26.0);
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(27),
+      borderRadius: BorderRadius.circular(size / 2),
       child: Opacity(
         opacity: onTap == null ? 0.45 : 1,
         child: Container(
-          width: 54,
-          height: 54,
+          width: size,
+          height: size,
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
@@ -555,7 +584,7 @@ class _RoundActionButton extends StatelessWidget {
               ),
             ],
           ),
-          child: Icon(icon, color: AppColors.logo, size: 24),
+          child: Icon(icon, color: AppColors.logo, size: iconSize),
         ),
       ),
     );
@@ -564,21 +593,26 @@ class _RoundActionButton extends StatelessWidget {
 
 class _CaptureButton extends StatelessWidget {
   final VoidCallback? onTap;
+  final double size;
 
-  const _CaptureButton({required this.onTap});
+  const _CaptureButton({required this.onTap, required this.size,});
 
   @override
   Widget build(BuildContext context) {
+    final innerSize = size * 0.72;
+    final cameraIconSize = (size * 0.36).clamp(24.0, 30.0);
+    final borderWidth = (size * 0.05).clamp(3.5, 4.5);
+
     return GestureDetector(
       onTap: onTap,
       child: Opacity(
         opacity: onTap == null ? 0.45 : 1,
         child: Container(
-          width: 78,
-          height: 78,
+          width: size,
+          height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4),
+            border: Border.all(color: Colors.white, width: borderWidth),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.2),
@@ -589,16 +623,16 @@ class _CaptureButton extends StatelessWidget {
           ),
           child: Center(
             child: Container(
-              width: 56,
-              height: 56,
+              width: innerSize,
+              height: innerSize,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.camera_alt_outlined,
                 color: AppColors.logo,
-                size: 28,
+                size: cameraIconSize,
               ),
             ),
           ),

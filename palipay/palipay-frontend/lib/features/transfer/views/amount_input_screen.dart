@@ -32,6 +32,8 @@ class AmountInputScreen extends StatefulWidget {
 class _AmountInputScreenState extends State<AmountInputScreen> {
   final TextEditingController _amountController = TextEditingController();
 
+  bool _didTryExceedAmount = false;
+
   int get _enteredAmount {
     final raw = _amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
     if (raw.isEmpty) return 0;
@@ -46,31 +48,36 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
     return CurrencyInputFormatter.format(_getWalletBalanceValue(provider));
   }
 
-  bool _getIsInsufficient(WalletProvider provider) =>
-      _enteredAmount > 0 && _enteredAmount > _getWalletBalanceValue(provider);
+  bool _getShowAmountWarning(WalletProvider provider) =>
+      _didTryExceedAmount ||
+      (_enteredAmount > 0 && _enteredAmount > _getWalletBalanceValue(provider));
 
   bool _getCanProceed(WalletProvider provider) =>
       _enteredAmount > 0 && _enteredAmount <= _getWalletBalanceValue(provider);
+
+  double _clamp(double value, double min, double max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+  }
+
+  void _handleAmountChanged(String _) {
+    setState(() {
+      _didTryExceedAmount = false;
+    });
+  }
+
+  void _handleAmountExceeded() {
+    if (!mounted) return;
+    setState(() {
+      _didTryExceedAmount = true;
+    });
+  }
 
   void _onNext() {
     final provider = context.read<WalletProvider>();
     if (!_getCanProceed(provider)) return;
 
-    /// -----------------------------------------
-    /// 지금: 다음 화면 이동만 처리
-    /// -----------------------------------------
-    // TODO: 다음 송금 확인 화면으로 이동
-
-    /// -----------------------------------------
-    /// 나중에 서버 연결 시 여기에서 실제 amount로 다시 검증 가능
-    /// 예:
-    /// context.read<WalletProvider>().loadWalletBalance(
-    ///   accessToken: '실제 토큰',
-    ///   walletId: 1,  //실제 아이디
-    ///   amount: _enteredAmount,
-    /// );
-    /// -----------------------------------------
-    ///
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -107,110 +114,178 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
   @override
   Widget build(BuildContext context) {
     final walletProvider = context.watch<WalletProvider>();
-    // 이 한 줄이 범인을 잡아줄 겁니다!
-    print(
-      "입력액: $_enteredAmount, 잔액: ${_getWalletBalanceValue(walletProvider)}, 로딩중: ${walletProvider.isLoading}, 진행가능: ${_getCanProceed(walletProvider)}",
-    );
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F8FB),
-      appBar: PaliTopBar(
-        title: 'transfer.title'.tr(),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.mainBlue,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
+    final walletBalance = _getWalletBalanceValue(walletProvider);
+    
+    final amountFormatters = <TextInputFormatter>[
+      FilteringTextInputFormatter.digitsOnly,
+      _MaxAmountBlockFormatter(
+        maxAmount: walletBalance,
+        onExceeded: _handleAmountExceeded,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'amount_input.from_my_wallet'.tr(),
-                style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.abledFont,
-                  fontWeight: FontWeight.bold,
+      CurrencyInputFormatter(),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = constraints.maxHeight;
+        final safeBottom = MediaQuery.of(context).padding.bottom;
+        final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
+
+        final horizontalPadding = _clamp(width * 0.06, 18, 24);
+        final topPadding = _clamp(height * 0.035, 20, 28);
+        final bottomPadding = safeBottom + keyboardInset + _clamp(height * 0.025, 16, 28);
+
+        final sectionGap = _clamp(height * 0.035, 20, 26);
+        final labelToValueGap = _clamp(height * 0.008, 6, 8);
+        final blockGap = _clamp(height * 0.03, 22, 30);
+        final helperGap = _clamp(height * 0.01, 6, 8);
+
+        final labelFontSize = _clamp(width * 0.042, 16, 18);
+        final valueFontSize = _clamp(width * 0.038, 14, 16);
+        final helperFontSize = _clamp(width * 0.034, 12, 14);
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F8FB),
+          appBar: PaliTopBar(
+            title: 'transfer.title'.tr(),
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(horizontalPadding, topPadding, horizontalPadding, bottomPadding,),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  // [수정] 최소 높이 확보해서 버튼이 너무 위로 뜨지 않게 함
+                  minHeight: constraints.maxHeight -
+                      topPadding -
+                      MediaQuery.of(context).padding.top,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                walletProvider.isLoading
-                    ? 'transfer.amount.balance_loading'.tr()
-                    : 'transfer.amount.balance_value'.tr(namedArgs: {'balance': _getFormattedWalletBalance(walletProvider)}),
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.exampleFont,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-              const SizedBox(height: 26),
-              Text(
-                'amount_input.to_bank'.tr(namedArgs: {'bankName': widget.bankName}),
-                style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.abledFont,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                widget.accountNumber,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.exampleFont,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-              const SizedBox(height: 26),
-              Text(
-                'amount_input.amount'.tr(),
-                style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.abledFont,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 0),
-              PaliInputOnelineField(
-                hintText: '₩0',
-                controller: _amountController,
-                keyboardType: TextInputType.number,
-                onChanged: (_) {
-                  setState(() {});
-                },
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly,
-                  CurrencyInputFormatter(),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'amount_input.enter_in_krw'.tr(),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.exampleFont,
-                ),
-              ),
-              const SizedBox(height: 8),
-              if (_getIsInsufficient(walletProvider))
-                Text(
-                  'amount_input.withdrawable_amount'.tr(namedArgs: {'balance': _getFormattedWalletBalance(walletProvider)}),
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.warningRed,
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'amount_input.from_my_wallet'.tr(),
+                        style: AppTextStyles.titleMedium.copyWith(
+                          color: AppColors.abledFont,
+                          fontWeight: FontWeight.bold,
+                          fontSize: labelFontSize,
+                        ),
+                      ),
+                      SizedBox(height: labelToValueGap),
+                      Text(
+                        walletProvider.isLoading
+                            ? 'transfer.amount.balance_loading'.tr()
+                            : 'transfer.amount.balance_value'.tr(namedArgs: {'balance': _getFormattedWalletBalance(walletProvider)}),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.exampleFont,
+                          fontWeight: FontWeight.normal,
+                          fontSize: valueFontSize,
+                        ),
+                      ),
+                      SizedBox(height: blockGap),
+                      Text(
+                        'amount_input.to_bank'.tr(namedArgs: {'bankName': widget.bankName}),
+                        style: AppTextStyles.titleMedium.copyWith(
+                          color: AppColors.abledFont,
+                          fontWeight: FontWeight.bold,
+                          fontSize: labelFontSize,
+                        ),
+                      ),
+                      SizedBox(height: labelToValueGap),
+                      Text(
+                        widget.accountNumber,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.exampleFont,
+                          fontWeight: FontWeight.normal,
+                          fontSize: valueFontSize,
+                        ),
+                      ),
+                      SizedBox(height: blockGap),
+                      Text(
+                        'amount_input.amount'.tr(),
+                        style: AppTextStyles.titleMedium.copyWith(
+                          color: AppColors.abledFont,
+                          fontWeight: FontWeight.bold,
+                          fontSize: labelFontSize,
+                        ),
+                      ),
+                      
+                      PaliInputOnelineField(
+                        hintText: '₩ 0',
+                        controller: _amountController,
+                        keyboardType: TextInputType.number,
+                        onChanged: _handleAmountChanged,
+                        inputFormatters: amountFormatters,
+                      ),
+                      SizedBox(height: helperGap),
+                      Text(
+                        'amount_input.enter_in_krw'.tr(),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.exampleFont,
+                          fontSize: helperFontSize,
+                        ),
+                      ),
+                      SizedBox(height: helperGap),
+                      Text(
+                        'amount_input.withdrawable_amount'.tr(
+                          namedArgs: {
+                            'balance': _getFormattedWalletBalance(walletProvider),
+                          },
+                        ),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          // 🔥 핵심: 초과하면 빨간색, 아니면 회색
+                          color: _getShowAmountWarning(walletProvider)
+                              ? AppColors.warningRed
+                              : AppColors.exampleFont,
+                          fontSize: helperFontSize,
+                        ),
+                      ),
+                      const Spacer(),
+                      PaliButton(
+                        text: 'transfer.btn_next'.tr(),
+                        onPressed: _getCanProceed(walletProvider) && !walletProvider.isLoading
+                            ? _onNext
+                            : null,
+                        backgroundColor: AppColors.mainBlue,
+                      ),
+                    ],
                   ),
                 ),
-              const Spacer(),
-              PaliButton(
-                text: 'transfer.btn_next'.tr(),
-                onPressed: _getCanProceed(walletProvider) && !walletProvider.isLoading
-                    ? _onNext
-                    : null,
-                backgroundColor: AppColors.mainBlue,
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
+  }
+}
+
+class _MaxAmountBlockFormatter extends TextInputFormatter {
+  final int maxAmount;
+  final VoidCallback? onExceeded;
+
+  _MaxAmountBlockFormatter({
+    required this.maxAmount,
+    this.onExceeded,
+  });
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final raw = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+
+    if (raw.isEmpty) return newValue;
+
+    final nextAmount = int.tryParse(raw) ?? 0;
+
+    if (maxAmount > 0 && nextAmount > maxAmount) {
+      onExceeded?.call();
+      return oldValue;
+    }
+
+    return newValue;
   }
 }

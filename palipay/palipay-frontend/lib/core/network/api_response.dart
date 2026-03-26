@@ -23,4 +23,6 @@ class ApiResponse<T> {
         status: false,
         message: message,
       );
+
+  bool get isSuccess => status;
 }

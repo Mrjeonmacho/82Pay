@@ -50,7 +50,7 @@ class TransferService {
       final response = await _dio.post(
         ApiConstants.transferExecute, // 상수명 확인: transfer -> transferExecute
         data: request.toJson(),
-        options: Options(headers: {'idempotency-key': idempotencyKey}),
+        options: Options(headers: {'Idempotency-Key': idempotencyKey}),
       );
       return ApiResponse.success(TransferExecuteResponse.fromJson(response.data['data']));
     } on DioException catch (e) {

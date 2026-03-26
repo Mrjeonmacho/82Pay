@@ -43,7 +43,6 @@ class _PinScreenState extends State<PinScreen>
 
   String _inputPin = "";
   String? _errorMessage;
-  int _attemptCount = 0; // 틀린 횟수 추적
   bool _isLoading = false; // [추가] API 처리 중 입력 막기
 
   // [추가] Change PIN 전용 상태값
@@ -75,46 +74,54 @@ class _PinScreenState extends State<PinScreen>
   }
 
   String get _title {
-    if (widget.mode == PinMode.create) {
-      return "Create PIN";
-    } else if (widget.mode == PinMode.confirm) {
-      return "Confirm PIN";
-    } else if (widget.mode == PinMode.auth) {
-      return "Enter PIN";
-    } else if (widget.mode == PinMode.change) {
-      switch (_changeStep) {
-        case ChangePinStep.verifyCurrentPin:
-          return "Enter PIN";   
-        case ChangePinStep.enterNewPin:
-          return "New PIN";             
-        case ChangePinStep.confirmNewPin:
-          return "Confirm PIN";     
-        case ChangePinStep.completed:
-          return "PIN Updated";
-      }
+    switch (widget.mode) {
+      case PinMode.create:
+        return 'pin.create.title_create'.tr();
+      case PinMode.confirm:
+        return 'pin.create.title_confirm'.tr();
+      case PinMode.auth:
+        return 'pin.create.title_enter'.tr();
+      case PinMode.change:
+        switch (_changeStep) {
+          case ChangePinStep.verifyCurrentPin:
+            return 'pin.change.title_verify_current'.tr();
+          case ChangePinStep.enterNewPin:
+            return 'pin.change.title_create_new'.tr();
+          case ChangePinStep.confirmNewPin:
+            return 'pin.change.title_confirm_new'.tr();
+          case ChangePinStep.completed:
+            return 'pin.change.title_completed'.tr();
+        }
     }
-    return "Enter PIN";
   }
-
+     
   /// [추가] 모드/단계별 subtitle
   String get _subTitle {
-    if (widget.mode == PinMode.create) {
-      return "Enter a new 6-digit PIN";
-    } else if (widget.mode == PinMode.confirm) {
-      return "Re-enter your new PIN";
-    } else if (widget.mode == PinMode.change) {
-      switch (_changeStep) {
-        case ChangePinStep.verifyCurrentPin:
-          return "Enter your current PIN";
-        case ChangePinStep.enterNewPin:
-          return "Enter a new PIN";
-        case ChangePinStep.confirmNewPin:
-          return "Re-enter your new PIN";
-        case ChangePinStep.completed:
-          return "Your PIN has been updated";
-      }
+    switch (widget.mode) {
+      case PinMode.create:
+        return 'pin.create.desc_create'.tr();
+      case PinMode.confirm:
+        return 'pin.create.desc_confirm'.tr();
+      case PinMode.auth:
+        return 'pin.create.desc_enter'.tr();
+      case PinMode.change:
+        switch (_changeStep) {
+          case ChangePinStep.verifyCurrentPin:
+            return 'pin.change.desc_verify_current'.tr();
+          case ChangePinStep.enterNewPin:
+            return 'pin.change.desc_create_new'.tr();
+          case ChangePinStep.confirmNewPin:
+            return 'pin.change.desc_confirm_new'.tr();
+          case ChangePinStep.completed:
+            return 'pin.change.desc_completed'.tr();
+        }
     }
-    return "Enter your PIN";
+  }
+
+  int _resolveWalletId() {
+    final accountProvider = context.read<AccountProvider>();
+    final walletIdStr = accountProvider.linkedAccount?.walletId ?? '12345';
+    return widget.walletId ?? int.tryParse(walletIdStr) ?? 12345;
   }
 
   /// [수정] 공통 에러 처리
@@ -133,11 +140,12 @@ class _PinScreenState extends State<PinScreen>
 
     setState(() {
       if (isLocked) {
-        _errorMessage =
-            "Too many failed attempts. Try again in ${pinProvider.formattedLockTime}.";
+        _errorMessage = 'pin.locked_for'.tr(
+          namedArgs: {'time': pinProvider.formattedLockTime},
+        );
       } else if (countAttempt) {
         _errorMessage =
-            "$message ($attemptCount/${PinProvider.maxPinAttempts})";
+            'pin.error_incorrect'.tr(namedArgs: {'count': '$attemptCount'});
       } else {
         _errorMessage = message;
       }
@@ -190,11 +198,7 @@ class _PinScreenState extends State<PinScreen>
   /// PIN 입력 완료 시 모드별 처리 로직
   void _handleComplete() async {
     final pinProvider = context.read<PinProvider>();
-
-    // [수정] walletId를 Provider의 실제 계좌 정보나 widget에서 받도록 변경
-    final accountProvider = context.read<AccountProvider>();
-    final walletIdStr = accountProvider.linkedAccount?.walletId ?? "12345";
-    final walletId = widget.walletId ?? int.tryParse(walletIdStr) ?? 12345;
+    final walletId = _resolveWalletId();
 
     switch (widget.mode) {
       case PinMode.create:
@@ -212,11 +216,20 @@ class _PinScreenState extends State<PinScreen>
         break;
 
       case PinMode.confirm:
-        if (widget.firstPin == _inputPin) {
-          // [수정] Provider를 통해 실제로 PIN을 생성/등록합니다.
-          final success = await pinProvider.createPin(walletId);
+        if ((widget.firstPin ?? '') == _inputPin) {
+          setState(() => _isLoading = true);
 
-          if (mounted && success) {
+          // [수정] Provider를 통해 실제로 PIN을 생성/등록합니다.
+          final success = await pinProvider.createPin(
+            walletId,
+            pinNumber: widget.firstPin ?? _inputPin,
+          );
+
+          if (!mounted) return;
+
+          setState(() => _isLoading = false);
+
+          if (success) {
             // [기획 반영] 생성 성공 시 바로 계좌 관리 화면으로!
             // pushAndRemoveUntil을 써서 이전 PIN 입력 스택을 모두 비워줍니다.
             Navigator.pushAndRemoveUntil(
@@ -227,7 +240,7 @@ class _PinScreenState extends State<PinScreen>
               (route) => route.isFirst, // 홈 화면만 남기고 다 지움
             );
           } else {
-            _handleError(message: 'pin.error_registration_failed'.tr());
+            _handleError(message: pinProvider.errorMessage ?? 'pin.error_registration_failed'.tr());
           }
         } else {
           _handleError(message: 'pin.error_mismatch'.tr());
@@ -239,8 +252,9 @@ class _PinScreenState extends State<PinScreen>
           setState(() {
             _inputPin = "";
             _isLoading = false;
-            _errorMessage =
-                "Too many failed attempts. Try again in ${pinProvider.formattedLockTime}.";
+            _errorMessage = 'pin.locked_for'.tr(
+              namedArgs: {'time': pinProvider.formattedLockTime},
+            );
           });
           return;
         }
@@ -259,7 +273,7 @@ class _PinScreenState extends State<PinScreen>
           Navigator.pop(context, _inputPin);
         } else {
           _handleError(
-            message: "Incorrect PIN. Please try again.",
+            message: pinProvider.errorMessage ?? 'pin.error_mismatch'.tr(),
             countAttempt: true,
           );
         }
@@ -283,8 +297,9 @@ class _PinScreenState extends State<PinScreen>
           setState(() {
             _inputPin = "";
             _isLoading = false;
-            _errorMessage =
-                "Too many failed attempts. Try again in ${pinProvider.formattedLockTime}.";
+            _errorMessage = 'pin.locked_for'.tr(
+              namedArgs: {'time': pinProvider.formattedLockTime},
+            );
           });
           return;
         }
@@ -309,7 +324,7 @@ class _PinScreenState extends State<PinScreen>
           });
         } else {
           _handleError(
-            message: "The current PIN is incorrect.",
+            message: pinProvider.errorMessage ?? 'pin.change.error_invalid_current'.tr(),
             countAttempt: true,
           );
         }
@@ -318,7 +333,7 @@ class _PinScreenState extends State<PinScreen>
       case ChangePinStep.enterNewPin:
         if (_inputPin == _currentPin) {
           _handleError(
-            message: "Your new PIN must be different from the current PIN.",
+            message: pinProvider.errorMessage ?? 'pin.change.error_same_as_current'.tr(),
           );
           return;
         }
@@ -334,7 +349,7 @@ class _PinScreenState extends State<PinScreen>
       case ChangePinStep.confirmNewPin:
         if (_inputPin != _newPin) {
           _handleError(
-            message: "The new PINs do not match. Please try again.",
+            message: pinProvider.errorMessage ?? 'pin.change.error_mismatch'.tr(),
           );
           return;
         }
@@ -358,7 +373,7 @@ class _PinScreenState extends State<PinScreen>
           });
         } else {
           _handleError(
-            message: pinProvider.errorMessage ?? "Failed to change PIN.",
+            message: pinProvider.errorMessage ?? 'pin.change.error_failed'.tr(),
           );
         }
         break;
@@ -368,28 +383,21 @@ class _PinScreenState extends State<PinScreen>
     }
   }
 
-  /// TODO: 실제 서버 API 호출 로직을 구현하는 부분입니다.
-  Future<void> _registerPin(String pin) async {
-    // 여기에 PinService를 통해 API를 호출하는 로직이 들어갑니다.
-    // 성공 시 성공 화면으로 이동, 실패 시 에러 처리
-  }
-
   @override
   Widget build(BuildContext context) {
     final pinProvider = context.watch<PinProvider>();
     final isPinLocked = pinProvider.isPinLocked;
 
-    // [수정] change 모드이면서 완료 단계면 완료 화면 표시
     final bool showCompletedView =
         widget.mode == PinMode.change &&
             _changeStep == ChangePinStep.completed;
 
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       appBar: showCompletedView
           ? null
           : AppBar(
-              // 디자인 시안의 백 버튼과 타이틀 구현
               title: Text(
                 'pin.logo_text'.tr(),
                 style: const TextStyle(
@@ -404,100 +412,121 @@ class _PinScreenState extends State<PinScreen>
             ),
       body: SafeArea(
         child: showCompletedView
-          ? _buildCompletedView()
-          : Column(
-              children: [
-                const SizedBox(height: 44),
-                // 상단 헤더 영역
-                Text(
-                  _subTitle,
-                  style: AppTextStyles.titleMedium.copyWith(
-                    color: AppColors.abledFont,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                
-                const SizedBox(height: 50),
+            ? _buildCompletedView()
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final height = constraints.maxHeight;
+                  final width = constraints.maxWidth;
 
-                // [수정] 핀 도트가 흔들리도록 AnimatedBuilder로 감싸기
-                AnimatedBuilder(
-                  animation: _shakeAnimation,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(_shakeAnimation.value, 0), // X축으로만 흔들림
-                      child: child,
-                    );
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(6, (index) => _buildDot(index)),
-                  ),
-                ),
+                  final topSpace = height * 0.06;
+                  final titleGap = height * 0.03;
+                  final dotGap = height * 0.06;
+                  final bottomPadding =
+                      MediaQuery.of(context).viewPadding.bottom + 16;
 
-                const SizedBox(height: 20),
+                  return Column(
+                    children: [
+                      SizedBox(height: topSpace),
 
-                // 에러 메시지 영역
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28.0),
-                    child: Text(
-                      _errorMessage!,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.warningRed,
-                        fontWeight: FontWeight.bold,
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: width * 0.08,
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              _title,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.headlineLarge.copyWith(
+                                color: AppColors.mainBlue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: titleGap),
+                            Text(
+                              _subTitle,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.titleMedium.copyWith(
+                                color: AppColors.abledFont,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ),
-                
-                // [추가] lock
-                if (isPinLocked)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      "Locked for ${pinProvider.formattedLockTime}",
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.warningRed,
-                        fontWeight: FontWeight.bold,
+
+                      SizedBox(height: dotGap),
+
+                      AnimatedBuilder(
+                        animation: _shakeAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(_shakeAnimation.value, 0),
+                            child: child,
+                          );
+                        },
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: width * 0.035,
+                          children: List.generate(6, (index) => _buildDot(index, width)),
+                        ),
                       ),
-                    ),
-                  ),
 
-                // [추가] 로딩은 에러 메시지 아래에만 작게 표시
-                if (_isLoading)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 12),
-                    child: CircularProgressIndicator(),
-                  ),
+                      SizedBox(height: height * 0.025),
 
-                const Spacer(),
-                PaliKeypad(
-                  onNumberTap: _onKeyTap, // 숫자 누르면 실행할 함수 연결
-                  onBackspace: _onBackspace, // 지우기 누르면 실행할 함수 연결
-                  enabled: !_isLoading && !isPinLocked,
-                  leftButton: Center(
-                    // 하단 왼쪽 로고 배치
-                    child: Image.asset(
-                    'assets/images/logos/palilogo1.png',
-                    width: 40,
-                    ),
-                  ),
-                ),
-                // 커스텀 숫자 키패드
-                const SizedBox(height: 40),
-              ],
-        ),
+                      if (_errorMessage != null)
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: width * 0.08),
+                          child: Text(
+                            _errorMessage!,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.warningRed,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        
+                      if (_isLoading)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 12),
+                          child: CircularProgressIndicator(),
+                        ),
+
+                      const Spacer(),
+
+                      Padding(
+                        padding: EdgeInsets.only(bottom: bottomPadding),
+                        child: PaliKeypad(
+                          onNumberTap: _onKeyTap,
+                          onBackspace: _onBackspace,
+                          enabled: !_isLoading && !isPinLocked,
+                          leftButton: Center(
+                            child: Image.asset(
+                              'assets/images/logos/palilogo1.png',
+                              width: width * 0.1 > 40 ? 40 : width * 0.1,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
       ),
     );
   }
 
   /// 입력된 핀의 수에 따라 도트의 채워짐 상태를 그려주는 위젯
-  Widget _buildDot(int index) {
+  Widget _buildDot(int index, double screenWidth) {
     bool isFilled = index < _inputPin.length;
+    final double size = screenWidth < 360 ? 16 : 20;
+    final double margin = screenWidth < 360 ? 4 : 6;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10),
-      width: 20,
-      height: 20,
+      margin: EdgeInsets.symmetric(horizontal: margin),
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         // 입력되면 Main Blue로 채우고, 아니면 테두리만 표시
@@ -514,77 +543,77 @@ class _PinScreenState extends State<PinScreen>
   return LayoutBuilder(
     builder: (context, constraints) {
       final screenHeight = constraints.maxHeight;
+        final screenWidth = constraints.maxWidth;
 
-      final topSpacing = screenHeight > 760 ? 70.0 : 50.0;
-      final titleToLogoSpacing = screenHeight > 760 ? 50.0 : 40.0;
-      final logoToTextSpacing = screenHeight > 760 ? 50.0 : 40.0;
-      final bottomSpacing = screenHeight > 760 ? 24.0 : 16.0;
+        final topSpacing = screenHeight * 0.08;
+        final titleToLogoSpacing = screenHeight * 0.06;
+        final logoToTextSpacing = screenHeight * 0.06;
+        final bottomSpacing = MediaQuery.of(context).viewPadding.bottom + 16;
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(height: topSpacing),
+        final logoSize = screenWidth < 360 ? 110.0 : 140.0;
+        final iconSize = screenWidth < 360 ? 56.0 : 72.0;
 
-            // 1. title
-            Text(
-              _title,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.titleLarge.copyWith(
-                color: AppColors.mainBlue,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(height: topSpacing),
 
-            SizedBox(height: titleToLogoSpacing),
-
-            // 2. 로고(체크 아이콘)
-            Center(
-              child: Container(
-                width: 140,
-                height: 140,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFEAF3FF),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check,
-                  size: 72,
+              Text(
+                _title,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.headlineLarge.copyWith(
                   color: AppColors.mainBlue,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
 
-            SizedBox(height: logoToTextSpacing),
+              SizedBox(height: titleToLogoSpacing),
 
-            // 3. 문구
-            Text(
-              _subTitle,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.exampleFont,
-                fontWeight: FontWeight.w600,
-                height: 1.4,
+              Center(
+                child: Container(
+                  width: logoSize,
+                  height: logoSize,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEAF3FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check,
+                    size: iconSize,
+                    color: AppColors.mainBlue,
+                  ),
+                ),
               ),
-            ),
 
-            const Spacer(),
+              SizedBox(height: logoToTextSpacing),
 
-            // 4. 버튼
-            PaliButton(
-              text: "Done",
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-              type: PaliButtonType.primary,
-              backgroundColor: AppColors.mainBlue,
-            ),
+              Text(
+                _subTitle,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.exampleFont,
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                ),
+              ),
 
-            SizedBox(height: bottomSpacing),
-          ],
-        ),
-      );
+              const Spacer(),
+
+              PaliButton(
+                text: 'common.done'.tr(),
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                type: PaliButtonType.primary,
+                backgroundColor: AppColors.mainBlue,
+              ),
+
+              SizedBox(height: bottomSpacing),
+            ],
+          ),
+        );
     },
   );
 }
