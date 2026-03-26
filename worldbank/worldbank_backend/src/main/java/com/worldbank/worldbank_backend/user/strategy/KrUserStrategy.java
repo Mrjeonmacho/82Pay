@@ -68,9 +68,9 @@ public class KrUserStrategy implements UserStrategy {
 
         while (true) {
             // 숫자4자리-숫자4자리-숫자4자리 생성
-            AccountNumber = IntStream.range(0, 3)
-                    .mapToObj(i -> String.format("%04d", random.nextInt(10000)))
-                    .collect(Collectors.joining("-"));
+            AccountNumber = "KR" + IntStream.range(0, 12)
+                    .mapToObj(i -> String.valueOf(random.nextInt(10)))
+                    .collect(Collectors.joining(""));
 
             // DB에 해당 계좌번호가 있는지 확인
             if (!bankRepository.existsByAccountNumber(AccountNumber)) {
