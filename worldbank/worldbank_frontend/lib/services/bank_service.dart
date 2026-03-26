@@ -1,78 +1,42 @@
-import '../models/bank_model.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class BankService {
-  final String accessToken;
+  final String baseUrl = dotenv.env['BASE_URL'] ?? "http://70.12.247.184:8080";
 
-  BankService({this.accessToken = ''});
-
-  // 1. 공통: 잔액 확인 (국적 상관없이 호출)
-  Future<ApiResponse<BalanceModel>> fetchBalance(String userId) async {
+  // 1. 계좌 정보(잔액) 가져오기
+  Future<Map<String, dynamic>?> getAccountInfo(
+    int userId,
+    String currency,
+  ) async {
     try {
-      // final response = await _dio.get(
-      //   '/api/finance?userId=$userId',
-      //   options: Options(headers: {'accesstoken': accessToken}),
-      // );
-
-      // 2. 가짜 응답 데이터 생성
-      final mockResponseData = {
-        'message': '로컬 테스트 성공',
-        'data': {'amount': 55000.0, 'currency': 'KRW'},
-      };
-
-      return ApiResponse(
-        // message: response.data['message'],
-        // data: BalanceModel.fromJson(response.data['data']),
-        message: mockResponseData['message'] as String,
-        data: BalanceModel.fromJson(
-          mockResponseData['data'] as Map<String, dynamic>,
-        ),
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/finance/user/$userId?currency=$currency'),
       );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(utf8.decode(response.bodyBytes));
+      }
     } catch (e) {
-      return ApiResponse(message: '잔액 조회 실패: $e');
+      print("계좌 조회 에러: $e");
     }
+    return null;
   }
 
-  // // 2. KR 전용: 사업자 정보 조회 (다른 국적일 땐 호출 금지)
-  // Future<ApiResponse<BusinessModel>> fetchBusinessInfo(
-  //   String accountNumber,
-  // ) async {
-  //   try {
-  //     final response = await _dio.get(
-  //       '/api/finance/corporation/$accountNumber',
-  //       options: Options(headers: {'accesstoken': accessToken}),
-  //     );
-
-  //     return ApiResponse(
-  //       message: response.data['message'],
-  //       data: BusinessModel.fromJson(response.data['data']),
-  //     );
-  //   } catch (e) {
-  //     return ApiResponse(message: '사업자 조회 실패: $e');
-  //   }
-  // }
-
-  // 3. 시뮬레이션: 입금 기록 생성
-  Future<ApiResponse<TransactionHistory>> deposit({
-    required BankNationality nationality,
-    required double amount,
-    required String currency,
-    required BankAccount account,
-    required double currentBalance,
-  }) async {
+  // 2. 거래 내역 가져오기
+  Future<List<dynamic>> getHistory(int userId, String currency) async {
     try {
-      final tx = TransactionHistory(
-        historyId: DateTime.now().millisecondsSinceEpoch.toString(),
-        type: TransactionType.deposit,
-        isCredit: true,
-        counterParty: 'Deposit',
-        memo: 'Simulated deposit',
-        transactedAt: DateTime.now(),
-        amount: amount,
-        balanceAfter: currentBalance + amount,
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/finance/history/$userId?currency=$currency'),
       );
-      return ApiResponse(message: '입금 시뮬레이션 완료', data: tx);
+
+      if (response.statusCode == 200) {
+        return jsonDecode(utf8.decode(response.bodyBytes));
+      }
     } catch (e) {
-      return ApiResponse(message: '입금 실패: $e');
+      print("히스토리 조회 에러: $e");
     }
+    return [];
   }
 }

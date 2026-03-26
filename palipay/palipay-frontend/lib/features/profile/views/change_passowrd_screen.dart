@@ -55,8 +55,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       } else if (newPassword.length < 8) {
         _newPasswordError = 'profile.password.error_too_short'.tr();
       } else if (newPassword == oldPassword) {
-        _newPasswordError =
-            'profile.password.error_same_as_current'.tr();
+        _newPasswordError = 'profile.password.error_same_as_current'.tr();
       }
 
       if (confirmPassword.isEmpty) {
@@ -192,7 +191,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('profile.password.label_current'.tr(), style: AppTextStyles.bodyMedium),
+                Text(
+                  'profile.password.label_current'.tr(),
+                  style: AppTextStyles.bodyMedium,
+                ),
                 SizedBox(height: fieldTopGap),
                 PaliInputField(
                   hintText: 'profile.password.hint_current'.tr(),
@@ -214,7 +216,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                 SizedBox(height: sectionGap),
 
-                Text('profile.password.label_new'.tr(), style: AppTextStyles.bodyMedium),
+                Text(
+                  'profile.password.label_new'.tr(),
+                  style: AppTextStyles.bodyMedium,
+                ),
                 SizedBox(height: fieldTopGap),
                 PaliInputField(
                   hintText: 'profile.password.hint_new'.tr(),

@@ -1,136 +1,70 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import '../models/bank_model.dart';
 import '../services/bank_service.dart';
 
-class BankProvider extends ChangeNotifier {
-  final BankService _service;
+class BankProvider with ChangeNotifier {
+  final BankService _service = BankService();
+  Timer? _timer;
 
-  BankProvider({BankService? service})
-    : _service = service ?? BankService(accessToken: '') {
-    _initData();
-  }
+  Map<String, dynamic>? _accountData;
+  List<dynamic> _historyList = [];
+  bool _isLoading = true; // 처음엔 true
+  String _userCountry = "US";
+  int _listKey = 0;
 
-  // 상태
-  BankNationality _nationality = BankNationality.kr;
-  UserModel _user = UserModel(
-    userId: 'guest',
-    userName: 'Guest',
-    currency: 'KRW',
-  );
-  BankAccount _account = BankAccount(
-    accountName: '',
-    accountNumber: '',
-    balance: 0,
-    bankName: '',
-  );
-  List<TransactionHistory> _transactions = [];
-  BalanceModel? _balance;
-  BusinessModel? _business;
-  bool _isLoading = false;
-  bool _isDepositing = false;
-
-  BankNationality get nationality => _nationality;
-  UserModel get user => _user;
-  String get userCurrency => _user.currency;
-  BankAccount get account => _account;
-  List<TransactionHistory> get transactions => List.unmodifiable(_transactions);
-  BalanceModel? get balance => _balance;
-  BusinessModel? get business => _business;
+  Map<String, dynamic>? get accountData => _accountData;
+  List<dynamic> get historyList => _historyList;
   bool get isLoading => _isLoading;
-  bool get isDepositing => _isDepositing;
+  String get userCountry => _userCountry;
+  int get listKey => _listKey;
 
-  double get currentAmount => _balance?.amount ?? _account.balance;
-  String get currencySymbol => _balance?.currency ?? 'KRW';
-
-  BankNationality _mapCurrencyToNationality(String currency) {
-    switch (currency.toUpperCase()) {
-      case 'USD':
-        return BankNationality.us;
-      case 'JPY':
-        return BankNationality.jp;
-      case 'CNY':
-        return BankNationality.cn;
-      default:
-        return BankNationality.kr;
-    }
-  }
-
-  void updateUser(UserModel user) {
-    _user = user;
-    _nationality = _mapCurrencyToNationality(user.currency);
-    _initData();
-  }
-
-  Future<void> _initData() async {
+  // 로그인 성공 시 반드시 호출해야 함
+  Future<void> init(int userId, String country) async {
     _isLoading = true;
-    notifyListeners();
-
-    // 로그인된 사용자 통화 우선으로 국가를 결정
-    _nationality = _mapCurrencyToNationality(_user.currency);
-
-    // 1. 잔액 조회
-    final balanceRes = await _service.fetchBalance(_user.userId);
-    _balance = balanceRes.data;
-
-    // 서버가 리턴한 통화가 있으면, 그에 따라 네이션도 맞춰주기
-    if (_balance != null && _balance!.currency.isNotEmpty) {
-      _nationality = _mapCurrencyToNationality(_balance!.currency);
-    }
-
-    // // 2. 한국(KR)인 경우에만 사업자 테이블 조회 (기획 의도 반영)
-    // if (_nationality == BankNationality.kr) {
-    //   final bizRes = await _service.fetchBusinessInfo(account.accountNumber);
-    //   _business = bizRes.data;
-    // } else {
-    //   _business = null; // 타 국적은 깔끔하게 null 유지
-    // }
-
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  Future<void> switchNationality(BankNationality nationality) async {
-    if (_nationality == nationality) return;
-    _nationality = nationality;
-    await _initData();
-  }
-
-  Future<void> simulateDeposit({double amount = 500.0}) async {
-    // _balance가 null인지 먼저 확실히 체크
-    final currentBalance = _balance;
-    if (_isDepositing || currentBalance == null) return;
-
-    _isDepositing = true;
+    _userCountry = country;
     notifyListeners();
 
     try {
-      final depositResult = await _service.deposit(
-        nationality: _nationality,
-        amount: amount,
-        currency: currentBalance.currency,
-        account: _account,
-        currentBalance: currentBalance.amount,
-      );
-
-      // ! 대신 if let 방식으로 안전하게 추출
-      final newTx = depositResult.data;
-      if (newTx != null) {
-        _transactions = [newTx, ..._transactions];
-
-        // 잔액 업데이트도 안전하게
-        final nextAmount = currentBalance.amount + amount;
-        _balance = BalanceModel(
-          amount: nextAmount,
-          currency: currentBalance.currency,
-        );
-
-        // _account 업데이트 생략 가능 혹은 안전하게 처리
-      }
+      await refreshData(userId);
     } catch (e) {
-      debugPrint('simulateDeposit failed: $e');
+      print("데이터 초기화 에러: $e");
     } finally {
-      _isDepositing = false;
+      _isLoading = false; // 여기서 로딩이 꺼짐
       notifyListeners();
     }
+
+    _timer?.cancel();
+    _timer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => refreshData(userId),
+    );
+  }
+
+  Future<void> refreshData(int userId) async {
+    String currency = (_userCountry == "KR")
+        ? "KRW"
+        : (_userCountry == "JP" ? "JPY" : "USD");
+
+    // 병렬 호출로 속도 최적화
+    final results = await Future.wait([
+      _service.getAccountInfo(userId, currency),
+      _service.getHistory(userId, currency),
+    ]);
+
+    _accountData = results[0] as Map<String, dynamic>?;
+
+    List<dynamic> newHistory = results[1] as List<dynamic>;
+    if (newHistory.length > _historyList.length) {
+      _listKey++;
+    }
+    _historyList = newHistory;
+
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 }

@@ -25,8 +25,12 @@ class _WalletCardState extends State<WalletCard> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final walletId = int.tryParse(widget.provider.linkedAccount?.walletId ?? '0') ?? 0;
-      context.read<WalletProvider>().loadWalletBalance(walletId: walletId, amount: 0);
+      final walletId =
+          int.tryParse(widget.provider.linkedAccount?.walletId ?? '0') ?? 0;
+      context.read<WalletProvider>().loadWalletBalance(
+        walletId: walletId,
+        amount: 0,
+      );
     });
   }
 
@@ -61,7 +65,11 @@ class _WalletCardState extends State<WalletCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [_buildHeader(context), _buildBalance(context), _buildFooter(context)],
+          children: [
+            _buildHeader(context),
+            _buildBalance(context),
+            _buildFooter(context),
+          ],
         ),
       ),
     );
@@ -70,9 +78,11 @@ class _WalletCardState extends State<WalletCard> {
   // 내부 컴포넌트들도 작은 메서드로 쪼개면 관리가 더 쉽습니다.
   Widget _buildHeader(BuildContext context) {
     // 헤더는 연동된 계좌(Bank) 정보를 표시
-    final String accountName = widget.provider.linkedAccount?.accountUsername ?? 'Unknown';
-    final String accountNumber = widget.provider.linkedAccount?.accountNumber ?? '';
-    
+    final String accountName =
+        widget.provider.linkedAccount?.accountUsername ?? 'Unknown';
+    final String accountNumber =
+        widget.provider.linkedAccount?.accountNumber ?? '';
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,

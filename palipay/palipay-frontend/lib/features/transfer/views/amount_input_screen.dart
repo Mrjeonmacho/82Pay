@@ -115,7 +115,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
   Widget build(BuildContext context) {
     final walletProvider = context.watch<WalletProvider>();
     final walletBalance = _getWalletBalanceValue(walletProvider);
-    
+
     final amountFormatters = <TextInputFormatter>[
       FilteringTextInputFormatter.digitsOnly,
       _MaxAmountBlockFormatter(
@@ -134,7 +134,8 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
 
         final horizontalPadding = _clamp(width * 0.06, 18, 24);
         final topPadding = _clamp(height * 0.035, 20, 28);
-        final bottomPadding = safeBottom + keyboardInset + _clamp(height * 0.025, 16, 28);
+        final bottomPadding =
+            safeBottom + keyboardInset + _clamp(height * 0.025, 16, 28);
 
         final sectionGap = _clamp(height * 0.035, 20, 26);
         final labelToValueGap = _clamp(height * 0.008, 6, 8);
@@ -147,16 +148,20 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
 
         return Scaffold(
           backgroundColor: const Color(0xFFF8F8FB),
-          appBar: PaliTopBar(
-            title: 'transfer.title'.tr(),
-          ),
+          appBar: PaliTopBar(title: 'transfer.title'.tr()),
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(horizontalPadding, topPadding, horizontalPadding, bottomPadding,),
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                topPadding,
+                horizontalPadding,
+                bottomPadding,
+              ),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   // [수정] 최소 높이 확보해서 버튼이 너무 위로 뜨지 않게 함
-                  minHeight: constraints.maxHeight -
+                  minHeight:
+                      constraints.maxHeight -
                       topPadding -
                       MediaQuery.of(context).padding.top,
                 ),
@@ -176,7 +181,13 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
                       Text(
                         walletProvider.isLoading
                             ? 'transfer.amount.balance_loading'.tr()
-                            : 'transfer.amount.balance_value'.tr(namedArgs: {'balance': _getFormattedWalletBalance(walletProvider)}),
+                            : 'transfer.amount.balance_value'.tr(
+                                namedArgs: {
+                                  'balance': _getFormattedWalletBalance(
+                                    walletProvider,
+                                  ),
+                                },
+                              ),
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.exampleFont,
                           fontWeight: FontWeight.normal,
@@ -185,7 +196,9 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
                       ),
                       SizedBox(height: blockGap),
                       Text(
-                        'amount_input.to_bank'.tr(namedArgs: {'bankName': widget.bankName}),
+                        'amount_input.to_bank'.tr(
+                          namedArgs: {'bankName': widget.bankName},
+                        ),
                         style: AppTextStyles.titleMedium.copyWith(
                           color: AppColors.abledFont,
                           fontWeight: FontWeight.bold,
@@ -210,7 +223,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
                           fontSize: labelFontSize,
                         ),
                       ),
-                      
+
                       PaliInputOnelineField(
                         hintText: '₩ 0',
                         controller: _amountController,
@@ -230,7 +243,9 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
                       Text(
                         'amount_input.withdrawable_amount'.tr(
                           namedArgs: {
-                            'balance': _getFormattedWalletBalance(walletProvider),
+                            'balance': _getFormattedWalletBalance(
+                              walletProvider,
+                            ),
                           },
                         ),
                         style: AppTextStyles.bodyMedium.copyWith(
@@ -244,7 +259,9 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
                       const Spacer(),
                       PaliButton(
                         text: 'transfer.btn_next'.tr(),
-                        onPressed: _getCanProceed(walletProvider) && !walletProvider.isLoading
+                        onPressed:
+                            _getCanProceed(walletProvider) &&
+                                !walletProvider.isLoading
                             ? _onNext
                             : null,
                         backgroundColor: AppColors.mainBlue,
@@ -265,10 +282,7 @@ class _MaxAmountBlockFormatter extends TextInputFormatter {
   final int maxAmount;
   final VoidCallback? onExceeded;
 
-  _MaxAmountBlockFormatter({
-    required this.maxAmount,
-    this.onExceeded,
-  });
+  _MaxAmountBlockFormatter({required this.maxAmount, this.onExceeded});
 
   @override
   TextEditingValue formatEditUpdate(

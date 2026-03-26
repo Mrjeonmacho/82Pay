@@ -26,7 +26,6 @@ public class Controller {
     private final BusinessService businessService;
     private final CheckService checkService;
 
-
     @PatchMapping
     public TransferResponseDto transfer(@RequestBody TransferRequestDto request) {
         return transferService.transfer(request);
@@ -39,9 +38,9 @@ public class Controller {
 
     @GetMapping("/check")
     public CheckResponseDto checkAccount(@RequestParam String targetAccountNumber,
-                                         @RequestParam(required = false) String targetAccountName,
-                                         @RequestParam(required = false) String targetBankCode,
-                                         @RequestParam String targetCurrency){
+            @RequestParam(required = false) String targetAccountName,
+            @RequestParam(required = false) String targetBankCode,
+            @RequestParam String targetCurrency) {
 
         CheckRequestDto request = CheckRequestDto.builder()
                 .targetAccountNumber(targetAccountNumber)
@@ -53,7 +52,7 @@ public class Controller {
     }
 
     @PostMapping("/Link")
-    public LinkResponseDto linkAccount(@RequestBody LinkRequestDto request){
+    public LinkResponseDto linkAccount(@RequestBody LinkRequestDto request) {
         return checkService.linkAccount(request);
     }
 
@@ -78,7 +77,4 @@ public class Controller {
         return checkService.getInfo(userId, currency);
     }
 
-
-
 }
-

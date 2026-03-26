@@ -7,7 +7,7 @@ import '../constants/bank_constants.dart';
 // lib/core/providers/user_provider.dart
 
 class UserProvider extends ChangeNotifier {
-  int? _userId;         // 💡 추가
+  int? _userId; // 💡 추가
   String? _userName;
   String? _userEmail;
   String? _countryCode = 'US'; // 기본값; // 💡 추가
@@ -34,7 +34,7 @@ class UserProvider extends ChangeNotifier {
     _userName = name ?? _userName;
     _userEmail = email ?? _userEmail;
     _countryCode = countryCode ?? _countryCode;
-    
+
     notifyListeners();
   }
 
@@ -64,12 +64,11 @@ class UserProvider extends ChangeNotifier {
     };
 
     final targetLocale = countryToLocale[countryCode] ?? const Locale('en');
-    
+
     if (context.locale != targetLocale) {
       context.setLocale(targetLocale);
     }
   }
-
 
   void logout() {
     _userId = null;

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:worldbank_app/core/widgets/pali_input_field.dart';
 import '../services/user_service.dart'; // 방금 만든 서비스 임포트
+import 'main_screen.dart';
+import 'signup_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,24 +26,34 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _pwController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('ID와 비밀번호를 입력해주세요.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('login.messages.error_empty_fields'.tr())),
+      );
       setState(() => _isLoading = false);
       return;
     }
 
-    final result = await _userService.login(email, password);
+    final result = await _userService.login(context, email, password);
 
     setState(() => _isLoading = false);
 
     if (result == 200) {
       // 로그인 성공 시 메인 화면으로 이동 (예시: /home)
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      ScaffoldMessenger.of(
+      Navigator.pushAndRemoveUntil(
         context,
-      ).showSnackBar(SnackBar(content: Text('로그인 실패 (코드: $result)')));
+        MaterialPageRoute(
+          builder: (context) => const MainScreen(),
+        ), // MainScreen 또는 HomeScreen 클래스명
+        (route) => false, // 로그인 전의 모든 페이지 스택(로그인창 등)을 제거해서 뒤로가기 방지
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'login.messages.error_login_failed'.tr(args: [result.toString()]),
+          ),
+        ),
+      );
     }
   }
 
@@ -64,12 +77,15 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 50),
 
               // 2. ID 입력 (공통 위젯 사용)
-              PaliInputField(hintText: 'ID', controller: _idController),
+              PaliInputField(
+                hintText: 'login.labels.id'.tr(),
+                controller: _idController,
+              ),
               const SizedBox(height: 16),
 
               // 3. PW 입력 (공통 위젯 사용)
               PaliInputField(
-                hintText: 'PW',
+                hintText: 'login.labels.pw'.tr(),
                 controller: _pwController,
                 isPassword: true,
               ),
@@ -91,9 +107,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text(
-                          'Login',
-                          style: TextStyle(
+                      : Text(
+                          'login.buttons.login'.tr(),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -101,6 +117,39 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "login.labels.no_account".tr(),
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // 회원가입 화면으로 이동
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignupScreen(),
+                        ),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFFE2D696), // 골드 포인트 컬러
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                    child: Text(
+                      "login.buttons.signup".tr(),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        decoration:
+                            TextDecoration.underline, // 밑줄 추가로 클릭 가능해보이게
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

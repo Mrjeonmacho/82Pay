@@ -29,7 +29,9 @@ class WalletService {
         shortageAmount: (data?['shortageAmount'] as num?)?.toInt(),
       );
     } catch (e) {
-      return WalletBalanceModel.empty().copyWith(message: 'error.network_issue'.tr());
+      return WalletBalanceModel.empty().copyWith(
+        message: 'error.network_issue'.tr(),
+      );
     }
   }
 
@@ -41,13 +43,16 @@ class WalletService {
     required num convertedAmount,
     required num amount,
   }) async {
-    final response = await _dio.post('/finance/charges', data: {
-      'walletId': walletId,
-      'pinNumber': pinNumber,
-      'accountCurrency': accountCurrency,
-      'convertedAmount': convertedAmount,
-      'amount': amount,
-    });
+    final response = await _dio.post(
+      '/finance/charges',
+      data: {
+        'walletId': walletId,
+        'pinNumber': pinNumber,
+        'accountCurrency': accountCurrency,
+        'convertedAmount': convertedAmount,
+        'amount': amount,
+      },
+    );
     return response.data;
   }
 
@@ -59,25 +64,36 @@ class WalletService {
     required num convertedAmount,
     required num amount,
   }) async {
-    final response = await _dio.post('/finance/refunds', data: {
-      'walletId': walletId,
-      'pinNumber': pinNumber,
-      'accountCurrency': accountCurrency,
-      'convertedAmount': convertedAmount,
-      'amount': amount,
-    });
+    final response = await _dio.post(
+      '/finance/refunds',
+      data: {
+        'walletId': walletId,
+        'pinNumber': pinNumber,
+        'accountCurrency': accountCurrency,
+        'convertedAmount': convertedAmount,
+        'amount': amount,
+      },
+    );
     return response.data;
   }
 
   /// 최대 환불 가능 금액 조회
   Future<Map<String, dynamic>> getMaxRefundable({required int walletId}) async {
-    final response = await _dio.get('/finance/refunds/max', queryParameters: {'walletId': walletId});
+    final response = await _dio.get(
+      '/finance/refunds/max',
+      queryParameters: {'walletId': walletId},
+    );
     return response.data;
   }
 
   /// 환율 견적 조회
-  Future<Map<String, dynamic>> getExchangeRateQuote({required String currency}) async {
-    final response = await _dio.get('/finance/quote', queryParameters: {'currency': currency});
+  Future<Map<String, dynamic>> getExchangeRateQuote({
+    required String currency,
+  }) async {
+    final response = await _dio.get(
+      '/finance/quote',
+      queryParameters: {'currency': currency},
+    );
     return response.data;
   }
 }

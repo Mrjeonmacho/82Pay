@@ -10,7 +10,7 @@ class HistoryService {
     int page = 0,
     int size = 20,
     int? walletId,
-    String? token, 
+    String? token,
   }) async {
     try {
       final response = await _dio.get(
@@ -19,8 +19,7 @@ class HistoryService {
           'page': page,
           'size': size,
           // category 관련 조건문 제거
-          if (walletId != null && walletId != 0)
-            'walletId': walletId,
+          if (walletId != null && walletId != 0) 'walletId': walletId,
         },
         options: Options(headers: {'accesstoken': token ?? 'TEMP_TOKEN'}),
       );

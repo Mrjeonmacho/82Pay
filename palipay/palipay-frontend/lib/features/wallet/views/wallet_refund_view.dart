@@ -31,9 +31,10 @@ class _ExchangeViewState extends State<ExchangeView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<WalletProvider>();
       final accountProvider = context.read<AccountProvider>();
-      final walletId = int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
+      final walletId =
+          int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
       final currency = accountProvider.linkedAccount?.moneyCode ?? 'USD';
-      
+
       provider.initForRefund(currency: currency);
       provider.loadExchangeRateQuote();
       provider.loadWalletBalance(walletId: walletId, amount: 0);
@@ -67,18 +68,27 @@ class _ExchangeViewState extends State<ExchangeView> {
                       child: _RefundMaxButton(
                         onTap: () async {
                           // 우선 로딩을 방지하기 위해 Provider에서 최신 잔액을 가져오는 API 호출
-                          final accountProvider = context.read<AccountProvider>();
-                          final walletId = int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
-                          
+                          final accountProvider = context
+                              .read<AccountProvider>();
+                          final walletId =
+                              int.tryParse(
+                                accountProvider.linkedAccount?.walletId ?? '0',
+                              ) ??
+                              0;
+
                           await provider.loadMaxRefundable(walletId);
-                          
+
                           // 받아온 최대 환급 가능 금액 적용
                           final maxAmount = provider.maxRefundableAmount ?? 0;
                           provider.updateKrwAmount(maxAmount.toDouble());
-                          final newText = CurrencyInputFormatter.format(maxAmount);
+                          final newText = CurrencyInputFormatter.format(
+                            maxAmount,
+                          );
                           _controller.value = TextEditingValue(
                             text: newText,
-                            selection: TextSelection.collapsed(offset: newText.length),
+                            selection: TextSelection.collapsed(
+                              offset: newText.length,
+                            ),
                           );
                         },
                       ),
@@ -96,7 +106,7 @@ class _ExchangeViewState extends State<ExchangeView> {
                           ),
                         ),
                       ),
-                    
+
                     const SizedBox(height: 48),
 
                     // ===== 2. Transfer Details 표시 (아래로 뺌) =====
@@ -119,7 +129,8 @@ class _ExchangeViewState extends State<ExchangeView> {
                           // Source: 가상 지갑
                           WalletAccountCard(
                             title: '+82Pay Wallet',
-                            subtitle: 'Balance: ₩ ${CurrencyInputFormatter.format(provider.currentBalance ?? 0)}',
+                            subtitle:
+                                'Balance: ₩ ${CurrencyInputFormatter.format(provider.currentBalance ?? 0)}',
                             icon: Icons.wallet,
                           ),
                           const Padding(
@@ -133,15 +144,18 @@ class _ExchangeViewState extends State<ExchangeView> {
                           Consumer<AccountProvider>(
                             builder: (context, accProvider, child) {
                               final account = accProvider.linkedAccount;
-                              final String bankName = account?.bankName ?? 'Unknown Bank';
-                              final String accNum = account?.accountNumber ?? '••••';
-                              final String maskedAcc = accNum.length > 4 
-                                  ? '•••• ${accNum.substring(accNum.length - 4)}' 
+                              final String bankName =
+                                  account?.bankName ?? 'Unknown Bank';
+                              final String accNum =
+                                  account?.accountNumber ?? '••••';
+                              final String maskedAcc = accNum.length > 4
+                                  ? '•••• ${accNum.substring(accNum.length - 4)}'
                                   : accNum;
 
                               return WalletAccountCard(
                                 title: bankName,
-                                subtitle: '${account?.moneyCode ?? "Local"} Account $maskedAcc',
+                                subtitle:
+                                    '${account?.moneyCode ?? "Local"} Account $maskedAcc',
                                 icon: Icons.account_balance,
                                 trailing: const Icon(
                                   Icons.keyboard_arrow_down,
@@ -182,8 +196,13 @@ class _ExchangeViewState extends State<ExchangeView> {
 
                         // 2. 인증 성공 시 환급 로직 실행
                         if (pinNumber != null && mounted) {
-                          final accountProvider = context.read<AccountProvider>();
-                          final walletId = int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
+                          final accountProvider = context
+                              .read<AccountProvider>();
+                          final walletId =
+                              int.tryParse(
+                                accountProvider.linkedAccount?.walletId ?? '0',
+                              ) ??
+                              0;
 
                           // 서버 통신
                           final success = await provider.refundWallet(
@@ -193,18 +212,24 @@ class _ExchangeViewState extends State<ExchangeView> {
 
                           if (success && mounted) {
                             // 성공 시 UI 실시간 잔액 반영
-                            final currentBankBalance = accountProvider.linkedAccount?.amount ?? 0;
-                            accountProvider.updateBalance(currentBankBalance + provider.krwAmount.toInt());
+                            final currentBankBalance =
+                                accountProvider.linkedAccount?.amount ?? 0;
+                            accountProvider.updateBalance(
+                              currentBankBalance + provider.krwAmount.toInt(),
+                            );
 
                             // 거래 내역 바로 반영하기 위해 fetchHistory 호출
-                            context.read<HistoryProvider>().fetchHistory(walletId: walletId);
+                            context.read<HistoryProvider>().fetchHistory(
+                              walletId: walletId,
+                            );
 
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => WalletResultView(
                                   isRecharge: false,
-                                  amount: '₩ ${CurrencyInputFormatter.format(provider.krwAmount.toInt())}',
+                                  amount:
+                                      '₩ ${CurrencyInputFormatter.format(provider.krwAmount.toInt())}',
                                 ),
                               ),
                             );

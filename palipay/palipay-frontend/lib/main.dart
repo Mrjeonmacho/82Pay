@@ -53,7 +53,7 @@ void main() async {
   // 2. [추가] 금고에서 토큰이 있는지 확인 (자동 로그인 여부 판단)
   const storage = FlutterSecureStorage();
   String? token = await storage.read(key: 'accessToken');
-  
+
   // 토큰이 있다면 '이미 로그인된 상태'로 간주합니다.
   bool isLoggedIn = token != null;
 

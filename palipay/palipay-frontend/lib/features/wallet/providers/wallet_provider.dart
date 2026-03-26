@@ -35,8 +35,10 @@ class WalletProvider extends ChangeNotifier {
 
   // --- [2] 초기화 로직 ---
   Future<void> initWalletData() async => await loadWalletBalance(walletId: 1);
-  void initForTopup({String? currency}) => initForAction(isTopup: true, currency: currency ?? "USD");
-  void initForRefund({String? currency}) => initForAction(isTopup: false, currency: currency ?? "USD");
+  void initForTopup({String? currency}) =>
+      initForAction(isTopup: true, currency: currency ?? "USD");
+  void initForRefund({String? currency}) =>
+      initForAction(isTopup: false, currency: currency ?? "USD");
 
   void initForAction({required bool isTopup, required String currency}) {
     _isTopupView = isTopup;
@@ -52,13 +54,15 @@ class WalletProvider extends ChangeNotifier {
   /// 실시간 환율 견적 조회 (이 메서드가 없어서 에러가 났었습니다!)
   Future<void> loadExchangeRateQuote() async {
     try {
-      final response = await _service.getExchangeRateQuote(currency: _targetCurrency);
+      final response = await _service.getExchangeRateQuote(
+        currency: _targetCurrency,
+      );
       final data = response['data'];
       if (data != null) {
         _exchangeRate = (data['exchangeRate'] as num).toDouble();
         _quoteId = data['quoteId'];
         _rateTimestamp = data['rateTimestamp'];
-        
+
         // 환율이 갱신되면 입력된 금액도 재계산
         if (_krwAmount > 0) updateKrwAmount(_krwAmount);
         notifyListeners();
@@ -69,11 +73,18 @@ class WalletProvider extends ChangeNotifier {
   }
 
   /// 지갑 잔액 조회
-  Future<void> loadWalletBalance({required int walletId, num? amount, String? accessToken}) async {
+  Future<void> loadWalletBalance({
+    required int walletId,
+    num? amount,
+    String? accessToken,
+  }) async {
     status = WalletStatus.loading;
     notifyListeners();
     try {
-      wallet = await _service.fetchWalletBalance(walletId: walletId, amount: amount ?? 0);
+      wallet = await _service.fetchWalletBalance(
+        walletId: walletId,
+        amount: amount ?? 0,
+      );
       status = WalletStatus.success;
     } catch (e) {
       status = WalletStatus.failure;
@@ -114,7 +125,9 @@ class WalletProvider extends ChangeNotifier {
   void addQuickAmount(double amount) => updateKrwAmount(_krwAmount + amount);
 
   void _validateAmount() {
-    if (!_isTopupView && currentBalance != null && _krwAmount > currentBalance!) {
+    if (!_isTopupView &&
+        currentBalance != null &&
+        _krwAmount > currentBalance!) {
       _errorMessage = 'wallet.error.insufficient_balance'.tr();
     } else if (_krwAmount > 2000000) {
       _errorMessage = 'wallet.error.max_limit'.tr();
@@ -125,7 +138,10 @@ class WalletProvider extends ChangeNotifier {
 
   // --- [5] 트랜잭션 실행 (충전/환급) ---
 
-  Future<bool> chargeWallet({required int walletId, required String pinNumber}) async {
+  Future<bool> chargeWallet({
+    required int walletId,
+    required String pinNumber,
+  }) async {
     return await _executeTransaction(
       walletId: walletId,
       pinNumber: pinNumber,
@@ -140,7 +156,10 @@ class WalletProvider extends ChangeNotifier {
     );
   }
 
-  Future<bool> refundWallet({required int walletId, required String pinNumber}) async {
+  Future<bool> refundWallet({
+    required int walletId,
+    required String pinNumber,
+  }) async {
     return await _executeTransaction(
       walletId: walletId,
       pinNumber: pinNumber,
@@ -167,7 +186,9 @@ class WalletProvider extends ChangeNotifier {
       final response = await action(walletId, pinNumber);
       final data = response['data'];
       if (data != null && data['currentBalance'] != null) {
-        wallet = wallet.copyWith(currentBalance: (data['currentBalance'] as num).toInt());
+        wallet = wallet.copyWith(
+          currentBalance: (data['currentBalance'] as num).toInt(),
+        );
       }
       status = WalletStatus.success;
       notifyListeners();

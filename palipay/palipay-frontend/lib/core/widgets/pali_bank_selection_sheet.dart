@@ -26,7 +26,7 @@ class BankSelectionSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     // 1. 해당 국가의 은행 목록과 통화 정보 가져오기
     final banks = BankConstants.getBanks(countryCode);
-    
+
     final size = MediaQuery.of(context).size;
     final width = size.width;
     final height = size.height;
@@ -61,25 +61,25 @@ class BankSelectionSheet extends StatelessWidget {
         children: [
           SizedBox(height: topGap),
           // 핸들러 바
-          Container(width: handleWidth, height: handleHeight, 
+          Container(
+            width: handleWidth,
+            height: handleHeight,
             decoration: BoxDecoration(
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(999),
             ),
           ),
           SizedBox(height: handleBottomGap),
-          
+
           Text(
-            'bank.selection.title'.tr(namedArgs: {
-              'country': countryCode,
-            }),
+            'bank.selection.title'.tr(namedArgs: {'country': countryCode}),
             style: AppTextStyles.titleMedium.copyWith(
               fontSize: titleFontSize,
               fontWeight: FontWeight.w800,
               color: AppColors.abledFont,
             ),
             textAlign: TextAlign.center,
-          ), 
+          ),
 
           SizedBox(height: titleBottomGap),
 
@@ -95,7 +95,7 @@ class BankSelectionSheet extends StatelessWidget {
               itemCount: banks.length,
               itemBuilder: (context, index) {
                 final bank = banks[index];
-                return _buildBankItem(context, bank, width, height,);
+                return _buildBankItem(context, bank, width, height);
               },
             ),
           ),
@@ -105,8 +105,8 @@ class BankSelectionSheet extends StatelessWidget {
   }
 
   Widget _buildBankItem(
-    BuildContext context, 
-    Map<String, dynamic> bank, 
+    BuildContext context,
+    Map<String, dynamic> bank,
     double screenWidth,
     double screenHeight,
   ) {
@@ -118,7 +118,7 @@ class BankSelectionSheet extends StatelessWidget {
     final logoTextGap = _clamp(screenHeight * 0.015, 10, 14);
 
     final labelFontSize = _clamp(screenWidth * 0.05, 15, 18);
-    
+
     return InkWell(
       onTap: () {
         Navigator.pop(context);
@@ -130,7 +130,10 @@ class BankSelectionSheet extends StatelessWidget {
           color: const Color(0xFFF6F6F8),
           borderRadius: BorderRadius.circular(itemRadius),
         ),
-        padding: EdgeInsets.symmetric(horizontal: itemPaddingH, vertical: itemPaddingV,),
+        padding: EdgeInsets.symmetric(
+          horizontal: itemPaddingH,
+          vertical: itemPaddingV,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

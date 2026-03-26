@@ -12,7 +12,6 @@ public interface BankStrategy {
 
     String getBankCurrency();
 
-
     void withdraw(TransferRequestDto request);
 
     void deposit(TransferRequestDto request);

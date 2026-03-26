@@ -6,19 +6,31 @@ class PaliInputField extends StatelessWidget {
   final String hintText;
   final TextEditingController? controller;
   final bool isPassword;
+  final TextInputType? keyboardType;
+  final ValueChanged<String>? onChanged;
+  final int? maxLength;
+  final FocusNode? focusNode;
 
   const PaliInputField({
     super.key,
     required this.hintText,
     this.controller,
     this.isPassword = false,
+    this.keyboardType,
+    this.onChanged,
+    this.maxLength,
+    this.focusNode,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       obscureText: isPassword,
+      keyboardType: keyboardType,
+      onChanged: onChanged,
+      maxLength: maxLength,
       style: AppTextStyles.bodyLarge, // 입력 시 16pt, Bold
       decoration: InputDecoration(
         hintText: hintText,
