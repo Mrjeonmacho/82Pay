@@ -12,7 +12,7 @@ class BankService {
   ) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/finance/user/$userId?currency=$currency'),
+        Uri.parse('$baseUrl/finance/info/$userId?currency=$currency'),
       );
 
       if (response.statusCode == 200) {
@@ -28,7 +28,7 @@ class BankService {
   Future<List<dynamic>> getHistory(int userId, String currency) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/finance/history/$userId?currency=$currency'),
+        Uri.parse('$baseUrl/finance/history/$userId?currency=$currency'),
       );
 
       if (response.statusCode == 200) {

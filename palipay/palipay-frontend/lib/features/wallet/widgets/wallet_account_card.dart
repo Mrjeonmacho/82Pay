@@ -6,14 +6,14 @@ import '../../../core/theme/app_text_styles.dart';
 class WalletAccountCard extends StatelessWidget {
   final String title;
   final String subtitle;
-  final IconData icon;
+  final Widget? iconWidget; // 💡 아이콘 대신 이미지가 필요한 경우를 대비한 유연한 옵s션
   final Widget? trailing; // 화살표나 체크박스 등 상황에 맞게 배치
 
   const WalletAccountCard({
     super.key,
     required this.title,
     required this.subtitle,
-    required this.icon,
+    required this.iconWidget,
     this.trailing,
   });
 
@@ -41,7 +41,9 @@ class WalletAccountCard extends StatelessWidget {
               color: AppColors.background,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: AppColors.mainBlue),
+            child:
+                iconWidget ??
+                const Icon(Icons.account_balance, color: AppColors.mainBlue),
           ),
           const SizedBox(width: 16),
           // 텍스트 영역

@@ -1,29 +1,29 @@
+// lib/features/wallet/services/wallet_service.dart
+
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../core/constants/api_constants.dart';
 import '../models/wallet_model.dart';
 import 'package:palipay_app/core/network/dio_client.dart';
 
 class WalletService {
-  // 💡 절대 여기 안에 final WalletService _service = WalletService(); 를 넣지 마세요!
   final Dio _dio = DioClient().dio;
 
-  /// 🚀 NEW: 지갑 기본 정보 조회 (계좌번호, 이름, 잔액)
+  /// 🚀 지갑 기본 정보 조회 (bankCode 매핑 포함)
   Future<WalletInfoModel> fetchWalletInfo() async {
-    // 👈 walletId 파라미터 제거!
     try {
-      // 주소에 /api가 필요한지 확인해 보세요! (예: /api/finance/mywallet)
-      final response = await _dio.get('/finance/mywallet');
+      // 📍 경로 확인: /api/finance/mywallet
+      final response = await _dio.get('/wallet/mywallet');
       final responseData = response.data;
       final data = responseData['data'] as Map<String, dynamic>?;
 
       return WalletInfoModel(
-        // 💾 중요: 서버가 주는 진짜 ID를 모델에 꼭 담아줘야 합니다.
         walletId: data?['walletId'] as int?,
-        message: responseData['message'] as String?,
         accountNumber: data?['accountNumber'] as String?,
         accountUsername: data?['accountUsername'] as String?,
+        // ⭐ 바로 이 부분입니다! 서버 JSON의 'bankCode'를 모델에 전달
+        bankCode: data?['bankCode'] as String?,
         amount: (data?['amount'] as num?)?.toDouble(),
+        message: responseData['message'] as String?,
       );
     } catch (e) {
       print('🚨 fetchWalletInfo 에러: $e');
@@ -33,14 +33,14 @@ class WalletService {
     }
   }
 
-  /// 지갑 잔액 조회
+  /// 지갑 잔액 조회 및 부족 여부 체크
   Future<WalletBalanceModel> fetchWalletBalance({
     required int walletId,
     required num amount,
   }) async {
     try {
       final response = await _dio.post(
-        ApiConstants.balanceCheck,
+        '/finance/balance/check',
         data: {'walletId': walletId, 'amount': amount},
       );
       final responseData = response.data;
@@ -77,6 +77,11 @@ class WalletService {
         'convertedAmount': convertedAmount,
         'amount': amount,
       },
+      options: Options(
+        headers: {
+          'Idempotency-Key': 'charge_${DateTime.now().millisecondsSinceEpoch}',
+        },
+      ),
     );
     return response.data;
   }
@@ -98,15 +103,11 @@ class WalletService {
         'convertedAmount': convertedAmount,
         'amount': amount,
       },
-    );
-    return response.data;
-  }
-
-  /// 최대 환불 가능 금액 조회
-  Future<Map<String, dynamic>> getMaxRefundable({required int walletId}) async {
-    final response = await _dio.get(
-      '/finance/refunds/max',
-      queryParameters: {'walletId': walletId},
+      options: Options(
+        headers: {
+          'Idempotency-Key': 'refund_${DateTime.now().millisecondsSinceEpoch}',
+        },
+      ),
     );
     return response.data;
   }

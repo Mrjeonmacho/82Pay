@@ -217,57 +217,56 @@ class _LoginScreenState extends State<LoginScreen>
                           const SizedBox(height: 15),
 
                           // 구분선 (Or)
-                          const Row(
-                            children: [
-                              Expanded(
-                                child: Divider(color: AppColors.mainBlue),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 10,
-                                ),
-                                child: Text(
-                                  'Or',
-                                  style: AppTextStyles.bodySmall,
-                                ),
-                              ),
-                              Expanded(
-                                child: Divider(color: AppColors.mainBlue),
-                              ),
-                            ],
-                          ),
+                          // const Row(
+                          //   children: [
+                          //     Expanded(
+                          //       child: Divider(color: AppColors.mainBlue),
+                          //     ),
+                          //     Padding(
+                          //       padding: EdgeInsets.symmetric(
+                          //         horizontal: 20,
+                          //         vertical: 10,
+                          //       ),
+                          //       child: Text(
+                          //         'Or',
+                          //         style: AppTextStyles.bodySmall,
+                          //       ),
+                          //     ),
+                          //     Expanded(
+                          //       child: Divider(color: AppColors.mainBlue),
+                          //     ),
+                          //   ],
+                          // ),
 
-                          const SizedBox(height: 15),
+                          // const SizedBox(height: 15),
 
                           // 구글 로그인 버튼
-                          OutlinedButton(
-                            onPressed: () {},
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                              side: const BorderSide(color: AppColors.mainBlue),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/images/logos/google.png',
-                                  height: 24,
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'Continue with Google',
-                                  style: AppTextStyles.bodyLarge.copyWith(
-                                    color: AppColors.mainBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
+                          // OutlinedButton(
+                          //   onPressed: () {},
+                          //   style: OutlinedButton.styleFrom(
+                          //     padding: const EdgeInsets.symmetric(vertical: 15),
+                          //     side: const BorderSide(color: AppColors.mainBlue),
+                          //     shape: RoundedRectangleBorder(
+                          //       borderRadius: BorderRadius.circular(8),
+                          //     ),
+                          //   ),
+                          //   child: Row(
+                          //     mainAxisAlignment: MainAxisAlignment.center,
+                          //     children: [
+                          //       Image.asset(
+                          //         'assets/images/logos/google.png',
+                          //         height: 24,
+                          //       ),
+                          //       const SizedBox(width: 12),
+                          //       Text(
+                          //         'Continue with Google',
+                          //         style: AppTextStyles.bodyLarge.copyWith(
+                          //           color: AppColors.mainBlue,
+                          //         ),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
                           const SizedBox(height: 12),
 
                           // 회원가입 안내

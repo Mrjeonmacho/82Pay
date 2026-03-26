@@ -50,5 +50,8 @@
             "title": "履歴"
         },
         "empty": "取引履歴がありません"
+    },
+    "splash": {
+        "get_started": "はじめる"
     }
 }

@@ -121,7 +121,6 @@ class ProfileScreen extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (_) => const PinScreen(
                             mode: PinMode.change,
-                            walletId: 12345,
                           ),
                         ),
                       );

@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:palipay_app/features/pin/providers/pin_provider.dart';
 import 'package:provider/provider.dart';
-import '../../account/providers/account_provider.dart';
+import '../../wallet/providers/wallet_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../account/views/account_management_view.dart';
@@ -118,10 +118,9 @@ class _PinScreenState extends State<PinScreen>
     }
   }
 
-  int _resolveWalletId() {
-    final accountProvider = context.read<AccountProvider>();
-    final walletIdStr = accountProvider.linkedAccount?.walletId ?? '12345';
-    return widget.walletId ?? int.tryParse(walletIdStr) ?? 12345;
+  int? _resolveWalletId() {
+    final walletProvider = context.read<WalletProvider>();
+    return widget.walletId ?? walletProvider.walletId;
   }
 
   /// [수정] 공통 에러 처리
@@ -197,6 +196,11 @@ class _PinScreenState extends State<PinScreen>
   void _handleComplete() async {
     final pinProvider = context.read<PinProvider>();
     final walletId = _resolveWalletId();
+
+    if (walletId == null) {
+      _handleError(message: 'Wallet ID not found.');
+      return;
+    }
 
     switch (widget.mode) {
       case PinMode.create:

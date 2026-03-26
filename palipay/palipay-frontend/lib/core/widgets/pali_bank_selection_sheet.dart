@@ -57,49 +57,51 @@ class BankSelectionSheet extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(sheetRadius)),
       ),
-      child: Column(
-        children: [
-          SizedBox(height: topGap),
-          // 핸들러 바
-          Container(
-            width: handleWidth,
-            height: handleHeight,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(999),
-            ),
-          ),
-          SizedBox(height: handleBottomGap),
-
-          Text(
-            'bank.selection.title'.tr(namedArgs: {'country': countryCode}),
-            style: AppTextStyles.titleMedium.copyWith(
-              fontSize: titleFontSize,
-              fontWeight: FontWeight.w800,
-              color: AppColors.abledFont,
-            ),
-            textAlign: TextAlign.center,
-          ),
-
-          SizedBox(height: titleBottomGap),
-
-          Expanded(
-            child: GridView.builder(
-              padding: EdgeInsets.only(bottom: gridBottomPadding),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: gridMainSpacing,
-                crossAxisSpacing: gridCrossSpacing,
-                childAspectRatio: childAspectRatio,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(height: topGap),
+            // 핸들러 바
+            Container(
+              width: handleWidth,
+              height: handleHeight,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(999),
               ),
-              itemCount: banks.length,
-              itemBuilder: (context, index) {
-                final bank = banks[index];
-                return _buildBankItem(context, bank, width, height);
-              },
             ),
-          ),
-        ],
+            SizedBox(height: handleBottomGap),
+
+            Text(
+              'bank.selection.title'.tr(namedArgs: {'country': countryCode}),
+              style: AppTextStyles.titleMedium.copyWith(
+                fontSize: titleFontSize,
+                fontWeight: FontWeight.w800,
+                color: AppColors.abledFont,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            SizedBox(height: titleBottomGap),
+
+            Expanded(
+              child: GridView.builder(
+                padding: EdgeInsets.only(bottom: gridBottomPadding),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: gridMainSpacing,
+                  crossAxisSpacing: gridCrossSpacing,
+                  childAspectRatio: childAspectRatio,
+                ),
+                itemCount: banks.length,
+                itemBuilder: (context, index) {
+                  final bank = banks[index];
+                  return _buildBankItem(context, bank, width, height);
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

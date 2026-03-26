@@ -50,5 +50,8 @@
             "title": "History"
         },
         "empty": "No transaction history"
+    },
+    "splash": {
+        "get_started": "Get Started"
     }
 }

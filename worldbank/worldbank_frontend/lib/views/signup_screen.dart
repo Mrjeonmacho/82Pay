@@ -333,6 +333,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: "signup.labels.name".tr(),
                     controller: _nameController,
                     onChanged: (val) => setState(() {}),
+                    maxLength: 50,
                   ),
 
                   // 국가 선택 버튼

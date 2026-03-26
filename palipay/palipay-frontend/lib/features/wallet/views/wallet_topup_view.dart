@@ -18,6 +18,7 @@ import '../widgets/wallet_account_card.dart';
 import '../widgets/quick_amount_row.dart';
 import '../widgets/currency_amount_input.dart';
 import '../../wallet/views/wallet_result_view.dart';
+import '../../pin/views/pin_screen.dart'; // 💡 PIN 화면 임포트
 
 class TopupView extends StatefulWidget {
   const TopupView({super.key});
@@ -28,6 +29,7 @@ class TopupView extends StatefulWidget {
 
 class _TopupViewState extends State<TopupView> {
   final TextEditingController _controller = TextEditingController();
+  // 💡 커서 깜빡임(자동 키보드) 방지를 위한 FocusNode
   final FocusNode _focusNode = FocusNode();
 
   @override
@@ -38,18 +40,24 @@ class _TopupViewState extends State<TopupView> {
       final accountProvider = context.read<AccountProvider>();
 
       final linkedAccount = accountProvider.linkedAccount;
-      final walletId = int.tryParse(linkedAccount?.walletId ?? '0') ?? 0;
       final currency = linkedAccount?.moneyCode ?? 'USD';
 
+      // 1. 충전 모드 초기화 및 환율 정보 로드
       walletProvider.initForTopup(currency: currency);
       walletProvider.loadExchangeRateQuote();
-      walletProvider.loadWalletBalance(walletId: walletId, amount: 0);
+
+      // 🚀 [수정] walletId 파라미터 삭제 (Provider 내부 캐싱된 ID 사용)
+      walletProvider.loadWalletBalance(amount: 0);
+
+      // 💡 [추가] 화면 진입 시 키보드가 바로 올라오지 않도록 포커스 해제
+      _focusNode.unfocus();
     });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose(); // FocusNode 해제
     super.dispose();
   }
 
@@ -73,7 +81,8 @@ class _TopupViewState extends State<TopupView> {
                     CurrencyAmountInput(
                       label: 'AMOUNT TO TOP-UP',
                       controller: _controller,
-                      // focusNode: _focusNode,
+                      // 💡 FocusNode를 연결하여 커서 자동 깜빡임 제어
+                      focusNode: _focusNode,
                       onChanged: (val) => provider.updateKrwAmountFromText(val),
                     ),
                     const SizedBox(height: 8),
@@ -131,13 +140,22 @@ class _TopupViewState extends State<TopupView> {
                 : accNum;
 
             return WalletAccountCard(
-              title: bankName,
-              subtitle: '${account?.moneyCode ?? "Local"} Account $maskedAcc',
-              icon: Icons.account_balance,
-              trailing: const Icon(
-                Icons.keyboard_arrow_down,
-                color: AppColors.abledFont,
-              ),
+              title: provider.bankName,
+              subtitle: 'WorldBank Account $maskedAcc',
+              iconWidget: provider.bankLogo != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        provider.bankLogo!,
+                        width: 30,
+                        height: 30,
+                        fit: BoxFit.contain,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.account_balance,
+                      color: AppColors.abledFont,
+                    ),
             );
           },
         ),
@@ -149,8 +167,7 @@ class _TopupViewState extends State<TopupView> {
           title: '+82Pay Wallet',
           subtitle:
               'Current Balance: ₩ ${CurrencyInputFormatter.format(provider.currentBalance ?? 0)}',
-          icon: Icons.wallet,
-          trailing: const Icon(Icons.check_circle, color: Color(0xFF94A3B8)),
+          iconWidget: const Icon(Icons.wallet, color: AppColors.abledFont),
         ),
       ],
     );
@@ -180,6 +197,8 @@ class _TopupViewState extends State<TopupView> {
                 text: newText,
                 selection: TextSelection.collapsed(offset: newText.length),
               );
+              // 💡 퀵 버튼 클릭 시에는 키보드를 올리지 않도록 포커스 해제
+              _focusNode.unfocus();
             },
           ),
           const SizedBox(height: 24),
@@ -188,7 +207,10 @@ class _TopupViewState extends State<TopupView> {
                 ? AppColors.mainBlue
                 : AppColors.disabledBackground,
             text: 'common.add_money'.tr(),
-            onPressed: canSubmit ? () => _handleTopup(provider) : null,
+            // 로딩 중일 때는 버튼 비활성화 (중복 클릭 방지)
+            onPressed: canSubmit && !provider.isLoading
+                ? () => _handleTopup(provider)
+                : null,
           ),
         ],
       ),
@@ -196,29 +218,33 @@ class _TopupViewState extends State<TopupView> {
   }
 
   Future<void> _handleTopup(WalletProvider provider) async {
-    // PIN 인증 로직 (현재 테스트용 하드코딩)
-    const String? pinNumber = "000000";
+    // 🚀 [수정] 하드코딩된 PIN 대신 실제 PIN 입력 화면 호출
+    final String? pinNumber = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PinScreen(mode: PinMode.auth),
+      ),
+    );
 
     if (pinNumber != null && mounted) {
-      final accountProvider = context.read<AccountProvider>();
-      final walletId =
-          int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
-
-      // 1. 충전 요청
-      final success = await provider.chargeWallet(
-        walletId: walletId,
-        pinNumber: pinNumber,
-      );
+      // 🚀 [수정] walletId 파라미터 삭제 (Provider 내부 ID 사용)
+      final success = await provider.chargeWallet(pinNumber: pinNumber);
 
       if (success && mounted) {
-        // 2. 잔액 및 히스토리 갱신
+        final accountProvider = context.read<AccountProvider>();
+
+        // 2. 계좌 잔액 업데이트 (출금 계좌인 외부 은행 계좌 잔액 차감)
         final currentBankBalance = accountProvider.linkedAccount?.amount ?? 0;
         accountProvider.updateBalance(
           currentBankBalance - provider.krwAmount.toInt(),
         );
-        context.read<HistoryProvider>().fetchHistory(walletId: walletId);
 
-        // 3. 결과 화면 이동
+        // 3. 히스토리 갱신 (Provider에 저장된 최신 walletId 사용)
+        context.read<HistoryProvider>().fetchHistory(
+          walletId: provider.walletId!,
+        );
+
+        // 4. 결과 화면 이동
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
