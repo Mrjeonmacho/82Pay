@@ -66,7 +66,7 @@ public class USUserStrategy implements UserStrategy {
 
         while (true) {
             // 숫자4자리-숫자4자리-숫자4자리 생성
-            AccountNumber = "US" + IntStream.range(0, 12)
+            AccountNumber = IntStream.range(0, 12)
                     .mapToObj(i -> String.valueOf(random.nextInt(10)))
                     .collect(Collectors.joining(""));
 
