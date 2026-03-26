@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:palipay_app/core/providers/user_provider.dart';
 import 'package:palipay_app/features/transfer/views/transfer_confirm_view.dart';
 import 'package:provider/provider.dart';
 import '../../../core/utils/currency_input_formatter.dart';
@@ -84,8 +85,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
         builder: (context) => TransferConfirmView(
           bankName: widget.bankName,
           accountNumber: widget.accountNumber,
-          // recipientName: widget.recipientName,
-          recipientName: "홍길동",
+          recipientName: widget.recipientName,
           amount: _enteredAmount, // int 타입 금액
         ),
       ),
@@ -97,10 +97,16 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 1. UserProvider에서 현재 로그인된 유저의 정보와 토큰을 가져옵니다.
+      final userProvider = context.read<UserProvider>();
+
+      // UserProvider의 walletId가 String이라면 int로 변환해줍니다.
+      final int wId = int.tryParse(userProvider.walletId ?? '0') ?? 0;
+
+      // 2. 가져온 실제 정보를 바탕으로 잔액 조회를 요청합니다.
       context.read<WalletProvider>().loadWalletBalance(
-        accessToken: null, // 지금은 더미라 필요 없음
-        walletId: 1, // 지금은 더미 wallet id
-        amount: 0, // 초기 진입 시 잔액만 조회
+        walletId: wId,
+        amount: 0, // 초기 진입 시에는 현재 잔액만 가져옵니다.
       );
     });
   }

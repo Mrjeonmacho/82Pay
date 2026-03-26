@@ -11,6 +11,12 @@ class WalletProvider extends ChangeNotifier {
   WalletStatus status = WalletStatus.idle;
   WalletBalanceModel wallet = WalletBalanceModel.empty();
 
+  // 🚀 NEW: 지갑 기본 정보 (계좌번호, 이름, 잔액)
+  WalletInfoModel walletInfo = WalletInfoModel.empty();
+
+  // 💾 walletId 캐싱 - pin, transfer 등 모든 거래에서 사용
+  int? _walletId;
+
   double _krwAmount = 0;
   double _foreignAmount = 0;
   double _exchangeRate = 0;
@@ -33,8 +39,36 @@ class WalletProvider extends ChangeNotifier {
   int? get maxRefundableAmount => _maxRefundableAmount;
   bool get isLoading => status == WalletStatus.loading;
 
+  // 🚀 NEW: 지갑 정보 Getters
+  String? get accountNumber => walletInfo.accountNumber;
+  String? get accountUsername => walletInfo.accountUsername;
+  double? get walletAmount => walletInfo.amount;
+
+  // 💾 walletId 캐싱된 ID 조회 - 모든 거래에서 사용
+  int? get walletId => _walletId;
+
   // --- [2] 초기화 로직 ---
-  Future<void> initWalletData() async => await loadWalletBalance(walletId: 1);
+  Future<void> initWalletData() async {
+    status = WalletStatus.loading;
+    notifyListeners();
+
+    try {
+      // 🚀 주소 변경에 맞춰 인자 없이 호출합니다.
+      await loadWalletInfo();
+
+      // 만약 balance 조회에는 여전히 ID가 필요하다면,
+      // 위에서 받아온 walletInfo의 ID를 사용하게 연결합니다.
+      if (walletId != null) {
+        await loadWalletBalance(walletId: walletId!);
+      }
+
+      status = WalletStatus.success;
+    } catch (e) {
+      status = WalletStatus.failure;
+    }
+    notifyListeners();
+  }
+
   void initForTopup({String? currency}) =>
       initForAction(isTopup: true, currency: currency ?? "USD");
   void initForRefund({String? currency}) =>
@@ -72,24 +106,37 @@ class WalletProvider extends ChangeNotifier {
     }
   }
 
-  /// 지갑 잔액 조회
+  /// 🚀 NEW: 지갑 기본 정보 조회 (계좌번호, 이름, 잔액)
+  Future<void> loadWalletInfo() async {
+    try {
+      // 1. 서비스 호출 (인자 필요 없음)
+      walletInfo = await _service.fetchWalletInfo();
+
+      // 2. 가져온 정보에 walletId가 있다면 캐싱
+      if (walletInfo.walletId != null) {
+        _walletId = walletInfo.walletId; // 이제 isn't defined 에러 해결! ✅
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('🚨 지갑 정보 로드 실패: $e');
+      rethrow;
+    }
+  }
+
   Future<void> loadWalletBalance({
-    required int walletId,
+    required int walletId, // 잔액 조회 API는 여전히 ID를 쓸 수 있으니 유지
     num? amount,
-    String? accessToken,
   }) async {
-    status = WalletStatus.loading;
-    notifyListeners();
     try {
       wallet = await _service.fetchWalletBalance(
         walletId: walletId,
         amount: amount ?? 0,
       );
-      status = WalletStatus.success;
+      notifyListeners();
     } catch (e) {
-      status = WalletStatus.failure;
+      debugPrint('🚨 잔액 조회 실패: $e');
     }
-    notifyListeners();
   }
 
   /// 최대 환불 가능 금액 조회

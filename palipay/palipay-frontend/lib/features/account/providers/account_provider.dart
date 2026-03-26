@@ -9,124 +9,82 @@ class AccountProvider extends ChangeNotifier {
 
   BankAccount? _linkedAccount;
   bool _isLoading = false;
+  String? _walletId;
 
   bool get hasWallet => _linkedAccount != null;
   BankAccount? get linkedAccount => _linkedAccount;
   bool get isLoading => _isLoading;
+  String? get walletId => _walletId;
 
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
 
+  /// [USER_ACCOUNT_001] 계좌 연동 (실제 서버 통신)
   Future<String> linkAccount({
     required Map<String, dynamic> requestData,
     required String token,
   }) async {
     _setLoading(true);
 
-    // try {
-    //   final response = await _service.linkAccount(
-    //     accountData: requestData,
-    //     token: token,
-    //   );
-
-    //   if (response.statusCode == 200 || response.statusCode == 201) {
-    //     final data = response.data;
-
-    //     _linkedAccount = BankAccount(
-    //       walletId: data['walletId']?.toString() ?? '',
-    //       bankCode: requestData['bankCode'],
-    //       bankName: data['bankName'] ?? '연동계좌',
-    //       accountNumber: data['accountNumber'] ?? requestData['accountNumber'],
-    //       accountUsername: data['accountUsername'] ?? requestData['accountUsername'] ?? 'Unknown',
-    //       accountPassword: requestData['accountPassword'],
-    //       moneyCode: requestData['moneyCode'] ?? 'USD',
-    //       amount: (data['amount'] as num?)?.toInt() ?? 0,
-    //     );
-
-    //     notifyListeners();
-    //     return "SUCCESS"; // 💡 성공
-    //   }
-
-    //   return "FAILED"; // 💡 일반적인 실패
-    // } catch (e) {
-    //   // 💡 여기가 핵심입니다! 에러 원인을 분석합니다.
-    //   debugPrint('API 연동 실패: $e');
-
-    //   if (e is DioException) {
-    //     // 1. 서버가 응답을 준 경우 (400, 401, 500 등)
-    //     if (e.response != null) {
-    //       int statusCode = e.response!.statusCode ?? 500;
-
-    //       if (statusCode == 401 || statusCode == 400) {
-    //         return "INVALID_PASSWORD"; // 💡 비밀번호 틀림
-    //       } else if (statusCode >= 500) {
-    //         return "SERVER_ERROR";    // 💡 서버 터짐
-    //       }
-    //     }
-
-    //     // 2. 응답조차 없는 경우 (타임아웃 등)
-    //     if (e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.connectionTimeout) {
-    //       return "TIMEOUT";           // 💡 서버 대답 없음
-    //     }
-    //   }
-
-    //   return "UNKNOWN_ERROR";
-    // } finally {
-    //   _setLoading(false);
-    // }
     try {
-      // 💡 1. 실제 서버 통신은 잠시 주석 처리 (서버 에러 무시)
-      /*
-    final response = await _service.linkAccount(
-      accountData: requestData,
-      token: token,
-    );
-    */
+      final response = await _service.linkAccount(
+        accountData: requestData,
+        token: token,
+      );
 
-      // 💡 2. 통신하는 척 0.5초만 기다려줍니다 (UX를 위해)
-      await Future.delayed(const Duration(milliseconds: 500)); // 통신하는 척!
-
-      final inputPassword = requestData['accountPassword']; // 사용자가 입력한 비번
-
-      if (inputPassword == "1234") {
-        // 🟢 [성공] 비밀번호가 1234인 경우
-        final mockData = {
-          'walletId': '99999',
-          'bankName': '테스트은행',
-          'accountNumber': requestData['accountNumber'],
-          'accountUsername': requestData['accountUsername'],
-          'amount': 555000, // 테스트용 잔액
-        };
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data['data']; // 서버 응답 구조에 맞게 수정
 
         _linkedAccount = BankAccount(
-          walletId: mockData['walletId']!,
+          walletId: data['walletId']!,
           bankCode: requestData['bankCode'],
-          bankName: mockData['bankName']!,
-          accountNumber: mockData['accountNumber'],
-          accountUsername: mockData['accountUsername'],
-          accountPassword: inputPassword,
-          moneyCode: requestData['moneyCode'] ?? 'KRW',
-          amount: mockData['amount'] as int,
+          bankName: data['bankName'] ?? 'Pali Account',
+          accountNumber: data['accountNumber'] ?? requestData['accountNumber'],
+          accountUsername: data['accountUsername'] ?? 'Unknown',
+          accountPassword: requestData['accountPassword'],
+          moneyCode: data['moneyCode'] ?? requestData['moneyCode'] ?? 'KRW',
+          amount: (data['amount'] as num?)?.toInt() ?? 0,
         );
+
+        _walletId = _linkedAccount?.walletId;
 
         notifyListeners();
         return "SUCCESS";
-      } else {
-        // 🔴 [실패] 비밀번호가 1234가 아닌 경우
-        return "INVALID_PASSWORD";
       }
+
+      return "FAILED";
     } catch (e) {
-      // 이 부분은 이제 실행될 일이 없겠지만 남겨둡니다.
-      debugPrint('Mocking 중 에러: $e');
+      debugPrint('🚨 계좌 연동 실패: $e');
+
+      if (e is DioException) {
+        if (e.response != null) {
+          int statusCode = e.response!.statusCode ?? 500;
+
+          // 서버에서 정의한 에러 코드에 따라 분기
+          if (statusCode == 401 || statusCode == 400) {
+            return "INVALID_PASSWORD"; // 비밀번호가 틀렸거나 잘못된 요청
+          } else if (statusCode == 409) {
+            return "ALREADY_LINKED"; // 이미 연동된 계좌
+          } else if (statusCode >= 500) {
+            return "SERVER_ERROR"; // 서버 내부 에러
+          }
+        }
+
+        if (e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout) {
+          return "TIMEOUT";
+        }
+      }
+
       return "UNKNOWN_ERROR";
     } finally {
       _setLoading(false);
     }
   }
 
-  // 충전/환급 후 잔액을 업데이트하기 위한 메서드
+  /// 충전/환급 후 잔액 동기화
   void updateBalance(int newBalance) {
     if (_linkedAccount != null) {
       _linkedAccount = _linkedAccount!.copyWith(amount: newBalance);
@@ -134,42 +92,31 @@ class AccountProvider extends ChangeNotifier {
     }
   }
 
-  // [USER_ACCOUNT_002] 계좌 연동 해제
+  /// [USER_ACCOUNT_002] 계좌 연동 해제 (실제 서버 통신)
   Future<bool> unlinkAccount(String token) async {
-    // walletId를 int로 변환하여 전송 (명세서 bigint 대응)
     if (_linkedAccount == null) return false;
     _setLoading(true);
 
     try {
-      // TODO:
-      // 서버 완전 연결 전 UI 테스트용 더미 처리
-      await Future.delayed(const Duration(milliseconds: 250));
-
-      _linkedAccount = null;
-      notifyListeners();
-      return true;
-
-      // 실제 서버 붙으면 아래 로직으로 교체
-      /*
       final int targetId = int.parse(_linkedAccount!.walletId);
       final response = await _service.unlinkAccount(targetId, token);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 204) {
         _linkedAccount = null;
+        _walletId = null;
         notifyListeners();
         return true;
       }
       return false;
-      */
     } catch (e) {
-      debugPrint('Error unlinking account: $e');
+      debugPrint('🚨 계좌 해제 실패: $e');
       return false;
     } finally {
       _setLoading(false);
     }
   }
 
-  // [USER_ACCOUNT_003] 핀(PIN) 번호 생성
+  /// [USER_ACCOUNT_003] 핀(PIN) 번호 생성
   Future<bool> createPin({
     required String walletId,
     required String pinNumber,
@@ -177,30 +124,22 @@ class AccountProvider extends ChangeNotifier {
   }) async {
     _setLoading(true);
     try {
-      // 명세서 규격: walletId(bigint), pinNumber(String)
-
-      // 요청 객체 만들기
       final request = PinCreateRequest(
-        walletId: int.parse(walletId), // 명세서 bigint 대응
+        walletId: int.parse(walletId),
         pinNumber: pinNumber,
       );
-      // 응답 객체 만들기
       final response = await _service.createPin(request, token);
 
-      if (response.statusCode == 200) {
-        return true;
-      }
-      return false;
+      return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      // 409 CONFLICT: 이미 핀 번호가 존재함
-      debugPrint('Error creating PIN: $e');
+      debugPrint('🚨 PIN 생성 실패: $e');
       return false;
     } finally {
       _setLoading(false);
     }
   }
 
-  // [USER_ACCOUNT_004] 핀(PIN) 번호 변경
+  /// [USER_ACCOUNT_004] 핀(PIN) 번호 변경
   Future<bool> updatePin({
     required String walletId,
     required String oldPinNumber,
@@ -210,20 +149,15 @@ class AccountProvider extends ChangeNotifier {
     _setLoading(true);
     try {
       final request = PinUpdateRequest(
-        walletId: int.parse(walletId), // 명세서 bigint 대응
+        walletId: int.parse(walletId),
         oldPinNumber: oldPinNumber,
         newPinNumber: newPinNumber,
       );
-      // 명세서 규격: walletId, oldPinNumber, newPinNumber
       final response = await _service.updatePin(request, token);
 
-      if (response.statusCode == 200) {
-        return true;
-      }
-      return false;
+      return response.statusCode == 200;
     } catch (e) {
-      // 400 BAD_REQUEST: 기존 핀 번호 불일치 등
-      debugPrint('Error updating PIN: $e');
+      debugPrint('🚨 PIN 변경 실패: $e');
       return false;
     } finally {
       _setLoading(false);

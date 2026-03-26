@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:palipay_app/core/utils/currency_input_formatter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
-import '../../account/providers/account_provider.dart';
 import '../../wallet/views/wallet_refund_view.dart';
 import '../../wallet/views/wallet_topup_view.dart';
 import '../../account/views/account_management_view.dart';
@@ -12,7 +11,8 @@ import 'package:provider/provider.dart';
 import '../../wallet/providers/wallet_provider.dart';
 
 class WalletCard extends StatefulWidget {
-  final AccountProvider provider;
+  // 💡 AccountProvider에서 WalletProvider로 타입을 변경합니다!
+  final WalletProvider provider;
 
   const WalletCard({super.key, required this.provider});
 
@@ -25,12 +25,12 @@ class _WalletCardState extends State<WalletCard> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final walletId =
-          int.tryParse(widget.provider.linkedAccount?.walletId ?? '0') ?? 0;
-      context.read<WalletProvider>().loadWalletBalance(
-        walletId: walletId,
-        amount: 0,
-      );
+      // 💡 widget.provider가 이제 WalletProvider이므로 직접 walletId를 가져옵니다.
+      final walletId = widget.provider.walletId ?? 0;
+
+      if (walletId > 0) {
+        widget.provider.loadWalletInfo();
+      }
     });
   }
 
@@ -77,11 +77,15 @@ class _WalletCardState extends State<WalletCard> {
 
   // 내부 컴포넌트들도 작은 메서드로 쪼개면 관리가 더 쉽습니다.
   Widget _buildHeader(BuildContext context) {
-    // 헤더는 연동된 계좌(Bank) 정보를 표시
-    final String accountName =
-        widget.provider.linkedAccount?.accountUsername ?? 'Unknown';
-    final String accountNumber =
-        widget.provider.linkedAccount?.accountNumber ?? '';
+    // 1. 이미 watch하고 있는 walletProvider를 활용합니다.
+    final walletProvider = context.watch<WalletProvider>();
+
+    // 2. WalletProvider에 정의된 getter를 사용하거나 walletInfo에서 직접 가져옵니다.
+    // 💡 walletProvider.accountUsername은 이미 WalletProvider에 구현해두신 getter입니다.
+    final String accountName = walletProvider.accountUsername ?? 'User';
+
+    // 💡 walletProvider.accountNumber 역시 getter입니다.
+    final String accountNumber = walletProvider.accountNumber ?? '';
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -135,17 +139,20 @@ class _WalletCardState extends State<WalletCard> {
 
   // 2. 잔액 표시 (중앙 유지)
   Widget _buildBalance(BuildContext context) {
-    // 잔액은 지갑(Wallet)의 현재 잔액을 띄워줌
     final walletProvider = context.watch<WalletProvider>();
-    final int amount = walletProvider.currentBalance ?? 0;
-    final String formattedAmount = CurrencyInputFormatter.format(amount);
+
+    // 🚀 WalletProvider의 walletAmount getter 사용
+    final num amount = walletProvider.walletAmount ?? 0;
+    final String formattedAmount = CurrencyInputFormatter.format(
+      amount.toInt(),
+    );
 
     return Text(
       '₩ $formattedAmount',
       style: AppTextStyles.titleMedium.copyWith(
         color: Colors.white,
         fontWeight: FontWeight.bold,
-        fontSize: 34, // 가독성을 위해 폰트 크기 유지 또는 살짝 확대
+        fontSize: 34,
       ),
     );
   }
