@@ -132,4 +132,9 @@ public class UserAuthService {
         return passwordEncoder.matches(request.password(), user.getPassword());
     }
 
+    public UserPali findUserByEmail(String email) {
+        return userPaliRepository.findByEmail(email)
+                .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
+
 }
