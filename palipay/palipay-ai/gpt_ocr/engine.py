@@ -260,6 +260,9 @@ class GptOCREngine(OCREngine):
         if not isinstance(full_text, str):
             full_text = str(full_text)
 
+        ft_raw = full_text.strip()
+        _log(f"full_text (모델 원문) 길이={len(ft_raw)}자 {ft_raw!r}")
+
         lines = [ln.strip() for ln in full_text.splitlines() if ln.strip()]
         items: List[Dict[str, Any]] = [
             {"text": ln, "score": 1.0, "box": _GPT_LINE_PLACEHOLDER_BOX} for ln in lines
