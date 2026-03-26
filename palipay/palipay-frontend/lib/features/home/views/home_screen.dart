@@ -1,11 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+// [임포트 확인] 프로젝트 구조에 맞게 UserProvider 경로를 확인하세요.
 import 'package:palipay_app/features/home/widgets/empty_wallet_card.dart';
 import 'package:palipay_app/features/home/widgets/transactions_section.dart';
 import 'package:palipay_app/features/home/widgets/wallet_card.dart';
-import 'package:provider/provider.dart';
 import 'package:palipay_app/features/account/providers/account_provider.dart';
 import 'package:palipay_app/features/wallet/providers/wallet_provider.dart';
+import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
@@ -21,314 +24,58 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // [중요] 화면이 처음 그려질 때 서버에서 데이터를 동기화합니다.
+    // 초기 로드 시 시도
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _syncWalletData();
     });
   }
-  
+
   void _syncWalletData() {
-    // WalletProvider에게 "서버에 있는 내 정보를 가져와줘"라고 시킵니다.
-    // DioClient의 인터셉터가 이미 토큰을 넣어주므로, 여기선 호출만 하면 됩니다.
-    context.read<WalletProvider>().initWalletData(); 
+    final userProvider = context.read<UserProvider>();
+    final walletId = int.tryParse(userProvider.walletId ?? '0') ?? 0;
+
+    if (walletId > 0) {
+      debugPrint('✅ [Home] 초기 동기화 성공: $walletId');
+      context.read<WalletProvider>().initWalletData();
+    }
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    context.locale; // 다국어 변경을 감지하여 Rebuild 되도록 의존성 주입
-    // context.watch가 상태 변화를 감지하므로, 
-    // 서버 응답이 오면 자동으로 EmptyWalletCard가 WalletCard로 바뀝니다!
-    final walletProvider = context.watch<WalletProvider>();
-    final accountProvider = context.watch<AccountProvider>();
+    context.locale;
 
-    // 지갑 정보 유무 판단 (WalletProvider의 잔액이나 모델을 기준으로 설정)
-    final bool hasWallet = walletProvider.currentBalance != null;
+    // 1. 이제 WalletProvider를 watch합니다.
+    final walletProvider = context.watch<WalletProvider>();
+    final userProvider = context.watch<UserProvider>();
+
+    // 2. 지갑 유무 판단 기준 변경
+    // WalletProvider에 walletId가 저장되어 있고, 서버에서 가져온 지갑 정보(accountNumber)가 있다면 지갑이 있는 것으로 간주합니다.
+    final bool hasWallet =
+        walletProvider.walletId != null &&
+        walletProvider.walletInfo.accountNumber != null;
 
     return Scaffold(
       extendBody: true,
       backgroundColor: AppColors.background,
       appBar: const PaliTopBar(title: 'PaliPay'),
-      body: Stack(
-        children: [
-
-          // 배경 글래스모피즘 효과를 극대화하기 위한 은은한 오로라 도형 1 (좌측 상단)  --. TEST용
-          // Positioned(
-          //   top: 180,
-          //   left: -80,
-          //   child: Container(
-          //     width: 300,
-          //     height: 300,
-          //     decoration: BoxDecoration(
-          //       shape: BoxShape.circle,
-          //       color: AppColors.mainBlue.withOpacity(0.04),
-          //       boxShadow: [
-          //         BoxShadow(
-          //           color: AppColors.mainBlue.withOpacity(0.4),
-          //           blurRadius: 100,
-          //           spreadRadius: 60,
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ),
-          // // 배경 글래스모피즘 효과를 극대화하기 위한 은은한 오로라 도형 2 (우측 하단)
-          // Positioned(
-          //   bottom: 80,
-          //   right: -100,
-          //   child: Container(
-          //     width: 350,
-          //     height: 350,
-          //     decoration: BoxDecoration(
-          //       shape: BoxShape.circle,
-          //       color: const Color(0xFFC75146).withOpacity(0.04),
-          //       boxShadow: [
-          //         BoxShadow(
-          //           color: const Color(0xFFC75146).withOpacity(0.4),
-          //           blurRadius: 120,
-          //           spreadRadius: 80,
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ),
-          // 기존 뷰
-          SingleChildScrollView(
-            // padding: const EdgeInsets.only(bottom: 100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: hasWallet
-                      ? WalletCard(provider: accountProvider) 
-                      : const EmptyWalletCard(),
-                ),
-                const TransactionsSection(),
-              ],
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: walletProvider.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    ) // 로딩 중일 때 처리
+                  : hasWallet
+                  ? WalletCard(provider: walletProvider) // WalletProvider 전달
+                  : const EmptyWalletCard(),
             ),
-          ),
-        ],
+            const TransactionsSection(),
+          ],
+        ),
       ),
     );
   }
-
-  //   // --- 여기서부터는 build 메서드 밖입니다 ---
-  //   // 1. 활성화된 지갑 카드 (그라데이션 디자인 반영)
-  //   Widget _buildActiveWalletCard(
-  //     BuildContext context,
-  //     AccountProvider provider,
-  //   ) {
-  //     return GestureDetector(
-  //       onTap: () {
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(
-  //             builder: (context) => const AccountManagementView(),
-  //           ),
-  //         );
-  //       },
-  //       child: Container(
-  //         width: double.infinity,
-  //         height: 200, // 시안의 비율에 맞춰 높이 조절
-  //         padding: const EdgeInsets.all(24),
-  //         decoration: BoxDecoration(
-  //           borderRadius: BorderRadius.circular(24),
-  //           // 시안의 선명한 레드-블루 그라데이션 적용
-  //           gradient: const LinearGradient(
-  //             // 시안의 느낌을 더 살리기 위해 시작점을 약간 더 위쪽/왼쪽으로 이동
-  //             begin: Alignment(-0.8, -1.0),
-  //             end: Alignment(0.8, 1.0),
-  //             colors: [
-  //               AppColors.warningRed, // 시안의 레드/핑크 계열
-  //               AppColors.mainBlue, // 시안의 딥 블루 계열
-  //             ],
-  //             // 색상이 바뀌는 지점
-  //             stops: [0.2, 0.9],
-  //           ),
-  //           boxShadow: [
-  //             BoxShadow(
-  //               color: AppColors.mainBlue.withOpacity(0.3),
-  //               blurRadius: 20,
-  //               offset: const Offset(0, 10),
-  //             ),
-  //           ],
-  //         ),
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //           children: [
-  //             // 상단 영역: 라벨 및 아이콘
-  //             Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //               children: [
-  //                 Text(
-  //                   'Main Wallet',
-  //                   style: AppTextStyles.bodyMedium.copyWith(
-  //                     color: Colors.white.withOpacity(0.8),
-  //                     fontWeight: FontWeight.w500,
-  //                   ),
-  //                 ),
-  //                 Container(
-  //                   padding: const EdgeInsets.all(8),
-  //                   decoration: BoxDecoration(
-  //                     color: Colors.white.withOpacity(0.2),
-  //                     shape: BoxShape.circle,
-  //                   ),
-  //                   child: const Icon(
-  //                     Icons.account_balance_wallet,
-  //                     color: Colors.white,
-  //                     size: 18,
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-
-  //             // 중앙 영역: 잔액 표시
-  //             Text(
-  //               '₩ ${provider.linkedAccount?.amount ?? 0}',
-  //               style: AppTextStyles.titleMedium.copyWith(
-  //                 color: Colors.white,
-  //                 fontWeight: FontWeight.bold,
-  //                 fontSize: 32,
-  //               ),
-  //             ),
-
-  //             // 하단 영역: 홀더 이름 및 액션 버튼
-  //             Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //               crossAxisAlignment: CrossAxisAlignment.end,
-  //               children: [
-  //                 Column(
-  //                   crossAxisAlignment: CrossAxisAlignment.start,
-  //                   children: [
-  //                     Text(
-  //                       'CARD HOLDER',
-  //                       style: AppTextStyles.bodySmall.copyWith(
-  //                         color: Colors.white.withOpacity(0.6),
-  //                         fontSize: 10,
-  //                       ),
-  //                     ),
-  //                     const SizedBox(height: 4),
-  //                     Text(
-  //                       'ALEX JOHNSON', // 실제 데이터 연결 시 provider 활용
-  //                       style: AppTextStyles.bodyLarge.copyWith(
-  //                         color: Colors.white,
-  //                         fontWeight: FontWeight.w600,
-  //                         letterSpacing: 1.1,
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //                 // ADD MONEY 버튼 (반투명 스타일)
-  //                 Material(
-  //                   color: Colors.transparent,
-  //                   child: InkWell(
-  //                     onTap: () {
-  //                       Navigator.push(
-  //                         context,
-  //                         MaterialPageRoute(
-  //                           builder: (context) => const TopupView(),
-  //                         ),
-  //                       );
-  //                     },
-  //                     borderRadius: BorderRadius.circular(12),
-  //                     child: Container(
-  //                       padding: const EdgeInsets.symmetric(
-  //                         horizontal: 16,
-  //                         vertical: 10,
-  //                       ),
-  //                       decoration: BoxDecoration(
-  //                         color: Colors.white.withOpacity(0.2),
-  //                         borderRadius: BorderRadius.circular(12),
-  //                       ),
-  //                       child: Text(
-  //                         'ADD MONEY',
-  //                         style: AppTextStyles.bodySmall.copyWith(
-  //                           color: Colors.white,
-  //                           fontWeight: FontWeight.bold,
-  //                         ),
-  //                       ),
-  //                     ),
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     );
-  //   }
-
-  //   Widget _buildEmptyWalletCard(BuildContext context) {
-  //     return InkWell(
-  //       onTap: () => Navigator.push(
-  //         context,
-  //         MaterialPageRoute(
-  //           builder: (context) => const PinScreen(mode: PinMode.create),
-  //         ),
-  //       ),
-  //       borderRadius: BorderRadius.circular(20),
-  //       child: CustomPaint(
-  //         painter: DashedRectPainter(color: AppColors.exampleFont),
-  //         child: Container(
-  //           width: double.infinity,
-  //           height: 180,
-  //           // alignment: MainAxisAlignment.center,
-  //           child: Column(
-  //             mainAxisAlignment: MainAxisAlignment.center,
-  //             children: [
-  //               const Icon(
-  //                 Icons.add_circle_outline,
-  //                 size: 48,
-  //                 color: AppColors.mainBlue,
-  //               ),
-  //               const SizedBox(height: 12),
-  //               Text(
-  //                 'Link your bank account',
-  //                 style: AppTextStyles.bodyMedium.copyWith(
-  //                   color: AppColors.abledFont,
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       ),
-  //     );
-  //   }
-  // }
-
-  // // --- 점선을 그리기 위한 Painter ---
-  // class DashedRectPainter extends CustomPainter {
-  //   final Color color;
-  //   DashedRectPainter({required this.color});
-
-  //   @override
-  //   void paint(Canvas canvas, Size size) {
-  //     double dashWidth = 5, dashSpace = 5, startX = 0;
-  //     final paint = Paint()
-  //       ..color = color
-  //       ..strokeWidth = 2
-  //       ..style = PaintingStyle.stroke;
-
-  //     final RRect rRect = RRect.fromRectAndRadius(
-  //       Rect.fromLTWH(0, 0, size.width, size.height),
-  //       const Radius.circular(20),
-  //     );
-
-  //     Path path = Path()..addRRect(rRect);
-
-  //     // 점선 효과 구현
-  //     for (PathMetric pathMetric in path.computeMetrics()) {
-  //       while (startX < pathMetric.length) {
-  //         canvas.drawPath(
-  //           pathMetric.extractPath(startX, startX + dashWidth),
-  //           paint,
-  //         );
-  //         startX += dashWidth + dashSpace;
-  //       }
-  //     }
-  //   }
-
-  //   @override
-  //   bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

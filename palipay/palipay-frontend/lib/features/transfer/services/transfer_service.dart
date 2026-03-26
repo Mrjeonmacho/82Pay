@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:palipay_app/core/constants/api_constants.dart';
-import 'package:palipay_app/core/network/api_response.dart'; 
+import 'package:palipay_app/core/network/api_response.dart';
 import 'package:palipay_app/features/transfer/models/transfer_model.dart';
 import 'package:palipay_app/features/transfer/models/transfer_dto.dart';
 
@@ -12,16 +12,18 @@ class TransferService {
   TransferService();
 
   // 1단계: 잔액 체크 (FINANCE_CHECK_001)
-  Future<ApiResponse<BalanceCheckResponse>> checkBalance(String walletId, double amount) async {
+  Future<ApiResponse<BalanceCheckResponse>> checkBalance(
+    String walletId,
+    double amount,
+  ) async {
     try {
       final response = await _dio.post(
         ApiConstants.balanceCheck,
-        data: {
-          'walletId': walletId,
-          'amount': amount,
-        },
+        data: {'walletId': walletId, 'amount': amount},
       );
-      return ApiResponse.success(BalanceCheckResponse.fromJson(response.data['data']));
+      return ApiResponse.success(
+        BalanceCheckResponse.fromJson(response.data['data']),
+      );
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -29,13 +31,17 @@ class TransferService {
 
   // 2단계: 최종 검증 (FINANCE_TRANSFER_001)
   // Map 대신 TransferValidateResponse 모델을 사용하면 에러 목록 처리가 훨씬 쉬워집니다.
-  Future<ApiResponse<TransferValidateResponse>> validateTransfer(TransferRequest request) async {
+  Future<ApiResponse<TransferValidateResponse>> validateTransfer(
+    TransferRequest request,
+  ) async {
     try {
       final response = await _dio.post(
-        ApiConstants.transferValidate, 
-        data: request.toJson()
+        ApiConstants.transferValidate,
+        data: request.toJson(),
       );
-      return ApiResponse.success(TransferValidateResponse.fromJson(response.data['data']));
+      return ApiResponse.success(
+        TransferValidateResponse.fromJson(response.data['data']),
+      );
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -43,8 +49,8 @@ class TransferService {
 
   // 3단계: 송금 실행 (FINANCE_TRANSFER_002)
   Future<ApiResponse<TransferExecuteResponse>> executeTransfer(
-    TransferRequest request, 
-    String idempotencyKey
+    TransferRequest request,
+    String idempotencyKey,
   ) async {
     try {
       final response = await _dio.post(
@@ -52,7 +58,9 @@ class TransferService {
         data: request.toJson(),
         options: Options(headers: {'Idempotency-Key': idempotencyKey}),
       );
-      return ApiResponse.success(TransferExecuteResponse.fromJson(response.data['data']));
+      return ApiResponse.success(
+        TransferExecuteResponse.fromJson(response.data['data']),
+      );
     } on DioException catch (e) {
       throw _handleError(e);
     }

@@ -8,6 +8,7 @@ import com.palipay.palipay_backend.finance.dto.request.FinanceAccountRequest;
 import com.palipay.palipay_backend.finance.dto.request.WalletPinRequest;
 import com.palipay.palipay_backend.finance.dto.request.WalletPinUpdateRequest;
 import com.palipay.palipay_backend.finance.dto.response.FinanceAccountResponse;
+import com.palipay.palipay_backend.finance.dto.response.WalletInfoResponse;
 import com.palipay.palipay_backend.finance.dto.response.WalletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -103,6 +104,32 @@ public class FinanceAccountService {
         walletService.unlinkAccount(userId, walletId);
 
         return new WalletResponse("계좌 연동이 성공적으로 해제되었습니다.");
+    }
+
+    public WalletInfoResponse getWallet(Long userId){
+        WalletPali walletPali = walletService.getWalletPaliByUserId(userId);
+
+        // 권한 체크
+        if (!walletPali.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("지갑 접근 권한이 없습니다.");
+        }
+
+        return new WalletInfoResponse(
+                "지갑 조회에 성공했습니다.",
+                new WalletInfoResponse.Data(
+                        walletPali.getWalletId(),
+                        walletPali.getUserId(),
+                        walletPali.getAccountNumber(),
+                        walletPali.getMoneyCode(),
+                        walletPali.getAccountUsername(),
+                        walletPali.getBankCode(),
+                        walletPali.getAmount(),
+                        walletPali.getPinNumber(),
+                        walletPali.getCreatedAt(),
+                        walletPali.getUpdatedAt()
+                )
+        );
+
     }
 
 }

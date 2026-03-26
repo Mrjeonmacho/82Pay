@@ -10,10 +10,7 @@ import '../../../core/theme/app_text_styles.dart';
 class GalleryCropScreen extends StatefulWidget {
   final File imageFile;
 
-  const GalleryCropScreen({
-    super.key,
-    required this.imageFile,
-  });
+  const GalleryCropScreen({super.key, required this.imageFile});
 
   @override
   State<GalleryCropScreen> createState() => _GalleryCropScreenState();
@@ -95,12 +92,7 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
       final rectLeft = left + (drawWidth - rectWidth) / 2;
       final rectTop = top + (drawHeight - rectHeight) / 2;
 
-      _selectionRect = Rect.fromLTWH(
-        rectLeft,
-        rectTop,
-        rectWidth,
-        rectHeight,
-      );
+      _selectionRect = Rect.fromLTWH(rectLeft, rectTop, rectWidth, rectHeight);
       _isSelectionInitailized = true;
     } else {
       _selectionRect = _clampRectToImageBounds(_selectionRect);
@@ -142,13 +134,9 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
   bool _isOnResizeHandle(Offset point) {
     if (_displayedImageSize == null) return false;
 
-    final handleTouchRadius =
-        _clamp(_displayedImageSize!.width * 0.07, 24, 32);
+    final handleTouchRadius = _clamp(_displayedImageSize!.width * 0.07, 24, 32);
 
-    final handleCenter = Offset(
-      _selectionRect.right,
-      _selectionRect.bottom,
-    );
+    final handleCenter = Offset(_selectionRect.right, _selectionRect.bottom);
     return (point - handleCenter).distance <= handleTouchRadius;
   }
 
@@ -181,8 +169,14 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
     if (_isMoving) {
       next = _selectionRect.shift(Offset(dx, dy));
     } else if (_isResizing) {
-      final newWidth = (_selectionRect.width + dx).clamp(minWidth, _displayedImageSize!.width);
-      final newHeight = (_selectionRect.height + dy).clamp(minHeight, _displayedImageSize!.height);
+      final newWidth = (_selectionRect.width + dx).clamp(
+        minWidth,
+        _displayedImageSize!.width,
+      );
+      final newHeight = (_selectionRect.height + dy).clamp(
+        minHeight,
+        _displayedImageSize!.height,
+      );
 
       next = Rect.fromLTWH(
         _selectionRect.left,
@@ -266,131 +260,134 @@ class _GalleryCropScreenState extends State<GalleryCropScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: PaliTopBar(
-        title: 'gallery_crop.title'.tr(),
-      ),
+      appBar: PaliTopBar(title: 'gallery_crop.title'.tr()),
       body: _decodedImage == null
-        ? const Center(child: CircularProgressIndicator())
-        : LayoutBuilder(
-            builder: (context, constraints) {
-              _updateDisplayedImageRect(constraints);
+          ? const Center(child: CircularProgressIndicator())
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                _updateDisplayedImageRect(constraints);
 
-              final width = constraints.maxWidth;
-              final height = constraints.maxHeight;
-              final safeBottom = MediaQuery.of(context).padding.bottom;
+                final width = constraints.maxWidth;
+                final height = constraints.maxHeight;
+                final safeBottom = MediaQuery.of(context).padding.bottom;
 
-              final horizontalPadding = _clamp(width * 0.045, 14, 22);
-              final topGuide = _clamp(height * 0.02, 12, 20);
-              final bottomButton = safeBottom + _clamp(height * 0.02, 10, 18);
+                final horizontalPadding = _clamp(width * 0.045, 14, 22);
+                final topGuide = _clamp(height * 0.02, 12, 20);
+                final bottomButton = safeBottom + _clamp(height * 0.02, 10, 18);
 
-              final handleSize = _clamp(width * 0.075, 24, 30);
-              final handleIconSize = _clamp(handleSize * 0.58, 14, 18);
-              final borderRadius = _clamp(width * 0.03, 10, 14);
-              final guideFontSize = _clamp(width * 0.037, 13, 15);
+                final handleSize = _clamp(width * 0.075, 24, 30);
+                final handleIconSize = _clamp(handleSize * 0.58, 14, 18);
+                final borderRadius = _clamp(width * 0.03, 10, 14);
+                final guideFontSize = _clamp(width * 0.037, 13, 15);
 
-              return Stack(
-                children: [
-                  GestureDetector(
-                    onPanStart: _onPanStart,
-                    onPanUpdate: _onPanUpdate,
-                    onPanEnd: _onPanEnd,
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: Center(
-                            child: SizedBox(
-                              width: _displayedImageSize!.width,
-                              height: _displayedImageSize!.height,
-                              child: Image.file(
-                                widget.imageFile,
-                                fit: BoxFit.contain,
+                return Stack(
+                  children: [
+                    GestureDetector(
+                      onPanStart: _onPanStart,
+                      onPanUpdate: _onPanUpdate,
+                      onPanEnd: _onPanEnd,
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: Center(
+                              child: SizedBox(
+                                width: _displayedImageSize!.width,
+                                height: _displayedImageSize!.height,
+                                child: Image.file(
+                                  widget.imageFile,
+                                  fit: BoxFit.contain,
+                                ),
                               ),
                             ),
                           ),
-                        ),
 
-                        Positioned.fill(
-                          child: CustomPaint(
-                            painter: _CropOverlayPainter(
-                              rect: _selectionRect,
-                              borderRadius: borderRadius,
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: _CropOverlayPainter(
+                                rect: _selectionRect,
+                                borderRadius: borderRadius,
+                              ),
                             ),
                           ),
-                        ),
 
-                        Positioned(
-                          left: _selectionRect.left,
-                          top: _selectionRect.top,
-                          child: Container(
-                            width: _selectionRect.width,
-                            height: _selectionRect.height,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white, width: 2),
-                              borderRadius: BorderRadius.circular(12),
+                          Positioned(
+                            left: _selectionRect.left,
+                            top: _selectionRect.top,
+                            child: Container(
+                              width: _selectionRect.width,
+                              height: _selectionRect.height,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
-                        ),
 
-                        Positioned(
-                          left: _selectionRect.right - handleSize / 2,
-                          top: _selectionRect.bottom - handleSize / 2,
-                          child: Container(
-                            width: handleSize,
-                            height: handleSize,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(handleSize / 2),
-                            ),
-                            child: Icon(
-                              Icons.open_in_full,
-                              size: handleIconSize,
-                              color: Colors.black,
+                          Positioned(
+                            left: _selectionRect.right - handleSize / 2,
+                            top: _selectionRect.bottom - handleSize / 2,
+                            child: Container(
+                              width: handleSize,
+                              height: handleSize,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(
+                                  handleSize / 2,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.open_in_full,
+                                size: handleIconSize,
+                                color: Colors.black,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
 
-                  Positioned(
-                    top: topGuide,
-                    left: horizontalPadding,
-                    right: horizontalPadding,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: _clamp(width * 0.04, 12, 16),
-                        vertical: _clamp(height * 0.012, 8, 10),
-                      ),
-                      child: Text(
-                        'gallery_crop.guide'.tr(),
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.buttonFont,
-                          height: 1.4,
+                    Positioned(
+                      top: topGuide,
+                      left: horizontalPadding,
+                      right: horizontalPadding,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: _clamp(width * 0.04, 12, 16),
+                          vertical: _clamp(height * 0.012, 8, 10),
+                        ),
+                        child: Text(
+                          'gallery_crop.guide'.tr(),
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.buttonFont,
+                            height: 1.4,
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  Positioned(
-                    left: 16,
-                    right: 16,
-                    bottom: 24,
-                    child: SafeArea(
-                      top: false,
-                      child: PaliButton(
-                        text: 'gallery_crop.done'.tr(),
-                        onPressed: _confirmCrop,
-                        type: PaliButtonType.primary,
-                        backgroundColor: Colors.transparent,
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      bottom: 24,
+                      child: SafeArea(
+                        top: false,
+                        child: PaliButton(
+                          text: 'gallery_crop.done'.tr(),
+                          onPressed: _confirmCrop,
+                          type: PaliButtonType.primary,
+                          backgroundColor: Colors.transparent,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
-          ),
-  );
+                  ],
+                );
+              },
+            ),
+    );
   }
 }
 
@@ -398,17 +395,16 @@ class _CropOverlayPainter extends CustomPainter {
   final Rect rect;
   final double borderRadius;
 
-  _CropOverlayPainter({required this.rect, required this.borderRadius,});
+  _CropOverlayPainter({required this.rect, required this.borderRadius});
 
   @override
   void paint(Canvas canvas, Size size) {
     final overlayPaint = Paint()..color = Colors.black.withOpacity(0.65);
 
-    final fullPath = Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+    final fullPath = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
     final holePath = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)),
-      );
+      ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)));
 
     final overlayPath = Path.combine(
       PathOperation.difference,

@@ -53,31 +53,64 @@ void main() async {
   // 2. [추가] 금고에서 토큰이 있는지 확인 (자동 로그인 여부 판단)
   const storage = FlutterSecureStorage();
   String? token = await storage.read(key: 'accessToken');
-  
-  // 토큰이 있다면 '이미 로그인된 상태'로 간주합니다.
-  bool isLoggedIn = token != null;
+  String? walletId = await storage.read(
+    key: 'walletId',
+  ); // 💾 walletId도 저장되어 있다면 읽어옴
+  String? userName = await storage.read(key: 'userName');
 
+  // 🔍 디버깅용 로그: 토큰이 정말 있는지 확인!
+  debugPrint('🚀 [Startup] 저장된 토큰: $token');
+
+  bool isLoggedIn = token != null && token.isNotEmpty;
   runApp(
     // 4. 앱 전체를 EasyLocalization으로 감싸야 함
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ja'), Locale('zh')],
       path: 'assets/translations', // 번역 파일 경로 확인!
       fallbackLocale: const Locale('en'),
-      child: PaliPayApp(isLoggedIn: isLoggedIn),
+      child: PaliPayApp(
+        isLoggedIn: isLoggedIn,
+        token: token,
+        walletId: walletId,
+        userName: userName,
+      ),
     ),
   );
 }
 
 class PaliPayApp extends StatelessWidget {
-  final bool isLoggedIn; // 👈 추가
-  const PaliPayApp({super.key, required this.isLoggedIn});
+  final bool isLoggedIn;
+  final String? token;
+  final String? walletId;
+  final String? userName;
+
+  const PaliPayApp({
+    super.key,
+    required this.isLoggedIn,
+    this.token,
+    this.walletId,
+    this.userName,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(
+          create: (_) {
+            final userProvider = UserProvider();
+            if (isLoggedIn && token != null) {
+              userProvider.restoreUser(
+                token: token!,
+                walletId: walletId,
+                userName: userName,
+              );
+            }
+            return userProvider;
+          },
+        ),
         // 추후 생성할 Provider들을 여기에 등록하세요.
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        // ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => AccountProvider()),
         ChangeNotifierProvider(create: (_) => HistoryProvider()),
         ChangeNotifierProvider(create: (_) => WalletProvider()),

@@ -18,11 +18,11 @@ public record FinanceAdjustmentRequest(
         String accountCurrency,
 
         @NotNull
-        @DecimalMin(value = "0.0001")
+        @DecimalMin(value = "0")
         BigDecimal convertedAmount,     //보통 krw
 
         @NotNull
-        @DecimalMin(value = "0.0001")
+        @DecimalMin(value = "0")
         BigDecimal amount
 ) {
 }

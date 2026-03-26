@@ -18,19 +18,19 @@ enum PinMode {
 }
 
 /// [추가] Change PIN 내부 단계를 위한 enum
-enum ChangePinStep {
-  verifyCurrentPin,
-  enterNewPin,
-  confirmNewPin,
-  completed,
-}
+enum ChangePinStep { verifyCurrentPin, enterNewPin, confirmNewPin, completed }
 
 class PinScreen extends StatefulWidget {
   final PinMode mode;
   final String? firstPin; // Confirm 모드일 때 비교를 위한 첫 번째 입력값
   final int? walletId; // [추가] create, change API에 사용할 walletId
 
-  const PinScreen({super.key, required this.mode, this.firstPin, this.walletId,});
+  const PinScreen({
+    super.key,
+    required this.mode,
+    this.firstPin,
+    this.walletId,
+  });
 
   @override
   State<PinScreen> createState() => _PinScreenState();
@@ -94,7 +94,7 @@ class _PinScreenState extends State<PinScreen>
         }
     }
   }
-     
+
   /// [추가] 모드/단계별 subtitle
   String get _subTitle {
     switch (widget.mode) {
@@ -125,10 +125,7 @@ class _PinScreenState extends State<PinScreen>
   }
 
   /// [수정] 공통 에러 처리
-  void _handleError({
-    required String message,
-    bool countAttempt = false,
-  }) {
+  void _handleError({required String message, bool countAttempt = false}) {
     final pinProvider = context.read<PinProvider>();
 
     if (countAttempt) {
@@ -144,8 +141,9 @@ class _PinScreenState extends State<PinScreen>
           namedArgs: {'time': pinProvider.formattedLockTime},
         );
       } else if (countAttempt) {
-        _errorMessage =
-            'pin.error_incorrect'.tr(namedArgs: {'count': '$attemptCount'});
+        _errorMessage = 'pin.error_incorrect'.tr(
+          namedArgs: {'count': '$attemptCount'},
+        );
       } else {
         _errorMessage = message;
       }
@@ -205,12 +203,11 @@ class _PinScreenState extends State<PinScreen>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                PinScreen(
-                  mode: PinMode.confirm,
-                  firstPin: _inputPin,
-                  walletId: walletId, // [추가] 다음 화면에도 walletId 전달
-                ),
+            builder: (context) => PinScreen(
+              mode: PinMode.confirm,
+              firstPin: _inputPin,
+              walletId: walletId, // [추가] 다음 화면에도 walletId 전달
+            ),
           ),
         );
         break;
@@ -240,7 +237,11 @@ class _PinScreenState extends State<PinScreen>
               (route) => route.isFirst, // 홈 화면만 남기고 다 지움
             );
           } else {
-            _handleError(message: pinProvider.errorMessage ?? 'pin.error_registration_failed'.tr());
+            _handleError(
+              message:
+                  pinProvider.errorMessage ??
+                  'pin.error_registration_failed'.tr(),
+            );
           }
         } else {
           _handleError(message: 'pin.error_mismatch'.tr());
@@ -258,7 +259,7 @@ class _PinScreenState extends State<PinScreen>
           });
           return;
         }
-        
+
         setState(() => _isLoading = true);
 
         final isValid = await pinProvider.verifyPin(
@@ -278,7 +279,7 @@ class _PinScreenState extends State<PinScreen>
           );
         }
         break;
-      
+
       case PinMode.change:
         // [추가] Change PIN은 별도 메서드로 분리
         await _handleChangePinFlow(pinProvider, walletId);
@@ -286,7 +287,7 @@ class _PinScreenState extends State<PinScreen>
     }
   }
 
-   /// [추가] Change PIN 전용 처리 로직
+  /// [추가] Change PIN 전용 처리 로직
   Future<void> _handleChangePinFlow(
     PinProvider pinProvider,
     int walletId,
@@ -324,7 +325,9 @@ class _PinScreenState extends State<PinScreen>
           });
         } else {
           _handleError(
-            message: pinProvider.errorMessage ?? 'pin.change.error_invalid_current'.tr(),
+            message:
+                pinProvider.errorMessage ??
+                'pin.change.error_invalid_current'.tr(),
             countAttempt: true,
           );
         }
@@ -333,7 +336,9 @@ class _PinScreenState extends State<PinScreen>
       case ChangePinStep.enterNewPin:
         if (_inputPin == _currentPin) {
           _handleError(
-            message: pinProvider.errorMessage ?? 'pin.change.error_same_as_current'.tr(),
+            message:
+                pinProvider.errorMessage ??
+                'pin.change.error_same_as_current'.tr(),
           );
           return;
         }
@@ -349,7 +354,8 @@ class _PinScreenState extends State<PinScreen>
       case ChangePinStep.confirmNewPin:
         if (_inputPin != _newPin) {
           _handleError(
-            message: pinProvider.errorMessage ?? 'pin.change.error_mismatch'.tr(),
+            message:
+                pinProvider.errorMessage ?? 'pin.change.error_mismatch'.tr(),
           );
           return;
         }
@@ -389,8 +395,7 @@ class _PinScreenState extends State<PinScreen>
     final isPinLocked = pinProvider.isPinLocked;
 
     final bool showCompletedView =
-        widget.mode == PinMode.change &&
-            _changeStep == ChangePinStep.completed;
+        widget.mode == PinMode.change && _changeStep == ChangePinStep.completed;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -429,9 +434,7 @@ class _PinScreenState extends State<PinScreen>
                       SizedBox(height: topSpace),
 
                       Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: width * 0.08,
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: width * 0.08),
                         child: Column(
                           children: [
                             Text(
@@ -468,7 +471,10 @@ class _PinScreenState extends State<PinScreen>
                         child: Wrap(
                           alignment: WrapAlignment.center,
                           spacing: width * 0.035,
-                          children: List.generate(6, (index) => _buildDot(index, width)),
+                          children: List.generate(
+                            6,
+                            (index) => _buildDot(index, width),
+                          ),
                         ),
                       ),
 
@@ -476,7 +482,9 @@ class _PinScreenState extends State<PinScreen>
 
                       if (_errorMessage != null)
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: width * 0.08),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: width * 0.08,
+                          ),
                           child: Text(
                             _errorMessage!,
                             textAlign: TextAlign.center,
@@ -486,7 +494,7 @@ class _PinScreenState extends State<PinScreen>
                             ),
                           ),
                         ),
-                        
+
                       if (_isLoading)
                         const Padding(
                           padding: EdgeInsets.only(top: 12),
@@ -539,10 +547,10 @@ class _PinScreenState extends State<PinScreen>
     );
   }
 
- Widget _buildCompletedView() {
-  return LayoutBuilder(
-    builder: (context, constraints) {
-      final screenHeight = constraints.maxHeight;
+  Widget _buildCompletedView() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenHeight = constraints.maxHeight;
         final screenWidth = constraints.maxWidth;
 
         final topSpacing = screenHeight * 0.08;
@@ -614,7 +622,7 @@ class _PinScreenState extends State<PinScreen>
             ],
           ),
         );
-    },
-  );
-}
+      },
+    );
+  }
 }

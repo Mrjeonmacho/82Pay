@@ -6,10 +6,7 @@ class PinCreateRequest {
   final int walletId;
   final String pinNumber;
 
-  PinCreateRequest({
-    required this.walletId,
-    required this.pinNumber
-  });
+  PinCreateRequest({required this.walletId, required this.pinNumber});
 
   // JSON 변환 메서드 (Dio 요청 시 사용)
   Map<String, dynamic> toJson() => {

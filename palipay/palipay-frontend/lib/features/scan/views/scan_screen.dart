@@ -328,176 +328,177 @@ class _ScanScreenState extends State<ScanScreen> {
 
         return LayoutBuilder(
           builder: (context, constraints) {
-              final width = constraints.maxWidth;
-              final height = constraints.maxHeight;
-              final safeBottom = MediaQuery.of(context).padding.bottom;
+            final width = constraints.maxWidth;
+            final height = constraints.maxHeight;
+            final safeBottom = MediaQuery.of(context).padding.bottom;
 
-              final guideTextTop = _clamp(height * 0.045, 24, 40);
-              final guideHorizontal = _clamp(width * 0.06, 18, 28);
-              final guideInnerHorizontal = _clamp(width * 0.045, 14, 20);
-              final guideInnerVertical = _clamp(height * 0.012, 8, 12);
+            final guideTextTop = _clamp(height * 0.045, 24, 40);
+            final guideHorizontal = _clamp(width * 0.06, 18, 28);
+            final guideInnerHorizontal = _clamp(width * 0.045, 14, 20);
+            final guideInnerVertical = _clamp(height * 0.012, 8, 12);
 
-              final roundButtonSize = _clamp(width * 0.14, 52, 58);
-              final captureButtonSize = _clamp(width * 0.20, 74, 82);
+            final roundButtonSize = _clamp(width * 0.14, 52, 58);
+            final captureButtonSize = _clamp(width * 0.20, 74, 82);
 
-              final guideRect = _getGuideRect(Size(width, height));
-              final guideBottom = guideRect.bottom;
+            final guideRect = _getGuideRect(Size(width, height));
+            final guideBottom = guideRect.bottom;
 
-              final buttonsBottom = safeBottom + _clamp(height * 0.04, 24, 40);
-              final buttonAreaTop = height - buttonsBottom - captureButtonSize;
-              final statusTop = guideBottom + ((buttonAreaTop - guideBottom) * 0.10);
+            final buttonsBottom = safeBottom + _clamp(height * 0.04, 24, 40);
+            final buttonAreaTop = height - buttonsBottom - captureButtonSize;
+            final statusTop =
+                guideBottom + ((buttonAreaTop - guideBottom) * 0.10);
 
-              final statusDotSize = _clamp(width * 0.025, 8, 10);
-              final statusGap = _clamp(width * 0.025, 8, 10);
+            final statusDotSize = _clamp(width * 0.025, 8, 10);
+            final statusGap = _clamp(width * 0.025, 8, 10);
 
-              return Scaffold(
-                backgroundColor: Colors.black,
-                appBar: PaliTopBar(
-                  title: 'common.scan'.tr(),
-                  actions: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: IconButton(
-                        iconSize: 28,
-                        splashRadius: 24,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const AccountInputScreen(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.edit_outlined,
-                          color: AppColors.mainBlue,
+            return Scaffold(
+              backgroundColor: Colors.black,
+              appBar: PaliTopBar(
+                title: 'common.scan'.tr(),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: IconButton(
+                      iconSize: 28,
+                      splashRadius: 24,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AccountInputScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                        color: AppColors.mainBlue,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              body: Stack(
+                children: [
+                  Positioned.fill(
+                    child: _isCameraReady && _cameraController != null
+                        ? CameraPreview(_cameraController!)
+                        : Container(
+                            color: Colors.black,
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator(),
+                          ),
+                  ),
+
+                  _ScanOverlay(getGuideRect: _getGuideRect),
+
+                  Positioned(
+                    top: guideTextTop,
+                    left: guideHorizontal,
+                    right: guideHorizontal,
+                    child: Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: guideInnerHorizontal,
+                          vertical: guideInnerVertical,
+                        ),
+                        child: Text(
+                          'scan.align_account_number'.tr(),
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.buttonFont,
+                          ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-                body: Stack(
-                  children: [
+                  ),
+
+                  Positioned(
+                    top: statusTop,
+                    left: guideHorizontal,
+                    right: guideHorizontal,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: statusDotSize,
+                              height: statusDotSize,
+                              decoration: BoxDecoration(
+                                color: provider.isBusy
+                                    ? AppColors.warningRed
+                                    : Colors.white70,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            SizedBox(width: statusGap),
+                            Text(
+                              provider.isBusy
+                                  ? 'scan.status_scanning'.tr()
+                                  : 'scan.status_ready'.tr(),
+                              style: AppTextStyles.headlineLarge.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: _clamp(height * 0.01, 6, 10)),
+                        Text(
+                          provider.isBusy
+                              ? 'scan.desc_recognizing'.tr()
+                              : 'scan.desc_steady'.tr(),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: buttonsBottom,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _RoundActionButton(
+                          icon: Icons.photo_library_outlined,
+                          onTap: provider.isBusy ? null : _pickFromGallery,
+                          size: roundButtonSize,
+                        ),
+                        _CaptureButton(
+                          onTap: provider.isBusy ? null : _takePicture,
+                          size: captureButtonSize,
+                        ),
+                        _RoundActionButton(
+                          icon: provider.flashOn
+                              ? Icons.flash_on_rounded
+                              : Icons.flash_off_rounded,
+                          onTap: provider.isBusy ? null : _toggleFlash,
+                          size: roundButtonSize,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  if (isDisabled)
                     Positioned.fill(
-                      child: _isCameraReady && _cameraController != null
-                          ? CameraPreview(_cameraController!)
-                          : Container(
-                              color: Colors.black,
-                              alignment: Alignment.center,
-                              child: const CircularProgressIndicator(),
-                            ),
-                    ),
-
-                    _ScanOverlay(getGuideRect: _getGuideRect),
-
-                    Positioned(
-                      top: guideTextTop,
-                      left: guideHorizontal,
-                      right: guideHorizontal,
-                      child: Center(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: guideInnerHorizontal,
-                            vertical: guideInnerVertical,
-                          ),
-                          child: Text(
-                            'scan.align_account_number'.tr(),
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.buttonFont,
-                            ),
-                          ),
-                        ),
+                      child: Container(
+                        color: _isPickingFromGallery
+                            ? Colors.black
+                            : Colors.black.withOpacity(0.18),
                       ),
                     ),
-
-                    Positioned(
-                      top: statusTop,
-                      left: guideHorizontal,
-                      right: guideHorizontal,
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                width: statusDotSize,
-                                height: statusDotSize,
-                                decoration: BoxDecoration(
-                                  color: provider.isBusy
-                                      ? AppColors.warningRed
-                                      : Colors.white70,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              SizedBox(width: statusGap),
-                              Text(
-                                provider.isBusy
-                                    ? 'scan.status_scanning'.tr()
-                                    : 'scan.status_ready'.tr(),
-                                style: AppTextStyles.headlineLarge.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: _clamp(height * 0.01, 6, 10)),
-                          Text(
-                            provider.isBusy
-                                ? 'scan.desc_recognizing'.tr()
-                                : 'scan.desc_steady'.tr(),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: buttonsBottom,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _RoundActionButton(
-                            icon: Icons.photo_library_outlined,
-                            onTap: provider.isBusy ? null : _pickFromGallery,
-                            size: roundButtonSize,
-                          ),
-                          _CaptureButton(
-                            onTap: provider.isBusy ? null : _takePicture,
-                            size: captureButtonSize,
-                          ),
-                          _RoundActionButton(
-                            icon: provider.flashOn
-                                ? Icons.flash_on_rounded
-                                : Icons.flash_off_rounded,
-                            onTap: provider.isBusy ? null : _toggleFlash,
-                            size: roundButtonSize,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    if (isDisabled)
-                      Positioned.fill(
-                        child: Container(
-                          color: _isPickingFromGallery
-                              ? Colors.black
-                              : Colors.black.withOpacity(0.18),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          );
+                ],
+              ),
+            );
+          },
+        );
       },
     );
   }
@@ -559,7 +560,11 @@ class _RoundActionButton extends StatelessWidget {
   final VoidCallback? onTap;
   final double size;
 
-  const _RoundActionButton({required this.icon, required this.onTap, required this.size,});
+  const _RoundActionButton({
+    required this.icon,
+    required this.onTap,
+    required this.size,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -595,7 +600,7 @@ class _CaptureButton extends StatelessWidget {
   final VoidCallback? onTap;
   final double size;
 
-  const _CaptureButton({required this.onTap, required this.size,});
+  const _CaptureButton({required this.onTap, required this.size});
 
   @override
   Widget build(BuildContext context) {

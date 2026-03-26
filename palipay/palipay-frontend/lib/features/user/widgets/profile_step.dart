@@ -31,7 +31,8 @@ class ProfileStep extends StatelessWidget {
             child: PaliInputField(
               hintText: 'sign_up.hint_name'.tr(),
               controller: provider.nameController,
-              validator: (value) => value!.isEmpty ? 'sign_up.error_empty_name'.tr() : null,
+              validator: (value) =>
+                  value!.isEmpty ? 'sign_up.error_empty_name'.tr() : null,
             ),
           ),
           SizedBox(height: spacing),
@@ -56,8 +57,14 @@ class ProfileStep extends StatelessWidget {
                         value: provider.selectedCountryCode,
                         items: const [
                           DropdownMenuItem(value: '+1', child: Text('🇺🇸 +1')),
-                          DropdownMenuItem(value: '+86', child: Text('🇨🇳 +86')),
-                          DropdownMenuItem(value: '+81', child: Text('🇯🇵 +81')),
+                          DropdownMenuItem(
+                            value: '+86',
+                            child: Text('🇨🇳 +86'),
+                          ),
+                          DropdownMenuItem(
+                            value: '+81',
+                            child: Text('🇯🇵 +81'),
+                          ),
                         ],
                         onChanged: (value) => provider.setCountryCode(value!),
                       ),

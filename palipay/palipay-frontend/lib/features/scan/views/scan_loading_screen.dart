@@ -105,96 +105,99 @@ class _ScanLoadingScreenState extends State<ScanLoadingScreen>
         final titleFontSize = _clamp(width * 0.08, 26, 32);
         final descFontSize = _clamp(width * 0.04, 14, 16);
 
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: Stack(
-          children: [
-            // 배경 이미지
-            Positioned.fill(
-              child: Container(
-                color: Colors.black,
-                alignment: Alignment.center,
-                child: Image.file(
-                  widget.imageFile,
-                  fit: BoxFit.contain,
-                  width: double.infinity,
-                  height: double.infinity,
+        return Scaffold(
+          backgroundColor: Colors.black,
+          body: Stack(
+            children: [
+              // 배경 이미지
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black,
+                  alignment: Alignment.center,
+                  child: Image.file(
+                    widget.imageFile,
+                    fit: BoxFit.contain,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
                 ),
               ),
-            ),
 
-            // 기본 어두운 오버레이
-            Positioned.fill(
-              child: Container(color: Colors.black.withOpacity(0.48)),
-            ),
+              // 기본 어두운 오버레이
+              Positioned.fill(
+                child: Container(color: Colors.black.withOpacity(0.48)),
+              ),
 
-            // 상단 그라데이션
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: IgnorePointer(
-                child: Container(
-                  height: topGradientHeight,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.38),
-                        Colors.transparent,
-                      ],
+              // 상단 그라데이션
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: IgnorePointer(
+                  child: Container(
+                    height: topGradientHeight,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.38),
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            // 하단 그라데이션
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: IgnorePointer(
-                child: Container(
-                  height: bottomGradientHeight,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.22),
-                        Colors.transparent,
-                      ],
+              // 하단 그라데이션
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: IgnorePointer(
+                  child: Container(
+                    height: bottomGradientHeight,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.22),
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            SafeArea(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: pagePaddingH, vertical: pagePaddingV,),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _LoadingHeader(
-                      titleFontSize: titleFontSize,
-                      descFontSize: descFontSize,
-                    ),
-                    const Spacer(),
-                    _LoadingCard(
-                      fadeAnimation: _fadeAnimation,
-                      progressAnimation: _progressAnimation,
-                    ),
-                  ],
+              SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: pagePaddingH,
+                    vertical: pagePaddingV,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _LoadingHeader(
+                        titleFontSize: titleFontSize,
+                        descFontSize: descFontSize,
+                      ),
+                      const Spacer(),
+                      _LoadingCard(
+                        fadeAnimation: _fadeAnimation,
+                        progressAnimation: _progressAnimation,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      );
-    },
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -269,7 +272,12 @@ class _LoadingCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(cardPaddingH, cardPaddingTop, cardPaddingH, cardPaddingBottom,),
+      padding: EdgeInsets.fromLTRB(
+        cardPaddingH,
+        cardPaddingTop,
+        cardPaddingH,
+        cardPaddingBottom,
+      ),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.96),
         borderRadius: BorderRadius.circular(cardRadius),

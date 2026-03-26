@@ -52,7 +52,6 @@ class PinProvider extends ChangeNotifier {
     return "$minutes:$remain";
   }
 
-
   /// 1. 숫자 입력 (키패드 연동)
   void addDigit(String digit) {
     if (_inputPin.length < 6) {
@@ -97,9 +96,7 @@ class PinProvider extends ChangeNotifier {
   }
 
   void _startPinLock() {
-    _lockedUntil = DateTime.now().add(
-      const Duration(seconds: pinLockSeconds),
-    );
+    _lockedUntil = DateTime.now().add(const Duration(seconds: pinLockSeconds));
 
     _lockTimer?.cancel();
     _lockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -173,7 +170,7 @@ class PinProvider extends ChangeNotifier {
 
       final isSuccess = await _service.createPin(request);
 
-       _status = isSuccess ? PinStatus.success : PinStatus.failure;
+      _status = isSuccess ? PinStatus.success : PinStatus.failure;
       if (!isSuccess) {
         _errorMessage = 'pin.error_registration_failed'.tr();
       }
@@ -196,7 +193,7 @@ class PinProvider extends ChangeNotifier {
       _errorMessage = 'error.network_issue'.tr();
       notifyListeners();
       return false;
-    }    
+    }
   }
 
   // 6. PIN 수정 요청
@@ -246,7 +243,7 @@ class PinProvider extends ChangeNotifier {
     }
   }
 
-   @override
+  @override
   void dispose() {
     _lockTimer?.cancel();
     super.dispose();

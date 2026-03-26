@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb; // 웹 체크용
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -11,8 +12,6 @@ class DioClient {
   static final DioClient _instance = DioClient._internal();
   late Dio dio;
   final _storage = const FlutterSecureStorage();
-
-
 
   // 쿠키 저장소를 나중에 초기화하기 위해 late로 선언
   // 더 넓은 의미인 'CookieJar'로 변경
@@ -40,7 +39,31 @@ class DioClient {
     if (kIsWeb) {
       // 1. 웹: 메모리 쿠키 저장소 사용 (파일 경로 필요 없음)
       cookieJar = CookieJar();
-      print("Web 환경: 메모리 쿠키 저장소를 사용합니다.");
+      debugPrint("🌐 Web 환경: 메모리 쿠키 저장소를 사용합니다.");
+
+      // 🔍 Web 환경에서도 인터셉터 추가
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) async {
+            final token = await _storage.read(key: 'accessToken');
+            final grantType = await _storage.read(key: 'grantType') ?? 'Bearer';
+            if (token != null) {
+              options.headers['Authorization'] = '$grantType $token';
+              options.headers['accesstoken'] = token;
+              debugPrint('🔐 [API Request - Web] AccessToken: $token');
+              debugPrint('📍 [API Request - Web] URL: ${options.path}');
+              debugPrint('📦 [API Request - Web] Method: ${options.method}');
+            } else {
+              debugPrint('⚠️ [API Request - Web] No AccessToken found!');
+            }
+            return handler.next(options);
+          },
+          onError: (DioException e, handler) async {
+            debugPrint('❌ [API Error - Web] ${e.message}');
+            return handler.next(e);
+          },
+        ),
+      );
     } else {
       // 1. 저장 경로 설정
       Directory appDocDir = await getApplicationDocumentsDirectory();
@@ -57,22 +80,31 @@ class DioClient {
 
       // 4. 기존 인터셉터 설정 (순서상 쿠키 매니저 뒤에 붙여도 무방함)
       // 2. [수정] 공통 인터셉터 - 여기서 '무조건 성공' 로직을 처리합니다.
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          // 일반 요청일 경우 토큰 주입
-          final token = await _storage.read(key: 'accessToken');
-          final grantType = await _storage.read(key: 'grantType') ?? 'Bearer';
-          if (token != null) {
-            options.headers['Authorization'] = '$grantType $token';
-          }
-          return handler.next(options);
-        },
-        onError: (DioException e, handler) async {
-          return handler.next(e);
-        },
-      ),
-    );
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) async {
+            // 일반 요청일 경우 토큰 주입
+            final token = await _storage.read(key: 'accessToken');
+            final grantType = await _storage.read(key: 'grantType') ?? 'Bearer';
+            if (token != null) {
+              options.headers['Authorization'] = '$grantType $token';
+              options.headers['accesstoken'] = token; // 백엔드에서 필요하다면 별도 헤더로도 전달
+
+              // 🔍 DEBUG: 터미널에 accessToken 로깅
+              debugPrint('🔐 [API Request] AccessToken: $token');
+              debugPrint('📍 [API Request] URL: ${options.path}');
+              debugPrint('📦 [API Request] Method: ${options.method}');
+            } else {
+              debugPrint('⚠️ [API Request] No AccessToken found!');
+            }
+            return handler.next(options);
+          },
+          onError: (DioException e, handler) async {
+            debugPrint('❌ [API Error] ${e.message}');
+            return handler.next(e);
+          },
+        ),
+      );
     }
   }
 }

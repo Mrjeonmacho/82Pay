@@ -10,7 +10,7 @@ class ProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
-    
+
     // 데이터가 없을 경우를 대비한 기본값 처리 (방어 코드)
     final String name = userProvider.userName ?? 'Guest User';
     final String email = userProvider.userEmail ?? 'Please login';
@@ -20,10 +20,7 @@ class ProfileCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: const LinearGradient(
-          colors: [
-            AppColors.warningRed,
-            AppColors.mainBlue,
-          ],
+          colors: [AppColors.warningRed, AppColors.mainBlue],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

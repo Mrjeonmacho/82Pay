@@ -214,7 +214,11 @@ class AccountManagementView extends StatelessWidget {
                 if (success && parentContext.mounted) {
                   // 2. 성공 메시지 출력
                   ScaffoldMessenger.of(parentContext).showSnackBar(
-                    SnackBar(content: Text('account_management.delete_success_msg'.tr())),
+                    SnackBar(
+                      content: Text(
+                        'account_management.delete_success_msg'.tr(),
+                      ),
+                    ),
                   );
 
                   // 3. (선택 사항) 삭제 후 홈 화면으로 아예 보내버리고 싶다면?

@@ -24,8 +24,16 @@ class _TransactionsSectionState extends State<TransactionsSection> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final accountProvider = context.read<AccountProvider>();
-      final walletId = int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
-      context.read<HistoryProvider>().fetchHistory(walletId: walletId);
+      final walletId =
+          int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
+
+      // 💾 walletId가 있을 때만 history 조회 (없으면 에러 방지)
+      if (walletId > 0) {
+        debugPrint('📝 [TransactionsSection] History 로드 - WalletId: $walletId');
+        context.read<HistoryProvider>().fetchHistory(walletId: walletId);
+      } else {
+        debugPrint('⚠️ [TransactionsSection] WalletId 없음 - History 조회 스킵');
+      }
     });
   }
 
@@ -36,12 +44,7 @@ class _TransactionsSectionState extends State<TransactionsSection> {
 
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 24),
-      child: Column(
-        children: [
-          _buildHeader(context),
-          _buildList(provider),
-        ],
-      ),
+      child: Column(children: [_buildHeader(context), _buildList(provider)]),
     );
   }
 
@@ -96,7 +99,10 @@ class _TransactionsSectionState extends State<TransactionsSection> {
                       ),
                     ),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(19),
                         gradient: LinearGradient(
@@ -144,7 +150,9 @@ class _TransactionsSectionState extends State<TransactionsSection> {
         padding: const EdgeInsets.all(40),
         child: Text(
           'home_screen.no_transactions'.tr(),
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.disabledFont),
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.disabledFont,
+          ),
         ),
       );
     }
@@ -160,7 +168,9 @@ class _TransactionsSectionState extends State<TransactionsSection> {
         final String title = tx.otherAccountName ?? 'Unknown';
         final int amount = tx.amount.toInt();
         final bool isOutput = tx.category == 'OUTPUT';
-        final String dateText = DateFormat('yy.MM.dd HH:mm').format(tx.createdAt);
+        final String dateText = DateFormat(
+          'yy.MM.dd HH:mm',
+        ).format(tx.createdAt);
 
         final amountPrefix = isOutput ? '-' : '+';
 
@@ -194,7 +204,10 @@ class _TransactionsSectionState extends State<TransactionsSection> {
                   ),
                 ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(22.5), // 외부 - 테두리 두께
                     gradient: LinearGradient(
@@ -210,47 +223,47 @@ class _TransactionsSectionState extends State<TransactionsSection> {
                     children: [
                       Expanded(
                         child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 16,
-                            color: const Color(0xFF2E3A59),
-                          ),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                color: const Color(0xFF2E3A59),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              dateText, // 포맷팅된 실제 날짜
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.disabledFont,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          dateText, // 포맷팅된 실제 날짜
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.disabledFont,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 12,
-                          ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '$amountPrefix ${CurrencyInputFormatter.format(amount)} ₩', // 원화 포맷 적용
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                          color: const Color(0xFF2E3A59),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '$amountPrefix ${CurrencyInputFormatter.format(amount)} ₩', // 원화 포맷 적용
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                      color: const Color(0xFF2E3A59),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
-  },
-);
   }
 }

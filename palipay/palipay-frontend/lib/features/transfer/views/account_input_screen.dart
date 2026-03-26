@@ -111,10 +111,8 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => AmountInputScreen(
-          bankName: bank,
-          accountNumber: account,
-        ),
+        builder: (_) =>
+            AmountInputScreen(bankName: bank, accountNumber: account),
       ),
     );
   }
@@ -141,12 +139,15 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
 
         return Scaffold(
           backgroundColor: const Color(0xFFF8F8FB),
-          appBar: PaliTopBar(
-            title: 'transfer.title'.tr(),
-          ),
+          appBar: PaliTopBar(title: 'transfer.title'.tr()),
           body: SafeArea(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(horizontalPadding, topPadding, horizontalPadding, bottomPadding,),
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                topPadding,
+                horizontalPadding,
+                bottomPadding,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -175,9 +176,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
                     controller: _accountController,
                     keyboardType: TextInputType.number,
                     maxLength: 20,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     errorText: _accountErrorText,
                     onChanged: _handleAccountChanged,
                     onMaxLengthExceeded: _handleAccountLengthExceeded,
@@ -204,7 +203,9 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
                             onChanged: (_) {},
                           ),
                           Padding(
-                            padding: EdgeInsets.only(right: _clamp(width * 0.01, 4, 8),),
+                            padding: EdgeInsets.only(
+                              right: _clamp(width * 0.01, 4, 8),
+                            ),
                             child: Icon(
                               Icons.keyboard_arrow_down_rounded,
                               color: AppColors.exampleFont,

@@ -95,10 +95,9 @@ class AuthService {
         return false;
       }
     } on DioException catch (e) {
-        print("❌ [실패] 상태코드: ${e.response?.statusCode}");
-        print("❌ [실패] 에러내용: ${e.response?.data}");
-        return false;
-
+      print("❌ [실패] 상태코드: ${e.response?.statusCode}");
+      print("❌ [실패] 에러내용: ${e.response?.data}");
+      return false;
     } catch (e) {
       print("네트워크 에러: $e");
       return false;
@@ -115,8 +114,6 @@ class AuthService {
 
       final data = response.data;
 
-
-
       if (response.statusCode == 200) {
         final token = data['accessToken'];
         await _storage.write(key: 'accessToken', value: token);
@@ -127,16 +124,16 @@ class AuthService {
         // 2. 💡 [핵심 추가] UserProvider에도 토큰을 꽂아줌
         if (context.mounted) {
           context.read<UserProvider>().setUserInfo(
-          token: token,
-          userId: userInfo['userId'],
-          name: userInfo['name'],
-          email: userInfo['email'],
-          countryCode: userInfo['countryCode'],
+            token: token,
+            userId: userInfo['userId'],
+            name: userInfo['name'],
+            email: userInfo['email'],
+            countryCode: userInfo['countryCode'],
           );
 
           // 2. 프로필 정보 업데이트 (ProfileProvider) 💡 추가!
           context.read<ProfileProvider>().setUser(
-            ProfileUserModel.fromJson(userInfo)
+            ProfileUserModel.fromJson(userInfo),
           );
         }
         return 200;
