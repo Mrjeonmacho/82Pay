@@ -9,6 +9,8 @@ import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/currency_input_formatter.dart';
 import '../../account/providers/account_provider.dart';
 import '../../history/providers/history_provider.dart';
+import '../../account/providers/account_provider.dart';
+import '../../history/providers/history_provider.dart';
 import '../providers/wallet_provider.dart';
 import '../widgets/wallet_account_card.dart';
 import '../widgets/currency_amount_input.dart';
@@ -30,8 +32,9 @@ class _ExchangeViewState extends State<ExchangeView> {
       final provider = context.read<WalletProvider>();
       final accountProvider = context.read<AccountProvider>();
       final walletId = int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
+      final currency = accountProvider.linkedAccount?.moneyCode ?? 'USD';
       
-      provider.initForRefund();
+      provider.initForRefund(currency: currency);
       provider.loadExchangeRateQuote();
       provider.loadWalletBalance(walletId: walletId, amount: 0);
     });

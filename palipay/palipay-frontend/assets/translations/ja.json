@@ -129,10 +129,12 @@
         "card_holder": "カード名義人"
     },
     "pin": {
-        "logo_text": "+82Pay",
+        "logo_text": "PaliPay",
         "error_incorrect": "PINが正しくありません。もう一度お試しください ({count}/5)",
         "error_registration_failed": "PINの登録に失敗しました。もう一度お試しください。",
         "error_mismatch": "PINが一致しません。もう一度お試しください。",
+        "error_already_exists": "このウォレットにはすでにPINが設定されています。",
+        "locked_for": "{time} の間ロックされています",
         "change": {
             "error_invalid_current": "現在のPINが正しくありません。",
             "error_same_as_current": "現在のPINとは異なるものを入力してください。",
@@ -179,7 +181,8 @@
     "account_input": {
         "scan_failed_msg": "スキャンに失敗しました。手動で入力してください。",
         "account_number": "口座番号",
-        "bank": "銀行"
+        "bank": "銀行",
+        "error_max_length": "口座番号は20桁以内で入力してください。"
     },
     "amount_input": {
         "from_my_wallet": "私の財布から",
@@ -285,5 +288,8 @@
         "title": "口座番号の範囲を選択",
         "done": "完了",
         "guide": "枠をドラッグして口座番号の範囲に合わせてください。\n右下のハンドルでサイズを調整できます。"
+    },
+    "error": {
+        "network_issue": "ネットワークエラーが発生しました。もう一度お試しください。"
     }
 }

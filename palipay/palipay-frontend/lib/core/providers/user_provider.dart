@@ -4,30 +4,41 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../constants/bank_constants.dart';
 
-/// PaliPay의 핵심 사용자 상태 및 글로벌 설정을 관리하는 프로바이더입니다.
+// lib/core/providers/user_provider.dart
+
 class UserProvider extends ChangeNotifier {
-  // 1. 사용자 핵심 상태 변수
-  String _countryCode = 'US'; // 기본값은 미국으로 설정
+  int? _userId;         // 💡 추가
   String? _userName;
   String? _userEmail;
-  bool _isLoggedIn = false;
+  String? _countryCode = 'US'; // 기본값; // 💡 추가
+  String? _accessToken;
 
   // Getters
-  String get countryCode => _countryCode;
+  int? get userId => _userId;
   String? get userName => _userName;
   String? get userEmail => _userEmail;
-  bool get isLoggedIn => _isLoggedIn;
+  String? get countryCode => _countryCode;
+  String? get accessToken => _accessToken;
+  bool get isLoggedIn => _accessToken != null;
 
-  /// 현재 설정된 국가의 은행 리스트를 반환합니다.
-  List<Map<String, dynamic>> get currentCountryBanks => 
-      BankConstants.getBanks(_countryCode);
+  // 💡 에러 해결 1: AuthService가 찾는 바로 그 메서드
+  void setUserInfo({
+    required String token,
+    int? userId,
+    String? name,
+    String? email,
+    String? countryCode,
+  }) {
+    _accessToken = token;
+    _userId = userId ?? _userId;
+    _userName = name ?? _userName;
+    _userEmail = email ?? _userEmail;
+    _countryCode = countryCode ?? _countryCode;
+    
+    notifyListeners();
+  }
 
-  /// 현재 설정된 국가의 기본 통화 코드를 반환합니다. (예: KRW, USD)
-  String get currentCurrency => 
-      BankConstants.getDefaultCurrency(_countryCode);
-
-  /// 회원가입이나 로그인 성공 시 사용자의 글로벌 설정을 업데이트합니다.
-  /// [countryCode]: 'KR', 'JP', 'US', 'CN' 등의 국가 코드
+  // 💡 에러 해결 2: SignUpProvider 등이 찾는 설정 메서드
   void setUserConfig({
     required String countryCode,
     String? name,
@@ -35,17 +46,15 @@ class UserProvider extends ChangeNotifier {
     required BuildContext context,
   }) {
     _countryCode = countryCode;
-    _userName = name;
-    _userEmail = email;
-    _isLoggedIn = true;
+    _userName = name ?? _userName;
+    _userEmail = email ?? _userEmail;
 
-    // 2. 국가 코드에 따른 앱 언어 자동 변경 로직
+    // 내부 메서드 호출
     _applyLocaleByCountry(countryCode, context);
-
     notifyListeners();
   }
 
-  /// 내부적으로 국가 코드에 맞는 Locale을 찾아 easy_localization에 적용합니다.
+  // 💡 에러 해결 3: 내부에서 언어 설정을 처리하는 메서드
   void _applyLocaleByCountry(String countryCode, BuildContext context) {
     final Map<String, Locale> countryToLocale = {
       'KR': const Locale('ko'),
@@ -56,18 +65,18 @@ class UserProvider extends ChangeNotifier {
 
     final targetLocale = countryToLocale[countryCode] ?? const Locale('en');
     
-    // 현재 앱의 언어와 다를 때만 변경 수행
     if (context.locale != targetLocale) {
       context.setLocale(targetLocale);
     }
   }
 
-  /// 로그아웃 시 상태를 초기화합니다.
+
   void logout() {
-    _countryCode = 'US';
+    _userId = null;
     _userName = null;
     _userEmail = null;
-    _isLoggedIn = false;
+    _countryCode = null;
+    _accessToken = null;
     notifyListeners();
   }
 }

@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // 1. Provider 추가
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/providers/user_provider.dart';
 
 class ProfileCard extends StatelessWidget {
-  final String name;
-  final String email;
-
-  const ProfileCard({
-    super.key,
-    required this.name,
-    required this.email,
-  });
+  const ProfileCard({super.key}); // 3. 인자값(name, email) 삭제
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>();
+    
+    // 데이터가 없을 경우를 대비한 기본값 처리 (방어 코드)
+    final String name = userProvider.userName ?? 'Guest User';
+    final String email = userProvider.userEmail ?? 'Please login';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
@@ -55,7 +56,7 @@ class ProfileCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  userProvider.userName ?? 'Guest', // 5. 실시간 데이터 반영
                   style: AppTextStyles.headlineLarge.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -63,7 +64,7 @@ class ProfileCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  email,
+                  userProvider.userEmail ?? 'please login', // 5. 실시간 데이터 반영
                   style: AppTextStyles.bodyLarge.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontWeight: FontWeight.normal,

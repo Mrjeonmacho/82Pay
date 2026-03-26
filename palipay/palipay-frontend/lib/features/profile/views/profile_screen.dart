@@ -2,6 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:palipay_app/features/user/provider/logout_provider.dart';
 import 'package:provider/provider.dart';
+import '../providers/profile_provider.dart';
+import '../providers/profile_provider.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -15,7 +17,6 @@ import '../views/change_passowrd_screen.dart';
 import '../views/linked_accounts_screen.dart';
 import '../../account/views/account_management_view.dart';
 import '../../pin/views/pin_screen.dart';
-import '../../user/views/delete_account_screen.dart';
 import '../../user/views/login_screen.dart';
 import '../../../../core/providers/user_provider.dart';
 
@@ -24,12 +25,12 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. UserProvider(또는 실제 유저 정보를 들고 있는 Provider)를 불러옵니다.
-    final userProvider = context.watch<UserProvider>(); 
-    
-    // 2. 유저 정보가 있는지 확인 (비어있을 경우를 대비한 가공)
-    final String userName = userProvider.userName ?? 'profile.user_name'.tr(); 
-    final String userEmail = userProvider.userEmail ?? 'profile.user_email'.tr();
+
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   context.read<ProfileProvider>().fetchProfile();
+    // });
+
+    final userProvider = context.watch<UserProvider>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FA),
@@ -61,8 +62,7 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 3. [수정] 하드코딩된 dummyProfileUser 대신 실제 데이터를 넘깁니다!
-              ProfileCard(name: userName, email: userEmail), 
+              const ProfileCard(), 
               const SizedBox(height: 24),
 
               // [Service Section]
@@ -133,30 +133,13 @@ class ProfileScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // [Delete Account Section]
-              SectionCard(
-                title: 'profile.menu_delete_account'.tr(), // 다국어 키 적용
-                children: [
-                  MenuTile(
-                    icon: Icons.no_accounts,
-                    title: 'account_management.unlink_account'.tr(), // 다국어 키 적용
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const DeleteAccountScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
             ],
           ),
         ),
       ),
     );
   }
+
 
   // 1. 언어 선택 팝업 함수 (모달 다이얼로그로 변경)
   void _showLanguagePicker(BuildContext context) {

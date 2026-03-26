@@ -43,7 +43,7 @@ class LoginProvider extends ChangeNotifier {
   }
 
   // 2. 로그인 로직
-  Future<bool> login() async {
+  Future<bool> login(BuildContext context) async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
@@ -59,7 +59,7 @@ class LoginProvider extends ChangeNotifier {
 
     try {
       // ⭐️ 이제 성공 여부가 아니라 코드를 받습니다.
-      int statusCode = await _authService.login(email, password);
+      int statusCode = await _authService.login(context, email, password);
 
       if (statusCode == 200) {
         if (_isAutoLogin) {
