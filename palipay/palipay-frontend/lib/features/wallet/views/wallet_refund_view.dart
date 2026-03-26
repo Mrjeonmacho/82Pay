@@ -3,15 +3,19 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:palipay_app/features/pin/views/pin_screen.dart';
 import 'package:palipay_app/features/wallet/views/wallet_result_view.dart';
 import 'package:provider/provider.dart';
+
+// Theme & Widgets
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/currency_input_formatter.dart';
-import '../../account/providers/account_provider.dart';
-import '../../history/providers/history_provider.dart';
+
+// Providers
 import '../../account/providers/account_provider.dart';
 import '../../history/providers/history_provider.dart';
 import '../providers/wallet_provider.dart';
+
+// Components
 import '../widgets/wallet_account_card.dart';
 import '../widgets/currency_amount_input.dart';
 
@@ -24,6 +28,7 @@ class ExchangeView extends StatefulWidget {
 
 class _ExchangeViewState extends State<ExchangeView> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -31,14 +36,24 @@ class _ExchangeViewState extends State<ExchangeView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<WalletProvider>();
       final accountProvider = context.read<AccountProvider>();
-      final walletId =
-          int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
+
+      // AccountProvider에서 통화 정보만 참조
       final currency = accountProvider.linkedAccount?.moneyCode ?? 'USD';
 
       provider.initForRefund(currency: currency);
       provider.loadExchangeRateQuote();
-      provider.loadWalletBalance(walletId: walletId, amount: 0);
+      provider.loadWalletBalance(amount: 0);
+
+      // 화면 진입 시 키보드 자동 방지
+      _focusNode.unfocus();
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -56,40 +71,39 @@ class _ExchangeViewState extends State<ExchangeView> {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    // ===== 1. 금액 입력 섹션 (위로 이동) =====
+                    // ===== 1. 금액 입력 섹션 =====
                     CurrencyAmountInput(
                       label: 'AMOUNT TO REFUND',
                       controller: _controller,
+                      focusNode: _focusNode,
                       onChanged: (val) => provider.updateKrwAmountFromText(val),
                     ),
                     const SizedBox(height: 12),
                     Align(
                       alignment: Alignment.centerRight,
                       child: _RefundMaxButton(
-                        onTap: () async {
-                          // 우선 로딩을 방지하기 위해 Provider에서 최신 잔액을 가져오는 API 호출
-                          final accountProvider = context
-                              .read<AccountProvider>();
-                          final walletId =
-                              int.tryParse(
-                                accountProvider.linkedAccount?.walletId ?? '0',
-                              ) ??
-                              0;
+                        onTap: () {
+                          if (provider.currentBalance != null &&
+                              provider.currentBalance! > 0) {
+                            final int maxAmount = provider.currentBalance!;
 
-                          await provider.loadMaxRefundable(walletId);
+                            provider.updateKrwAmount(maxAmount.toDouble());
 
-                          // 받아온 최대 환급 가능 금액 적용
-                          final maxAmount = provider.maxRefundableAmount ?? 0;
-                          provider.updateKrwAmount(maxAmount.toDouble());
-                          final newText = CurrencyInputFormatter.format(
-                            maxAmount,
-                          );
-                          _controller.value = TextEditingValue(
-                            text: newText,
-                            selection: TextSelection.collapsed(
-                              offset: newText.length,
-                            ),
-                          );
+                            final String formattedAmount =
+                                CurrencyInputFormatter.format(maxAmount);
+                            _controller.value = TextEditingValue(
+                              text: formattedAmount,
+                              selection: TextSelection.collapsed(
+                                offset: formattedAmount.length,
+                              ),
+                            );
+
+                            _focusNode.unfocus();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('환급 가능한 잔액이 없습니다.')),
+                            );
+                          }
                         },
                       ),
                     ),
@@ -109,7 +123,7 @@ class _ExchangeViewState extends State<ExchangeView> {
 
                     const SizedBox(height: 48),
 
-                    // ===== 2. Transfer Details 표시 (아래로 뺌) =====
+                    // ===== 2. Transfer Details 표시 =====
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -126,12 +140,15 @@ class _ExchangeViewState extends State<ExchangeView> {
                       scale: 0.9,
                       child: Column(
                         children: [
-                          // Source: 가상 지갑
+                          // (1) Source: 내 지갑
                           WalletAccountCard(
                             title: '+82Pay Wallet',
                             subtitle:
                                 'Balance: ₩ ${CurrencyInputFormatter.format(provider.currentBalance ?? 0)}',
-                            icon: Icons.wallet,
+                            iconWidget: const Icon(
+                              Icons.wallet,
+                              color: AppColors.mainBlue,
+                            ),
                           ),
                           const Padding(
                             padding: EdgeInsets.symmetric(vertical: 8),
@@ -140,29 +157,34 @@ class _ExchangeViewState extends State<ExchangeView> {
                               color: AppColors.mainBlue,
                             ),
                           ),
-                          // Target: 외부 계좌 (AccountProvider 연동)
-                          Consumer<AccountProvider>(
-                            builder: (context, accProvider, child) {
-                              final account = accProvider.linkedAccount;
-                              final String bankName =
-                                  account?.bankName ?? 'Unknown Bank';
-                              final String accNum =
-                                  account?.accountNumber ?? '••••';
-                              final String maskedAcc = accNum.length > 4
-                                  ? '•••• ${accNum.substring(accNum.length - 4)}'
-                                  : accNum;
+                          // (2) Target: 외부 계좌 (WalletProvider 데이터 연동) 🚀
+                          WalletAccountCard(
+                            // 🚀 [수정] WalletProvider가 BankConstants에서 찾은 이름을 직접 사용
+                            title: provider.bankName,
 
-                              return WalletAccountCard(
-                                title: bankName,
-                                subtitle:
-                                    '${account?.moneyCode ?? "Local"} Account $maskedAcc',
-                                icon: Icons.account_balance,
-                                trailing: const Icon(
-                                  Icons.keyboard_arrow_down,
-                                  color: AppColors.abledFont,
-                                ),
-                              );
-                            },
+                            // 🚀 [수정] 지갑 정보에서 가져온 실제 계좌번호 노출
+                            subtitle:
+                                'WorldBank Account ${provider.maskedAccountNumber}',
+
+                            // 🚀 [수정] 로고가 있으면 로고 이미지를, 없으면 기본 아이콘 표시
+                            iconWidget: provider.bankLogo != null
+                                ? Image.asset(
+                                    provider.bankLogo!,
+                                    width: 32,
+                                    height: 32,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.account_balance,
+                                              size: 32,
+                                              color: AppColors.abledFont,
+                                            ),
+                                  )
+                                : const Icon(
+                                    Icons.account_balance,
+                                    size: 32,
+                                    color: AppColors.abledFont,
+                                  ),
                           ),
                         ],
                       ),
@@ -181,48 +203,42 @@ class _ExchangeViewState extends State<ExchangeView> {
                     : AppColors.disabledBackground,
                 text: 'common.cash_out'.tr(),
                 onPressed:
-                    provider.errorMessage == null && provider.krwAmount > 0
+                    provider.errorMessage == null &&
+                        provider.krwAmount > 0 &&
+                        !provider.isLoading
                     ? () async {
-                        // PIN 인증 스킵 (나중에 활성화)
-                        // final String? pinNumber =
-                        //     await Navigator.push<String>(
-                        //       context,
-                        //       MaterialPageRoute(
-                        //         builder: (context) =>
-                        //             const PinScreen(mode: PinMode.auth),
-                        //       ),
-                        //     );
-                        final String? pinNumber = "000000";
+                        // 1. PIN 입력 화면 호출 (사용자 실제 PIN 입력 대기)
+                        final String? pinNumber = await Navigator.push<String>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const PinScreen(mode: PinMode.auth),
+                          ),
+                        );
 
-                        // 2. 인증 성공 시 환급 로직 실행
+                        // 2. PIN 입력 성공 시 거래 실행
                         if (pinNumber != null && mounted) {
-                          final accountProvider = context
-                              .read<AccountProvider>();
-                          final walletId =
-                              int.tryParse(
-                                accountProvider.linkedAccount?.walletId ?? '0',
-                              ) ??
-                              0;
-
-                          // 서버 통신
                           final success = await provider.refundWallet(
-                            walletId: walletId,
                             pinNumber: pinNumber,
                           );
 
                           if (success && mounted) {
-                            // 성공 시 UI 실시간 잔액 반영
+                            final accountProvider = context
+                                .read<AccountProvider>();
+
+                            // 외부 계좌 잔액 업데이트 (입금액 반영)
                             final currentBankBalance =
                                 accountProvider.linkedAccount?.amount ?? 0;
                             accountProvider.updateBalance(
                               currentBankBalance + provider.krwAmount.toInt(),
                             );
 
-                            // 거래 내역 바로 반영하기 위해 fetchHistory 호출
+                            // 거래 내역 갱신
                             context.read<HistoryProvider>().fetchHistory(
-                              walletId: walletId,
+                              walletId: provider.walletId!,
                             );
 
+                            // 결과 화면 이동
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(

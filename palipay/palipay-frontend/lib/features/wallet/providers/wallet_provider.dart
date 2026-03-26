@@ -1,22 +1,22 @@
+// lib/features/wallet/providers/wallet_provider.dart
+
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../models/wallet_model.dart';
 import '../services/wallet_service.dart';
+import '../../../core/constants/bank_constants.dart'; // 💡 임포트 확인
 
 enum WalletStatus { idle, loading, success, failure }
 
 class WalletProvider extends ChangeNotifier {
   final WalletService _service = WalletService();
 
+  // --- [1] 상태 변수 ---
   WalletStatus status = WalletStatus.idle;
   WalletBalanceModel wallet = WalletBalanceModel.empty();
-
-  // 🚀 NEW: 지갑 기본 정보 (계좌번호, 이름, 잔액)
   WalletInfoModel walletInfo = WalletInfoModel.empty();
 
-  // 💾 walletId 캐싱 - pin, transfer 등 모든 거래에서 사용
   int? _walletId;
-
   double _krwAmount = 0;
   double _foreignAmount = 0;
   double _exchangeRate = 0;
@@ -24,68 +24,98 @@ class WalletProvider extends ChangeNotifier {
   String? _quoteId;
   String? _rateTimestamp;
   String? _errorMessage;
-  int? _maxRefundableAmount;
   bool _isTopupView = false;
 
-  // --- [1] Getters ---
-  int? get balance => wallet.currentBalance;
-  int? get currentBalance => wallet.currentBalance;
-  String? get rateTimestamp => _rateTimestamp;
-  double get krwAmount => _krwAmount;
-  double get foreignAmount => _foreignAmount;
-  double get exchangeRate => _exchangeRate;
-  String get targetCurrency => _targetCurrency;
-  String? get errorMessage => _errorMessage;
-  int? get maxRefundableAmount => _maxRefundableAmount;
-  bool get isLoading => status == WalletStatus.loading;
+  String? _bankName;
+  String? _bankLogo;
 
-  // 🚀 NEW: 지갑 정보 Getters
+  // --- [2] Getters ---
+  int? get currentBalance =>
+      wallet.currentBalance ?? walletInfo.amount?.toInt();
+  int? get balance => currentBalance;
+  int? get walletId => _walletId;
   String? get accountNumber => walletInfo.accountNumber;
   String? get accountUsername => walletInfo.accountUsername;
   double? get walletAmount => walletInfo.amount;
 
-  // 💾 walletId 캐싱된 ID 조회 - 모든 거래에서 사용
-  int? get walletId => _walletId;
+  double get krwAmount => _krwAmount;
+  double get foreignAmount => _foreignAmount;
+  double get exchangeRate => _exchangeRate;
+  String? get rateTimestamp => _rateTimestamp;
+  String get targetCurrency => _targetCurrency;
+  String? get errorMessage => _errorMessage;
+  bool get isLoading => status == WalletStatus.loading;
 
-  // --- [2] 초기화 로직 ---
+  String get bankName => _bankName ?? 'Unknown Bank';
+  String? get bankLogo => _bankLogo;
+  // 1. 마스킹된 계좌번호 게터
+  String get maskedAccountNumber {
+    final acc = walletInfo.accountNumber ?? "";
+    if (acc.length > 4) {
+      // 뒤에서 4자리만 자르고 앞에 점을 붙임
+      return '•••• ${acc.substring(acc.length - 4)}';
+    }
+    return acc; // 4자리 이하면 그냥 노출
+  }
+
+  // --- [3] 데이터 로드 로직 ---
+
   Future<void> initWalletData() async {
     status = WalletStatus.loading;
+    _errorMessage = null;
     notifyListeners();
-
     try {
-      // 🚀 주소 변경에 맞춰 인자 없이 호출합니다.
       await loadWalletInfo();
-
-      // 만약 balance 조회에는 여전히 ID가 필요하다면,
-      // 위에서 받아온 walletInfo의 ID를 사용하게 연결합니다.
-      if (walletId != null) {
-        await loadWalletBalance(walletId: walletId!);
-      }
-
       status = WalletStatus.success;
     } catch (e) {
       status = WalletStatus.failure;
+      _errorMessage = '지갑 정보를 불러오는데 실패했습니다.';
     }
     notifyListeners();
   }
 
-  void initForTopup({String? currency}) =>
-      initForAction(isTopup: true, currency: currency ?? "USD");
-  void initForRefund({String? currency}) =>
-      initForAction(isTopup: false, currency: currency ?? "USD");
+  Future<void> loadWalletInfo() async {
+    try {
+      // 1. 서비스로부터 bankCode가 포함된 모델을 받아옴
+      walletInfo = await _service.fetchWalletInfo();
 
-  void initForAction({required bool isTopup, required String currency}) {
-    _isTopupView = isTopup;
-    _targetCurrency = currency;
-    _krwAmount = 0;
-    _foreignAmount = 0;
-    _errorMessage = null;
-    notifyListeners();
+      if (walletInfo.walletId != null) {
+        _walletId = walletInfo.walletId;
+
+        // 2. 모델에 담긴 bankCode로 은행 이름/로고 찾기
+        final String? code = walletInfo.bankCode;
+        final bankData = BankConstants.findBankByCode(code);
+
+        if (bankData != null) {
+          _bankName = bankData['name'];
+          _bankLogo = bankData['logo'];
+        } else {
+          _bankName = code != null ? 'Bank ($code)' : 'Unknown Bank';
+          _bankLogo = null;
+        }
+
+        wallet = wallet.copyWith(currentBalance: walletInfo.amount?.toInt());
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('🚨 loadWalletInfo 실패: $e');
+      rethrow;
+    }
   }
 
-  // --- [3] API 연동 메서드 ---
+  Future<void> loadWalletBalance({num? amount}) async {
+    if (_walletId == null) return;
+    try {
+      wallet = await _service.fetchWalletBalance(
+        walletId: _walletId!,
+        amount: amount ?? 0,
+      );
+      notifyListeners();
+    } catch (e) {
+      debugPrint('🚨 loadWalletBalance 실패: $e');
+    }
+  }
 
-  /// 실시간 환율 견적 조회 (이 메서드가 없어서 에러가 났었습니다!)
   Future<void> loadExchangeRateQuote() async {
     try {
       final response = await _service.getExchangeRateQuote(
@@ -96,8 +126,6 @@ class WalletProvider extends ChangeNotifier {
         _exchangeRate = (data['exchangeRate'] as num).toDouble();
         _quoteId = data['quoteId'];
         _rateTimestamp = data['rateTimestamp'];
-
-        // 환율이 갱신되면 입력된 금액도 재계산
         if (_krwAmount > 0) updateKrwAmount(_krwAmount);
         notifyListeners();
       }
@@ -106,54 +134,22 @@ class WalletProvider extends ChangeNotifier {
     }
   }
 
-  /// 🚀 NEW: 지갑 기본 정보 조회 (계좌번호, 이름, 잔액)
-  Future<void> loadWalletInfo() async {
-    try {
-      // 1. 서비스 호출 (인자 필요 없음)
-      walletInfo = await _service.fetchWalletInfo();
+  // --- [4] UI 계산 로직 ---
 
-      // 2. 가져온 정보에 walletId가 있다면 캐싱
-      if (walletInfo.walletId != null) {
-        _walletId = walletInfo.walletId; // 이제 isn't defined 에러 해결! ✅
-      }
+  void initForTopup({String? currency}) =>
+      _initForAction(isTopup: true, currency: currency ?? "USD");
+  void initForRefund({String? currency}) =>
+      _initForAction(isTopup: false, currency: currency ?? "USD");
 
-      notifyListeners();
-    } catch (e) {
-      debugPrint('🚨 지갑 정보 로드 실패: $e');
-      rethrow;
-    }
+  void _initForAction({required bool isTopup, required String currency}) {
+    _isTopupView = isTopup;
+    _targetCurrency = currency;
+    _krwAmount = 0;
+    _foreignAmount = 0;
+    _errorMessage = null;
+    loadExchangeRateQuote();
+    notifyListeners();
   }
-
-  Future<void> loadWalletBalance({
-    required int walletId, // 잔액 조회 API는 여전히 ID를 쓸 수 있으니 유지
-    num? amount,
-  }) async {
-    try {
-      wallet = await _service.fetchWalletBalance(
-        walletId: walletId,
-        amount: amount ?? 0,
-      );
-      notifyListeners();
-    } catch (e) {
-      debugPrint('🚨 잔액 조회 실패: $e');
-    }
-  }
-
-  /// 최대 환불 가능 금액 조회
-  Future<void> loadMaxRefundable(int walletId) async {
-    try {
-      final response = await _service.getMaxRefundable(walletId: walletId);
-      final data = response['data'];
-      if (data != null) {
-        _maxRefundableAmount = (data['maxRefundableAmount'] as num).toInt();
-        notifyListeners();
-      }
-    } catch (e) {
-      debugPrint('🚨 최대 환불 조회 실패: $e');
-    }
-  }
-
-  // --- [4] 금액 입력 및 계산 로직 ---
 
   void updateKrwAmount(double amount) {
     _krwAmount = amount;
@@ -183,14 +179,12 @@ class WalletProvider extends ChangeNotifier {
     }
   }
 
-  // --- [5] 트랜잭션 실행 (충전/환급) ---
+  // --- [5] 트랜잭션 ---
 
-  Future<bool> chargeWallet({
-    required int walletId,
-    required String pinNumber,
-  }) async {
+  Future<bool> chargeWallet({required String pinNumber}) async {
+    if (_walletId == null) return false;
     return await _executeTransaction(
-      walletId: walletId,
+      walletId: _walletId!,
       pinNumber: pinNumber,
       action: (wid, pin) => _service.chargeWallet(
         walletId: wid,
@@ -203,12 +197,10 @@ class WalletProvider extends ChangeNotifier {
     );
   }
 
-  Future<bool> refundWallet({
-    required int walletId,
-    required String pinNumber,
-  }) async {
+  Future<bool> refundWallet({required String pinNumber}) async {
+    if (_walletId == null) return false;
     return await _executeTransaction(
-      walletId: walletId,
+      walletId: _walletId!,
       pinNumber: pinNumber,
       action: (wid, pin) => _service.refundWallet(
         walletId: wid,
@@ -228,18 +220,20 @@ class WalletProvider extends ChangeNotifier {
     required String errorMsg,
   }) async {
     status = WalletStatus.loading;
+    _errorMessage = null;
     notifyListeners();
     try {
       final response = await action(walletId, pinNumber);
       final data = response['data'];
       if (data != null && data['currentBalance'] != null) {
-        wallet = wallet.copyWith(
-          currentBalance: (data['currentBalance'] as num).toInt(),
-        );
+        final newBalance = (data['currentBalance'] as num).toInt();
+        wallet = wallet.copyWith(currentBalance: newBalance);
+        walletInfo = walletInfo.copyWith(amount: newBalance.toDouble());
+        status = WalletStatus.success;
+        notifyListeners();
+        return true;
       }
-      status = WalletStatus.success;
-      notifyListeners();
-      return true;
+      throw Exception("Data format error");
     } catch (e) {
       status = WalletStatus.failure;
       _errorMessage = errorMsg;

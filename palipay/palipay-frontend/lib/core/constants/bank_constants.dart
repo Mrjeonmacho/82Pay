@@ -157,6 +157,24 @@ class BankConstants {
     },
   };
 
+  // bankCode로 은행 정보 전체를 찾는 헬퍼 메서드
+  static Map<String, dynamic>? findBankByCode(String? bankCode) {
+    if (bankCode == null) return null;
+
+    for (var country in countryData.values) {
+      final List<Map<String, dynamic>> banks = List<Map<String, dynamic>>.from(
+        country['banks'],
+      );
+
+      for (var bank in banks) {
+        if (bank['bankCode'] == bankCode) {
+          return bank; // 매칭되는 은행 객체 {name, bankCode, logo} 반환
+        }
+      }
+    }
+    return null; // 못 찾았을 경우
+  }
+
   // 특정 국가의 통화 코드를 가져오는 헬퍼 메서드
   static String getDefaultCurrency(String countryCode) {
     return countryData[countryCode]?['defaultMoneyCode'] ?? 'USD';
