@@ -8,6 +8,7 @@ import 'package:dio/dio.dart'; // 💡 Dio 임포트 확인!
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_keypad.dart';
+import '../../../core/providers/user_provider.dart';
 import '../providers/account_provider.dart';
 
 // 💡 1. 클래스 정의가 정확해야 합니다.
@@ -74,6 +75,19 @@ class _BankPasswordViewState extends State<BankPasswordView> {
         if (mounted) {
           if (result == "SUCCESS") {
             _showSnackBar('bank.pwd.link_success'.tr(), Colors.green);
+
+            // 🔖 walletId를 UserProvider에 저장
+            if (mounted) {
+              final walletId = accountProvider.walletId;
+              context.read<UserProvider>().setUserInfo(
+                token: realToken,
+                walletId: walletId,
+              );
+              debugPrint(
+                '✅ [AccountLink] UserProvider에 WalletId 저장: $walletId',
+              );
+            }
+
             Navigator.popUntil(context, (route) => route.isFirst);
           } else {
             String errorMessage = 'bank.pwd.invalid_msg'.tr();

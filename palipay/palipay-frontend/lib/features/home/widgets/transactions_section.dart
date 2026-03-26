@@ -26,7 +26,14 @@ class _TransactionsSectionState extends State<TransactionsSection> {
       final accountProvider = context.read<AccountProvider>();
       final walletId =
           int.tryParse(accountProvider.linkedAccount?.walletId ?? '0') ?? 0;
-      context.read<HistoryProvider>().fetchHistory(walletId: walletId);
+
+      // 💾 walletId가 있을 때만 history 조회 (없으면 에러 방지)
+      if (walletId > 0) {
+        debugPrint('📝 [TransactionsSection] History 로드 - WalletId: $walletId');
+        context.read<HistoryProvider>().fetchHistory(walletId: walletId);
+      } else {
+        debugPrint('⚠️ [TransactionsSection] WalletId 없음 - History 조회 스킵');
+      }
     });
   }
 

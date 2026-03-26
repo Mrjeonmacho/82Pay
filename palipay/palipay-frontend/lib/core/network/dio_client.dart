@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb; // 웹 체크용
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -38,7 +39,31 @@ class DioClient {
     if (kIsWeb) {
       // 1. 웹: 메모리 쿠키 저장소 사용 (파일 경로 필요 없음)
       cookieJar = CookieJar();
-      print("Web 환경: 메모리 쿠키 저장소를 사용합니다.");
+      debugPrint("🌐 Web 환경: 메모리 쿠키 저장소를 사용합니다.");
+
+      // 🔍 Web 환경에서도 인터셉터 추가
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) async {
+            final token = await _storage.read(key: 'accessToken');
+            final grantType = await _storage.read(key: 'grantType') ?? 'Bearer';
+            if (token != null) {
+              options.headers['Authorization'] = '$grantType $token';
+              options.headers['accesstoken'] = token;
+              debugPrint('🔐 [API Request - Web] AccessToken: $token');
+              debugPrint('📍 [API Request - Web] URL: ${options.path}');
+              debugPrint('📦 [API Request - Web] Method: ${options.method}');
+            } else {
+              debugPrint('⚠️ [API Request - Web] No AccessToken found!');
+            }
+            return handler.next(options);
+          },
+          onError: (DioException e, handler) async {
+            debugPrint('❌ [API Error - Web] ${e.message}');
+            return handler.next(e);
+          },
+        ),
+      );
     } else {
       // 1. 저장 경로 설정
       Directory appDocDir = await getApplicationDocumentsDirectory();
@@ -63,10 +88,19 @@ class DioClient {
             final grantType = await _storage.read(key: 'grantType') ?? 'Bearer';
             if (token != null) {
               options.headers['Authorization'] = '$grantType $token';
+              options.headers['accesstoken'] = token; // 백엔드에서 필요하다면 별도 헤더로도 전달
+
+              // 🔍 DEBUG: 터미널에 accessToken 로깅
+              debugPrint('🔐 [API Request] AccessToken: $token');
+              debugPrint('📍 [API Request] URL: ${options.path}');
+              debugPrint('📦 [API Request] Method: ${options.method}');
+            } else {
+              debugPrint('⚠️ [API Request] No AccessToken found!');
             }
             return handler.next(options);
           },
           onError: (DioException e, handler) async {
+            debugPrint('❌ [API Error] ${e.message}');
             return handler.next(e);
           },
         ),
