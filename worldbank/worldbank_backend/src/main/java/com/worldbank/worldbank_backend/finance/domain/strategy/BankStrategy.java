@@ -2,6 +2,7 @@ package com.worldbank.worldbank_backend.finance.domain.strategy;
 
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.History.HistoryResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Info.InfoResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
 
@@ -23,4 +24,6 @@ public interface BankStrategy {
     LinkResponseDto linkAccount(String accountNumber, String password);
 
     List<HistoryResponseDto> getHistoryByUserId(Long userId);
+
+    InfoResponseDto getInfoByUserId(Long userId);
 }

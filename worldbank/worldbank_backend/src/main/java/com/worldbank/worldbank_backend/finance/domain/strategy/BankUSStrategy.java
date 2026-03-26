@@ -2,6 +2,7 @@ package com.worldbank.worldbank_backend.finance.domain.strategy;
 
 import com.worldbank.worldbank_backend.finance.domain.dto.Check.CheckResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.History.HistoryResponseDto;
+import com.worldbank.worldbank_backend.finance.domain.dto.Info.InfoResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Link.LinkResponseDto;
 import com.worldbank.worldbank_backend.finance.domain.dto.Transfer.TransferRequestDto;
 import com.worldbank.worldbank_backend.finance.domain.entity.us.AccountHistoryUS;
@@ -138,5 +139,17 @@ public class BankUSStrategy implements BankStrategy {
                         .createdAt(history.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
+    }
+    @Override
+    public InfoResponseDto getInfoByUserId(Long userId) {
+        return bankRepository.findByUser_UserId(userId)
+                .map(bank -> InfoResponseDto.builder()
+                        .userName(bank.getUserName())
+                        .accountNumber(bank.getAccountNumber())
+                        .amount(bank.getAmount())
+                        .bankName(bank.getBankName())
+                        .currency(getBankCurrency())
+                        .build())
+                .orElseThrow(() -> new RuntimeException("해당 유저의 계좌 정보를 찾을 수 없습니다."));
     }
 }
