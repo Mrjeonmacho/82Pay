@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb; // 웹 체크용
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -28,15 +29,17 @@ class DioClient {
         baseUrl: dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8081',
         connectTimeout: const Duration(seconds: 20),
         receiveTimeout: const Duration(seconds: 20),
-        headers: {'Content-Type': 'application/json'},
+        // headers: {'Content-Type': 'application/json'},
       ),
     );
+    dio.interceptors.add(CustomLogInterceptor());
   }
 
   // 핵심: 비동기 초기화 함수 추가
   Future<void> init() async {
     // 웹과 모바일 분기 처리 (getApplicationDocumentsDirectory을 사용하면 웹에서 오류 발생)
     if (kIsWeb) {
+      dio.options.extra['withCredentials'] = true; // 쿠키 공유 허용
       // 1. 웹: 메모리 쿠키 저장소 사용 (파일 경로 필요 없음)
       cookieJar = CookieJar();
       debugPrint("🌐 Web 환경: 메모리 쿠키 저장소를 사용합니다.");
@@ -45,16 +48,13 @@ class DioClient {
       dio.interceptors.add(
         InterceptorsWrapper(
           onRequest: (options, handler) async {
+            // storage에서 읽기 전, 혹시 값이 비어있는지 체크
             final token = await _storage.read(key: 'accessToken');
-            final grantType = await _storage.read(key: 'grantType') ?? 'Bearer';
+
             if (token != null) {
-              options.headers['Authorization'] = '$grantType $token';
+              options.headers['Authorization'] = 'Bearer $token';
               options.headers['accesstoken'] = token;
-              debugPrint('🔐 [API Request - Web] AccessToken: $token');
-              debugPrint('📍 [API Request - Web] URL: ${options.path}');
-              debugPrint('📦 [API Request - Web] Method: ${options.method}');
-            } else {
-              debugPrint('⚠️ [API Request - Web] No AccessToken found!');
+              debugPrint('🌐 [Web Request] Token injected from Storage');
             }
             return handler.next(options);
           },
@@ -106,5 +106,42 @@ class DioClient {
         ),
       );
     }
+  }
+}
+
+class CustomLogInterceptor extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    debugPrint(
+      '🚀 [API Request] ${options.method} | ${options.baseUrl}${options.path}',
+    );
+    debugPrint('📂 QueryParams: ${options.queryParameters}');
+    debugPrint('📦 Body: ${options.data}');
+    debugPrint(
+      '🔐 Headers: ${options.headers['Authorization'] != null ? "Token Exist" : "No Token"}',
+    );
+    debugPrint('------------------------------------------------------------');
+    super.onRequest(options, handler);
+  }
+
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    debugPrint(
+      '✅ [API Response] ${response.statusCode} | ${response.requestOptions.path}',
+    );
+    debugPrint('📩 Data: ${response.data}');
+    debugPrint('------------------------------------------------------------');
+    super.onResponse(response, handler);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    debugPrint(
+      '❌ [API Error] ${err.response?.statusCode} | ${err.requestOptions.path}',
+    );
+    debugPrint('⚠️ Message: ${err.message}');
+    debugPrint('💣 Error Data: ${err.response?.data}');
+    debugPrint('------------------------------------------------------------');
+    super.onError(err, handler);
   }
 }

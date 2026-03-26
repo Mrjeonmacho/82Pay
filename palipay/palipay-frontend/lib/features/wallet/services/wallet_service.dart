@@ -13,7 +13,7 @@ class WalletService {
     // 👈 walletId 파라미터 제거!
     try {
       // 주소에 /api가 필요한지 확인해 보세요! (예: /api/finance/mywallet)
-      final response = await _dio.get('/finance/mywallet');
+      final response = await _dio.get('/wallet/mywallet');
       final responseData = response.data;
       final data = responseData['data'] as Map<String, dynamic>?;
 
