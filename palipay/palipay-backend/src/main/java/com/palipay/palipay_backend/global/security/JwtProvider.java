@@ -63,8 +63,26 @@ public class JwtProvider {
 
     // 토큰에서 유저 아이디만 추출
     public Long getUserId(String token) {
-        Claims claims = parseClaims(token);
-        return Long.parseLong(claims.getSubject());
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("JWT 토큰이 비어 있습니다.");
+        }
+
+        token = token.trim();
+
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7).trim();
+        }
+
+        if (token.isBlank()) {
+            throw new IllegalArgumentException("JWT 토큰이 비어 있습니다.");
+        }
+
+        try {
+            Claims claims = parseClaims(token);
+            return Long.parseLong(claims.getSubject());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("유효하지 않은 JWT 토큰입니다.", e);
+        }
     }
 
     // 토큰에서 클레임 추출
