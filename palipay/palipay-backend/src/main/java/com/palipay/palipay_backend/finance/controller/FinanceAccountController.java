@@ -4,6 +4,7 @@ import com.palipay.palipay_backend.finance.dto.request.FinanceAccountRequest;
 import com.palipay.palipay_backend.finance.dto.request.WalletPinRequest;
 import com.palipay.palipay_backend.finance.dto.request.WalletPinUpdateRequest;
 import com.palipay.palipay_backend.finance.dto.response.FinanceAccountResponse;
+import com.palipay.palipay_backend.finance.dto.response.WalletInfoResponse;
 import com.palipay.palipay_backend.finance.dto.response.WalletResponse;
 import com.palipay.palipay_backend.finance.service.FinanceAccountService;
 import com.palipay.palipay_backend.global.security.JwtProvider;
@@ -77,6 +78,18 @@ public class FinanceAccountController {
         return ResponseEntity.ok(
                 financeAccountService.unconnectWallet(userId, walletId)
         );
+    }
+
+    @GetMapping("/{walletId}")
+    public ResponseEntity<WalletInfoResponse> getWallet(
+            @RequestHeader(value = "accesstoken", required = false) String accessToken,
+            @PathVariable Long walletId
+    ) {
+        Long userId = jwtProvider.getUserId(accessToken);
+
+        WalletInfoResponse response = financeAccountService.getWallet(userId, walletId);
+
+        return ResponseEntity.ok(response);
     }
 
 
