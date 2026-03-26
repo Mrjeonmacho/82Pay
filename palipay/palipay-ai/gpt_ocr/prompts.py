@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from ocr.bank_patterns import BANK_NAME_ALIASES, build_bank_account_rules_for_prompt
-from ocr.postprocess import BANK_CANDIDATES
+from .bank_patterns import BANK_NAME_ALIASES, build_bank_account_rules_for_prompt
+from .postprocess_gpt import BANK_CANDIDATES
 
 
 def _build_alias_lines() -> str:
@@ -24,7 +24,7 @@ def build_developer_prompt() -> str:
 은행별 계좌 형식(내부 패턴과 동일, account_number는 항상 숫자만):
 {account_rules}
 
-**농협은행 우선**: 화면에 보이는 대표 형식은 **3-4-4-2** 하이픈 덩어리(예: `352-0725-9025-73`, 총 13자리)이다. 이렇게 읽은 뒤 `account_number`에는 숫자만 13자리로 붙여 출력한다. `3-4-6` 등 다른 형이면 그에 맞춰 읽되 자릿수를 빠뜨리지 않는다.
+형식 우선 안내: **국민** 신형 3-2-4-3(12)·구형 6-2-6(14) / **신한** 3-2-6(11)·구형 3-3-6(12) / **우리** 4-3-6(13) / **하나** 3-6-5(14) / **IBK·기업** 3-6-2-3(14) / **농협·부산** 3-4-4-2(13) / **수협·SC** 3-2-6(11) / **우체국** 6-2-6(14) / **카카오** 4-2-7(13) / **새마을** 4-4-4-1(13) 또는 3-2-6-1(12) / **대구** 3-2-6-1(12) / **전북·씨티** 3-6-3(12) / **제주** 2-2-6(10) / **KDB산업** 3-4-4-3(14). `full_text`는 빠짐없이 이음.
 
 표준 bank_name 목록(위 형식 블록의 은행명과 같아야 함):
 {banks}

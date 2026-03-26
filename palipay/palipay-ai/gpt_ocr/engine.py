@@ -6,21 +6,25 @@ import re
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
-import cv2
-
-from ocr.bank_patterns import get_pattern_match_info, resolve_bank_name
 from ocr.base import OCREngine
-from ocr.postprocess import extract_account_number
 
+from .bank_patterns import get_pattern_match_info, resolve_bank_name
 from .client import ChatCompletionsHttpError, chat_completions
 from .config import (
     get_api_key,
     get_api_url,
-    get_image_max_side,
+    get_gpt_upstream_b64_threshold,
+    get_gpt_upstream_fallback_jpeg_quality,
+    get_gpt_upstream_fallback_max_side,
+    get_gpt_upstream_jpeg_quality,
+    get_gpt_upstream_max_side,
     get_instruction_role,
+    get_max_completion_tokens,
     get_model,
     get_timeout_sec,
 )
+from .image_prep import encode_bgr_for_gpt_upstream
+from .postprocess_gpt import extract_account_number
 from .prompts import build_developer_prompt
 
 
@@ -37,39 +41,41 @@ _GPT_LINE_PLACEHOLDER_BOX: List[List[float]] = [
 ]
 
 
-def _bgr_to_data_url_jpeg(img_bgr: Any) -> Tuple[str, Dict[str, Any]]:
-    max_side = get_image_max_side()
-    orig_h, orig_w = int(img_bgr.shape[0]), int(img_bgr.shape[1])
-    h, w = orig_h, orig_w
-    resized = False
-    if max(h, w) > max_side:
-        scale = max_side / float(max(h, w))
-        img_bgr = cv2.resize(
-            img_bgr,
-            (int(w * scale), int(h * scale)),
-            interpolation=cv2.INTER_AREA,
-        )
-        resized = True
-    out_h, out_w = int(img_bgr.shape[0]), int(img_bgr.shape[1])
-    ok, buf = cv2.imencode(
-        ".jpg",
-        img_bgr,
-        [int(cv2.IMWRITE_JPEG_QUALITY), 88],
+def _bgr_to_data_url_gpt_upstream(img_bgr: Any) -> Tuple[str, Dict[str, Any]]:
+    """
+    GMS Chat Completions 전송용: PIL로 축소·JPEG 재인코딩 후 data URL.
+    base64 길이가 임계값을 넘으면 원본 BGR에서 한 번 더 강하게 축소한다.
+    """
+    max_side = get_gpt_upstream_max_side()
+    quality = get_gpt_upstream_jpeg_quality()
+    gpt_bytes, info = encode_bgr_for_gpt_upstream(
+        img_bgr, max_side=max_side, jpeg_quality=quality
     )
-    if not ok:
-        raise RuntimeError("failed to encode image as JPEG")
-    jpeg_n = int(buf.size)
-    b64 = base64.b64encode(buf.tobytes()).decode("ascii")
+    b64 = base64.b64encode(gpt_bytes).decode("ascii")
+    print("[gpt-ocr] optimized_bytes =", len(gpt_bytes), flush=True)
+    print("[gpt-ocr] optimized_b64_chars =", len(b64), flush=True)
+
+    threshold = get_gpt_upstream_b64_threshold()
+    if len(b64) > threshold:
+        fs = get_gpt_upstream_fallback_max_side()
+        fq = get_gpt_upstream_fallback_jpeg_quality()
+        _log(
+            f"gpt 업스트림 이미지 2차 축소 | b64_chars={len(b64)} > threshold={threshold} "
+            f"max_side {max_side}→{fs} quality {quality}→{fq}"
+        )
+        gpt_bytes, info = encode_bgr_for_gpt_upstream(
+            img_bgr, max_side=fs, jpeg_quality=fq
+        )
+        b64 = base64.b64encode(gpt_bytes).decode("ascii")
+        info["prep_pass"] = 2
+        print("[gpt-ocr] optimized_bytes =", len(gpt_bytes), flush=True)
+        print("[gpt-ocr] optimized_b64_chars =", len(b64), flush=True)
+    else:
+        info["prep_pass"] = 1
+
     data_url = f"data:image/jpeg;base64,{b64}"
-    info = {
-        "orig_wh": (orig_w, orig_h),
-        "out_wh": (out_w, out_h),
-        "max_side_cap": max_side,
-        "resized": resized,
-        "jpeg_bytes": jpeg_n,
-        "b64_chars": len(b64),
-        "data_url_chars": len(data_url),
-    }
+    info["b64_chars"] = len(b64)
+    info["data_url_chars"] = len(data_url)
     return data_url, info
 
 
@@ -164,17 +170,21 @@ class GptOCREngine(OCREngine):
                 "(로컬: backend/.env, 배포: 플랫폼 credential)"
             )
 
-        img_url, enc_info = _bgr_to_data_url_jpeg(img_bgr)
+        img_url, enc_info = _bgr_to_data_url_gpt_upstream(img_bgr)
         _log(
-            f"이미지 JPEG 인코딩 | 원본WxH={enc_info['orig_wh']} "
-            f"전송WxH={enc_info['out_wh']} resized={enc_info['resized']} "
-            f"jpeg_bytes={enc_info['jpeg_bytes']} b64_chars={enc_info['b64_chars']}"
+            f"gpt 업스트림 이미지 | prep_pass={enc_info.get('prep_pass')} "
+            f"원본WxH={enc_info['orig_wh']} 전송WxH={enc_info['out_wh']} "
+            f"resized={enc_info['resized']} max_side_cap={enc_info['max_side_cap']} "
+            f"jpeg_q={enc_info['jpeg_quality']} jpeg_bytes={enc_info['jpeg_bytes']} "
+            f"b64_chars={enc_info['b64_chars']}"
         )
 
         api_url = get_api_url()
         host = urlparse(api_url).netloc or api_url[:48]
+        max_completion_tokens = get_max_completion_tokens()
         _log(
             f"Chat Completions 요청 | model={get_model()!r} host={host!r} "
+            f"max_completion_tokens={max_completion_tokens} "
             f"timeout_sec={get_timeout_sec()} api_key={'설정됨(***)' if api_key else '없음'}"
         )
 
@@ -184,6 +194,16 @@ class GptOCREngine(OCREngine):
             {"role": "user", "content": _message_content_with_image(img_url)},
         ]
 
+        payload: Dict[str, Any] = {
+            "model": get_model(),
+            "messages": messages,
+            "max_completion_tokens": max_completion_tokens,
+        }
+        _, _, image_b64 = img_url.partition(",")
+        print("[gpt-ocr] payload.model =", payload.get("model"), flush=True)
+        print("[gpt-ocr] messages.count =", len(payload.get("messages", [])), flush=True)
+        print("[gpt-ocr] image_b64_chars =", len(image_b64), flush=True)
+
         try:
             raw = chat_completions(
                 url=api_url,
@@ -191,6 +211,7 @@ class GptOCREngine(OCREngine):
                 model=get_model(),
                 messages=messages,
                 timeout_sec=get_timeout_sec(),
+                max_completion_tokens=max_completion_tokens,
             )
         except ChatCompletionsHttpError as e:
             _log(f"API HTTP {e.status_code} | detail={e.detail!r}")
@@ -198,12 +219,17 @@ class GptOCREngine(OCREngine):
             hint = None
             if e.status_code == 400:
                 hint = (
-                    f"역할/페이로드 문제일 수 있음. GPT_OCR_INSTRUCTION_ROLE={alt} 로 시도하거나 "
-                    "upstream 메시지를 확인하세요."
+                    "이미지·역할·페이로드 문제 가능. GMS는 큰 data URL에서 오류 메시지가 "
+                    "'Model not found'처럼 보이기도 함. GPT_OCR_UPSTREAM_* 로 축소를 강화하거나 "
+                    f"GPT_OCR_INSTRUCTION_ROLE={alt} 로 시도하세요."
                 )
             raise ChatCompletionsHttpError(
                 e.status_code,
                 {"upstream": e.detail, "hint": hint, "request_role": role},
+                debug={
+                    "image_b64_chars": len(image_b64),
+                    "model": payload.get("model"),
+                },
             ) from e
 
         usage = raw.get("usage")
