@@ -128,7 +128,7 @@ public class BankCHStrategy implements BankStrategy {
 
     @Override
     public List<HistoryResponseDto> getHistoryByUserId(Long userId) {
-        return historyRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+        return historyRepository.findTop15ByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(history -> HistoryResponseDto.builder()
                         .historyId(history.getHistoryId())
                         .category(history.getCategory().name())
