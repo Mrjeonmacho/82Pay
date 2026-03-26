@@ -8,5 +8,5 @@ import java.util.List;
 public interface AccountHistoryUSRepository
         extends JpaRepository<AccountHistoryUS, Long> {
 
-    List<AccountHistoryUS> findByUserIdOrderByCreatedAtDesc(Long userId);
+    List<AccountHistoryUS> findTop15ByUserIdOrderByCreatedAtDesc(Long userId);
 }
