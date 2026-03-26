@@ -48,7 +48,7 @@ class PinService {
 
       // 200일 때 data.isValid == true 기대
       if (response.statusCode == 200) {
-        return data['data']?['isValid'] == true;
+        return data['isValid'] == true;
       }
 
       return false;
