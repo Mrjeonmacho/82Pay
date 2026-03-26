@@ -106,7 +106,7 @@ public class FinanceAccountService {
         return new WalletResponse("계좌 연동이 성공적으로 해제되었습니다.");
     }
 
-    public WalletInfoResponse getWallet(Long userId, Long walletId){
+    public WalletInfoResponse getWallet(Long userId){
         WalletPali walletPali = walletService.getWalletPaliByUserId(userId);
 
         // 권한 체크

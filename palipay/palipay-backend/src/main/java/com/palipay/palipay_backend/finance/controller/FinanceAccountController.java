@@ -80,14 +80,13 @@ public class FinanceAccountController {
         );
     }
 
-    @GetMapping("/{walletId}")
+    @GetMapping("/mywallet")
     public ResponseEntity<WalletInfoResponse> getWallet(
-            @RequestHeader(value = "accesstoken", required = false) String accessToken,
-            @PathVariable Long walletId
+            @RequestHeader(value = "accesstoken", required = false) String accessToken
     ) {
         Long userId = jwtProvider.getUserId(accessToken);
 
-        WalletInfoResponse response = financeAccountService.getWallet(userId, walletId);
+        WalletInfoResponse response = financeAccountService.getWallet(userId);
 
         return ResponseEntity.ok(response);
     }
