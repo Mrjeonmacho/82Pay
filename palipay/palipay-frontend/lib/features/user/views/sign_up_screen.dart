@@ -89,10 +89,12 @@ class _SignUpScreenState extends State<SignUpScreen>
       bool isCorrect = await provider.verifyEmailCode();
 
       if (isCorrect) {
+        provider.setCurrentIndex(2);
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
+        return;
       } else {
         _shakeController.forward(from: 0.0); // 🫨 흔들기 효과 발동!
         return;
@@ -109,7 +111,7 @@ class _SignUpScreenState extends State<SignUpScreen>
         );
       } else {
         // 성공 시 이동
-        bool success = await provider.finalSignUp(context);
+        final success = await provider.finalSignUp(context);
         if (success) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -120,6 +122,8 @@ class _SignUpScreenState extends State<SignUpScreen>
           _shakeController.forward(from: 0.0);
         }
       }
+    } else {
+      _shakeController.forward(from: 0.0);
     }
   }
 
@@ -127,61 +131,77 @@ class _SignUpScreenState extends State<SignUpScreen>
   Widget build(BuildContext context) {
     // ⭐️ Provider 구독: 데이터 창고와 연결
     final provider = Provider.of<SignUpProvider>(context);
-
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
+    final bottomInset = mediaQuery.viewInsets.bottom;
     final isKeyboardOpen = bottomInset > 0;
+    final horizontalPadding = screenWidth * 0.08;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      resizeToAvoidBottomInset: true,
-      appBar: PaliTopBar(
-        title: 'sign_up.create_your_account'.tr(),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.mainBlue,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        resizeToAvoidBottomInset: true,
+        appBar: PaliTopBar(
+          title: 'sign_up.create_your_account'.tr(),
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: AppColors.mainBlue,
+            ),
+            onPressed: () {
+              if (provider.currentIndex == 2) {
+                // profile -> email step으로 바로 이동
+                provider.resetEmailFlow();
+                provider.setCurrentIndex(0);
+                _formKey.currentState?.reset();
+
+                _pageController.animateToPage(
+                  0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              } else if (provider.currentIndex > 0) {
+                provider.setCurrentIndex(provider.currentIndex - 1);
+                _pageController.previousPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              } else {
+                Navigator.pop(context);
+              }
+            },
           ),
-          onPressed: () {
-            if (provider.currentIndex > 0) {
-              provider.setCurrentIndex(provider.currentIndex - 1);
-              _pageController.previousPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-            } else {
-              Navigator.pop(context);
-            }
-          },
         ),
-      ),
 
       // 버튼을 body 밖으로 분리
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: AnimatedPadding(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          padding: EdgeInsets.fromLTRB(30, 12, 30, bottomInset > 0 ? 12 : 30),
-          child: PaliButton(
-            text: provider.currentIndex == 3
-                ? 'sign_up.btn_sign_up'.tr()
-                : 'sign_up.btn_next'.tr(),
-            onPressed: () => _onNextPressed(provider),
-            backgroundColor: AppColors.mainBlue,
+       bottomNavigationBar: SafeArea(
+          top: false,
+          child: Container(
+            color: AppColors.background,
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              12,
+              horizontalPadding,
+              20,
+            ),
+            child: PaliButton(
+              text: provider.currentIndex == 3
+                  ? 'sign_up.btn_sign_up'.tr()
+                  : 'sign_up.btn_next'.tr(),
+              onPressed: () => _onNextPressed(provider),
+              backgroundColor: AppColors.mainBlue,
+            ),
           ),
         ),
-      ),
 
-      body: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: SafeArea(
+      body: SafeArea(
           top: false,
           child: Form(
             key: _formKey,
             child: Column(
               children: [
-                // 1. 로고
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOut,
@@ -197,7 +217,7 @@ class _SignUpScreenState extends State<SignUpScreen>
 
                 // 2. 타이틀 및 스텝 바
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -211,22 +231,19 @@ class _SignUpScreenState extends State<SignUpScreen>
                     ],
                   ),
                 ),
-                SizedBox(height: isKeyboardOpen ? 12 : 30),
+                SizedBox(height: isKeyboardOpen ? 12 : 24),
 
                 // 3. 단계별 콘텐츠 (PageView)
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0),
-                    child: PageView(
-                      controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        EmailStep(shakeController: _shakeController),
-                        EmailAuthStep(shakeController: _shakeController),
-                        ProfileStep(shakeController: _shakeController),
-                        PasswordStep(shakeController: _shakeController),
-                      ],
-                    ),
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      EmailStep(shakeController: _shakeController),
+                      EmailAuthStep(shakeController: _shakeController),
+                      ProfileStep(shakeController: _shakeController),
+                      PasswordStep(shakeController: _shakeController),
+                    ],
                   ),
                 ),
               ],

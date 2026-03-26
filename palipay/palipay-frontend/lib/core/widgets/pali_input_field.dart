@@ -18,6 +18,7 @@ class PaliInputField extends StatelessWidget {
   final bool useExternalErrorText;
   final AutovalidateMode? autovalidateMode; // 추가된 변수(회원가입 시 실시간 검증 위함)
   final List<TextInputFormatter>? inputFormatters; // ⭐️ 추가: 숫자만 입력 등 제한용
+  final bool showCounter;
 
   const PaliInputField({
     super.key,
@@ -34,6 +35,7 @@ class PaliInputField extends StatelessWidget {
     this.useExternalErrorText = false,
     this.autovalidateMode,
     this.inputFormatters,
+    this.showCounter = true,
   });
 
   @override
@@ -50,6 +52,7 @@ class PaliInputField extends StatelessWidget {
       style: AppTextStyles.bodyMedium, // 입력 시 16pt, Bold
       decoration: InputDecoration(
         hintText: hintText,
+        counterText: showCounter ? null : '',
         hintStyle: const TextStyle(
           color: AppColors.exampleFont,
           fontSize: 14,

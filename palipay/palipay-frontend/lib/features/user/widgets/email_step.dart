@@ -16,42 +16,55 @@ class EmailStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<SignUpProvider>(context);
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      child: StepLayout(
-        title: 'sign_up.step_email'.tr(),
-        shakeController: shakeController,
-        child: PaliInputField(
-          hintText: 'sign_up.hint_email'.tr(),
-          controller: provider.emailController,
-          // 1. 글자를 칠 때마다 서버 체크 & 형식 체크 실행
-          onChanged: (value) => provider.checkEmailAvailability(),
-          // 2. 칠 때마다 즉시 에러 메시지를 보여주도록 설정 (핵심!)
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          suffixIcon: provider.isCheckingEmail
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: Padding(
-                    padding: EdgeInsets.all(5.0),
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : (provider.isEmailAvailable && provider.isEmailValid
-                    ? const Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                      ) // 성공 시 체크 아이콘
-                    : null),
-          validator: (value) {
-            if (value == null || value.isEmpty) return 'Enter your email';
-            if (!provider.isEmailValid) return 'Invalid email address.';
-            if (!provider.isCheckingEmail && !provider.isEmailAvailable) {
-              return 'This email is already taken.';
-            }
-            return null;
-          },
-        ),
+      physics: const ClampingScrollPhysics(), // [추가] 불필요하게 늘어지는 스크롤 느낌 완화
+      padding: EdgeInsets.only(
+        bottom: keyboardOpen ? 120 : 24, // [수정] 키보드 있을 때만 하단 여백 크게
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          StepLayout(
+            title: 'sign_up.step_email'.tr(),
+            shakeController: shakeController,
+            child: PaliInputField(
+              hintText: 'sign_up.hint_email'.tr(),
+              controller: provider.emailController,
+              onChanged: (value) => provider.checkEmailAvailability(),
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              suffixIcon: provider.isCheckingEmail
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Padding(
+                        padding: EdgeInsets.all(5.0),
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : (provider.isEmailAvailable && provider.isEmailValid
+                      ? const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                        )
+                      : null),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Enter your email';
+                }
+                if (!provider.isEmailValid) {
+                  return 'Invalid email address.';
+                }
+                if (!provider.isCheckingEmail && !provider.isEmailAvailable) {
+                  return 'This email is already taken.';
+                }
+                return null;
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
