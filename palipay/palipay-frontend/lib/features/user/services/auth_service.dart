@@ -116,8 +116,13 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final token = data['accessToken'];
+        final grantType = data['grantType'] ?? 'Bearer';
+
         await _storage.write(key: 'accessToken', value: token);
         await _storage.write(key: 'grantType', value: data['grantType']);
+
+        _dio.options.headers['Authorization'] = '$grantType $token';
+        _dio.options.headers['accesstoken'] = token;
 
         final userInfo = data['userInfo'];
 
