@@ -10,7 +10,7 @@ public record BalanceCheckRequest(
         Long walletId,
 
         @NotNull
-        @DecimalMin(value = "0.0001", inclusive = true)
+        @DecimalMin(value = "0", inclusive = true)
         BigDecimal amount
 ){
 }

@@ -12,7 +12,7 @@ public record FinanceTransferRequest(
         Long walletId,
 
         @NotNull
-        @DecimalMin(value = "0.0001")
+        @DecimalMin(value = "0")
         BigDecimal amount,
 
         @NotBlank
