@@ -17,9 +17,14 @@ class PasswordStep extends StatelessWidget {
     final provider = Provider.of<SignUpProvider>(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final spacing = screenHeight * 0.02;
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      physics: const ClampingScrollPhysics(),
+      padding: EdgeInsets.only(
+        bottom: keyboardOpen ? 120 : 24,
+      ),
       child: Column(
         children: [
           StepLayout(
@@ -27,15 +32,13 @@ class PasswordStep extends StatelessWidget {
             shakeController: shakeController,
             child: PaliInputField(
               hintText: 'sign_up.hint_set_password'.tr(),
-              controller: provider.passwordController, // ✅ 올바른 컨트롤러 연결
+              controller: provider.passwordController,
               isPassword: true,
-              onChanged: (_) =>
-                  provider.checkPasswordLogic(), // ✅ 입력할 때마다 로직 실행
+              onChanged: (_) => provider.checkPasswordLogic(),
               validator: (value) {
-                if (value == null || value.isEmpty)
+                if (value == null || value.isEmpty) {
                   return 'sign_up.error_empty_password'.tr();
-
-                // 8자리 이상, 영문, 숫자, 특수문자 포함 여부 확인
+                }
                 if (!provider.isPasswordSecure) {
                   return 'sign_up.error_invalid_password'.tr();
                 }
@@ -49,10 +52,9 @@ class PasswordStep extends StatelessWidget {
             shakeController: shakeController,
             child: PaliInputField(
               hintText: 'sign_up.hint_confirm_password'.tr(),
-              controller: provider.confirmPasswordController, // ✅ 올바른 컨트롤러 연결
+              controller: provider.confirmPasswordController,
               isPassword: true,
-              onChanged: (_) =>
-                  provider.checkPasswordLogic(), // ✅ 입력할 때마다 로직 실행
+              onChanged: (_) => provider.checkPasswordLogic(),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'sign_up.error_empty_confirm_password'.tr();
@@ -64,7 +66,6 @@ class PasswordStep extends StatelessWidget {
               },
             ),
           ),
-          SizedBox(height: screenHeight * 0.2),
         ],
       ),
     );

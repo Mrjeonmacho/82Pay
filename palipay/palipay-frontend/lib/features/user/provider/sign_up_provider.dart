@@ -54,6 +54,22 @@ class SignUpProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void resetEmailFlow() {
+    // 이메일 단계 관련 값만 초기화
+    emailController.clear();
+    authCodeController.clear();
+
+    isEmailValid = false;
+    isCheckingEmail = false;
+    isEmailAvailable = false;
+
+    stopAuthTimer();
+    authSecondsRemaining = 180;
+    isTimerRunning = false;
+
+    notifyListeners();
+  }
+
   // 타이머
   Timer? _authTimer;
   int authSecondsRemaining = 180; // 3분 (180초)

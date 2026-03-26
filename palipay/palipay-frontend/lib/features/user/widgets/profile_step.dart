@@ -20,9 +20,14 @@ class ProfileStep extends StatelessWidget {
     final provider = Provider.of<SignUpProvider>(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final spacing = screenHeight * 0.02;
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      physics: const ClampingScrollPhysics(),
+      padding: EdgeInsets.only(
+        bottom: keyboardOpen ? 120 : 24,
+      ),
       child: Column(
         children: [
           StepLayout(
@@ -32,7 +37,9 @@ class ProfileStep extends StatelessWidget {
               hintText: 'sign_up.hint_name'.tr(),
               controller: provider.nameController,
               validator: (value) =>
-                  value!.isEmpty ? 'sign_up.error_empty_name'.tr() : null,
+                  value == null || value.isEmpty
+                      ? 'sign_up.error_empty_name'.tr()
+                      : null,
             ),
           ),
           SizedBox(height: spacing),
@@ -57,14 +64,8 @@ class ProfileStep extends StatelessWidget {
                         value: provider.selectedCountryCode,
                         items: const [
                           DropdownMenuItem(value: '+1', child: Text('🇺🇸 +1')),
-                          DropdownMenuItem(
-                            value: '+86',
-                            child: Text('🇨🇳 +86'),
-                          ),
-                          DropdownMenuItem(
-                            value: '+81',
-                            child: Text('🇯🇵 +81'),
-                          ),
+                          DropdownMenuItem(value: '+86', child: Text('🇨🇳 +86')),
+                          DropdownMenuItem(value: '+81', child: Text('🇯🇵 +81')),
                         ],
                         onChanged: (value) => provider.setCountryCode(value!),
                       ),
@@ -80,12 +81,14 @@ class ProfileStep extends StatelessWidget {
                     keyboardType: TextInputType.phone,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
-                    ], // 숫자만 입력 가능
+                    ],
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Enter phone number';
                       }
-                      if (value.length < 7) return 'Phone number is too short';
+                      if (value.length < 7) {
+                        return 'Phone number is too short';
+                      }
                       return null;
                     },
                   ),
@@ -93,9 +96,8 @@ class ProfileStep extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: screenHeight * 0.2),
         ],
       ),
-    );
+    );    
   }
 }
