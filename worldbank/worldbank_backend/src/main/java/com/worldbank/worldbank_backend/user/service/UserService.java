@@ -44,30 +44,31 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public boolean isEmailDuplicate(String email) {
-        return strategies.stream()
+        return strategies.parallelStream()
                 .anyMatch(strategy -> strategy.existsByEmail(email));
     }
 
     @Transactional(readOnly = true)
     public TokenResponse login(LoginRequest request) {
-        return strategies.stream()
+        UserWithCountry foundUser = strategies.parallelStream()
                 .map(strategy -> strategy.findByEmail(request.email())
                         .map(user -> new UserWithCountry(user, strategy.getCountryCode())))
                 .flatMap(Optional::stream)
-                .filter(u -> passwordEncoder.matches(request.password(), u.user().getPassword()))
-                .map(u -> {
-                    // 1. AT(국가코드 포함)와 RT 생성
-                    String at = jwtTokenProvider.createAccessToken(u.user().getUserId(), u.countryCode());
-                    String rt = jwtTokenProvider.createRefreshToken(u.user().getUserId());
-
-                    // 2. Redis Repository에 RT 저장 (KR1 : rt)
-                    redisRepository.save(new RefreshToken(u.countryCode(), u.user().getUserId(), rt));
-
-                    // 3. 컨트롤러가 응답과 쿠키를 구성할 수 있도록 DTO 반환
-                    return new TokenResponse(u.user().getUserId(), at, rt);
-                })
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("이메일 또는 비밀번호가 틀렸습니다."));
+
+        if (!passwordEncoder.matches(request.password(), foundUser.user().getPassword())) {
+            throw new RuntimeException("이메일 또는 비밀번호가 틀렸습니다.");
+        }
+
+        String at = jwtTokenProvider.createAccessToken(foundUser.user().getUserId(), foundUser.countryCode());
+        String rt = jwtTokenProvider.createRefreshToken(foundUser.user().getUserId());
+
+        // 2. Redis Repository에 RT 저장 (KR1 : rt)
+        redisRepository.save(new RefreshToken(foundUser.countryCode(), foundUser.user().getUserId(), rt));
+
+        // 3. 컨트롤러가 응답과 쿠키를 구성할 수 있도록 DTO 반환
+        return new TokenResponse(foundUser.user().getUserId(), at, rt);
     }
 
     private record UserWithCountry(BaseUser user, String countryCode) {
