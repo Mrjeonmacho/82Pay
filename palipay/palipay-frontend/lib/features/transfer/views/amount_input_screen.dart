@@ -97,15 +97,8 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // 1. UserProvider에서 현재 로그인된 유저의 정보와 토큰을 가져옵니다.
-      final userProvider = context.read<UserProvider>();
-
-      // UserProvider의 walletId가 String이라면 int로 변환해줍니다.
-      final int wId = int.tryParse(userProvider.walletId ?? '0') ?? 0;
-
       // 2. 가져온 실제 정보를 바탕으로 잔액 조회를 요청합니다.
       context.read<WalletProvider>().loadWalletBalance(
-        walletId: wId,
         amount: 0, // 초기 진입 시에는 현재 잔액만 가져옵니다.
       );
     });

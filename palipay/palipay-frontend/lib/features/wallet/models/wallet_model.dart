@@ -3,6 +3,7 @@ class WalletInfoModel {
   final int? walletId;
   final String? accountNumber;
   final String? accountUsername;
+  final String? bankCode; // 💡 추가: 서버에서 내려주는 은행 식별 코드 (예: '081', 'wb_kr')
   final double? amount;
   final String? message;
 
@@ -11,6 +12,7 @@ class WalletInfoModel {
     this.walletId,
     this.accountNumber,
     this.accountUsername,
+    this.bankCode,
     this.amount,
     this.message,
   });
@@ -23,6 +25,7 @@ class WalletInfoModel {
     int? walletId,
     String? accountNumber,
     String? accountUsername,
+    String? bankCode,
     double? amount,
     String? message,
   }) {
@@ -30,6 +33,7 @@ class WalletInfoModel {
       walletId: walletId ?? this.walletId,
       accountNumber: accountNumber ?? this.accountNumber,
       accountUsername: accountUsername ?? this.accountUsername,
+      bankCode: bankCode ?? this.bankCode,
       amount: amount ?? this.amount,
       message: message ?? this.message,
     );
