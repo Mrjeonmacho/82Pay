@@ -23,6 +23,15 @@ public class ExchangeRateRedisService {
 
     public ExchangeQuoteResponse createExchangeQuote(String currency) {
         validateCurrency(currency);
+        if(currency.equals("KRW")){
+            return new ExchangeQuoteResponse(
+                    "환율 견적이 생성되었습니다.",
+                    new ExchangeQuoteResponse.Data(
+                            BigDecimal.ONE,
+                            LocalDateTime.now()
+                    )
+            );
+        }
 
         ExchangeRateCacheDto exchangeRate = getExchangeRate(currency+"KRW");
 
@@ -122,7 +131,8 @@ public class ExchangeRateRedisService {
 
         if (!normalizedCurrency.equals("USD")
                 && !normalizedCurrency.equals("JPY")
-                && !normalizedCurrency.equals("CNY")) {
+                && !normalizedCurrency.equals("CNY")
+                && !normalizedCurrency.equals("KRW")) {
             throw new IllegalArgumentException("지원하지 않는 통화 코드입니다. currency=" + currency);
         }
 
