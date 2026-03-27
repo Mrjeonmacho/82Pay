@@ -80,11 +80,20 @@
         "pwd": {
             "link_success": "Bank account linked successfully!",
             "invalid_msg": "Invalid password.",
+            "invalid_info": "The information entered does not match.",
+            "timeout": "Server connection timed out.",
             "title": "Enter Bank Password",
             "desc": "Please enter your 4-digit bank password"
         }
     },
     "account_link": {
+        "title": "Account Information",
+        "selected_bank": "Selected Bank",
+        "account_holder": "Account Holder",
+        "enter_full_name": "Enter full name",
+        "linking": "Linking...",
+        "link_account": "Link Account",
+        "msg_invalid_account_format": "Invalid account number format. (e.g. KR-1234-5678-9012)",
         "currency_info": "Your currency will be set to KRW based on your profile.",
         "fill_all_fields": "Please fill in all fields."
     },

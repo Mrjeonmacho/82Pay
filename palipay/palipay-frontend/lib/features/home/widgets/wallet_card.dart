@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:palipay_app/core/providers/user_provider.dart';
 import 'package:palipay_app/core/utils/currency_input_formatter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -79,11 +80,16 @@ class _WalletCardState extends State<WalletCard> {
   Widget _buildHeader(BuildContext context) {
     // 1. 이미 watch하고 있는 walletProvider를 활용합니다.
     final walletProvider = context.watch<WalletProvider>();
+    final userProvider = context.watch<UserProvider>();
 
     // 2. WalletProvider에 정의된 getter를 사용하거나 walletInfo에서 직접 가져옵니다.
     // 💡 walletProvider.accountUsername은 이미 WalletProvider에 구현해두신 getter입니다.
-    final String accountName = walletProvider.accountUsername ?? 'User';
-
+    // 2. 계좌 예금주명이 없으면 로그인 유저명, 그것도 없으면 'User'
+    final String accountName =
+        (walletProvider.accountUsername != null &&
+            walletProvider.accountUsername!.isNotEmpty)
+        ? walletProvider.accountUsername!
+        : (userProvider.userName ?? 'User');
     // 💡 walletProvider.accountNumber 역시 getter입니다.
     final String accountNumber = walletProvider.accountNumber ?? '';
 

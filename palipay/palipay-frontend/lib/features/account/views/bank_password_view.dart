@@ -91,13 +91,13 @@ class _BankPasswordViewState extends State<BankPasswordView> {
             Navigator.popUntil(context, (route) => route.isFirst);
           } else {
             String errorMessage = 'bank.pwd.invalid_msg'.tr();
-            if (result == "SERVER_ERROR") errorMessage = "서버 점검 중입니다.";
-            if (result == "TIMEOUT") errorMessage = "서버 연결 시간이 초과되었습니다.";
-
-            setState(() {
-              _isLoading = false;
-              _inputPassword = "";
-            });
+            if (result == "SERVER_ERROR") errorMessage = "bank.pwd.invalid_info".tr();
+            if (result == "TIMEOUT") errorMessage = "bank.pwd.timeout".tr();
+            Navigator.pop(context);
+            // setState(() {
+            //   _isLoading = false;
+            //   _inputPassword = "";
+            // });
             _showSnackBar(errorMessage, AppColors.warningRed);
           }
         }

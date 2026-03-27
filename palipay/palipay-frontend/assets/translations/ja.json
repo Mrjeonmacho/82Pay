@@ -80,11 +80,20 @@
         "pwd": {
             "link_success": "口座の連携が完了しました！",
             "invalid_msg": "パスワードが違います",
+            "invalid_info": "入力された情報が一致しません。",
+            "timeout": "サーバー接続がタイムアウトしました。",
             "title": "銀行パスワード入力",
             "desc": "銀行の暗証番号4桁を入力してください"
         }
     },
     "account_link": {
+        "title": "口座情報",
+        "selected_bank": "選択した銀行",
+        "account_holder": "口座名義人",
+        "enter_full_name": "フルネームを入力",
+        "linking": "連携中...",
+        "link_account": "口座を連携する",
+        "msg_invalid_account_format": "口座番号の形式が正しくありません。（例：KR-1234-5678-9012）",
         "currency_info": "プロフィールに基づき、通貨がKRWに設定されます。",
         "fill_all_fields": "すべての項目を入力してください。"
     },
