@@ -115,23 +115,36 @@ class _MainScreenState extends State<MainScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.account_balance, color: Colors.white),
-                  const SizedBox(width: 10),
-                  Text(
-                    data?['bankName'] ?? "World Bank",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                // 은행 이름 영역
+                flex: 2,
+                child: Row(
+                  children: [
+                    const Icon(Icons.account_balance, color: Colors.white),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        data?['bankName'] ?? "World Bank",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              Text(
-                data?['userName'] ?? "User",
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              const SizedBox(width: 8),
+              Expanded(
+                // 사용자 이름 영역도 보호
+                flex: 1,
+                child: Text(
+                  data?['userName'] ?? "User",
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  overflow: TextOverflow.ellipsis, // 이름 길면 잘라줌
+                ),
               ),
             ],
           ),

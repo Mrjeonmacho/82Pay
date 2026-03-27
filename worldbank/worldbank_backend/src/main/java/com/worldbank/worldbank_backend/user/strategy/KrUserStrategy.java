@@ -61,7 +61,8 @@ public class KrUserStrategy implements UserStrategy {
         userRepository.save(user);
 
         // 계좌 등록 로직 추가
-        //String AccountNumber = "KR-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        // String AccountNumber = "KR-" + UUID.randomUUID().toString().substring(0,
+        // 8).toUpperCase();
 
         String AccountNumber;
         Random random = new Random();
@@ -94,7 +95,7 @@ public class KrUserStrategy implements UserStrategy {
                 .userId(user.getUserId())
                 .category(AccountHistoryKR.Category.INPUT)
                 .amount(new BigDecimal("1000000"))
-                .otherAccountName("World bank의 축하금")
+                .otherAccountName("Welecome")
                 .build();
         historyRepository.save(historyKR);
     }

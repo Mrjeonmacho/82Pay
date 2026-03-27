@@ -10,6 +10,7 @@ class PaliInputField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final int? maxLength;
   final FocusNode? focusNode;
+  final bool isCounterText;
 
   const PaliInputField({
     super.key,
@@ -20,6 +21,7 @@ class PaliInputField extends StatelessWidget {
     this.onChanged,
     this.maxLength,
     this.focusNode,
+    this.isCounterText = false,
   });
 
   @override
@@ -34,6 +36,7 @@ class PaliInputField extends StatelessWidget {
       style: AppTextStyles.bodyLarge, // 입력 시 16pt, Bold
       decoration: InputDecoration(
         hintText: hintText,
+        counterText: isCounterText ? null : "",
         hintStyle: const TextStyle(
           color: AppColors.exampleFont, // #BCB6B6 적용
           fontSize: 14,

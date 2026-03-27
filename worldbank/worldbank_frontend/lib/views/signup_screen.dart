@@ -266,6 +266,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         child: PaliInputField(
                           hintText: "signup.labels.email_address".tr(),
                           controller: _emailController,
+                          isCounterText: true,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -282,6 +283,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: "signup.labels.password".tr(),
                     controller: _pwController,
                     isPassword: true,
+                    isCounterText: true,
                   ),
                 ],
               ),

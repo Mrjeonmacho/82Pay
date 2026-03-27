@@ -80,6 +80,8 @@ class _LoginScreenState extends State<LoginScreen> {
               PaliInputField(
                 hintText: 'login.labels.id'.tr(),
                 controller: _idController,
+                maxLength: 100,
+                isCounterText: true,
               ),
               const SizedBox(height: 16),
 
@@ -88,6 +90,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 hintText: 'login.labels.pw'.tr(),
                 controller: _pwController,
                 isPassword: true,
+                maxLength: 100,
+                isCounterText: true,
               ),
               const SizedBox(height: 40),
 

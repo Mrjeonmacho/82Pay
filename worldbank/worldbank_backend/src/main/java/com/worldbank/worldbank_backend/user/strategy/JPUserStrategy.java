@@ -59,7 +59,8 @@ public class JPUserStrategy implements UserStrategy {
         userRepository.save(user);
 
         // 계좌 등록 로직 추가
-        //String AccountNumber = "JP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        // String AccountNumber = "JP-" + UUID.randomUUID().toString().substring(0,
+        // 8).toUpperCase();
         // 2. 중복 없는 계좌번호 생성 (While 루프 사용)
         String AccountNumber;
         Random random = new Random();
@@ -92,11 +93,9 @@ public class JPUserStrategy implements UserStrategy {
                 .userId(user.getUserId())
                 .category(AccountHistoryJP.Category.INPUT)
                 .amount(new BigDecimal("100000"))
-                .otherAccountName("World bank의 축하금")
+                .otherAccountName("Welecome")
                 .build();
         historyRepository.save(historyJP);
     }
-
-
 
 }
