@@ -27,12 +27,27 @@ class DioClient {
     dio = Dio(
       BaseOptions(
         baseUrl: dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8081',
-        connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 20),
+        connectTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 60),
         // headers: {'Content-Type': 'application/json'},
       ),
     );
-    dio.interceptors.add(CustomLogInterceptor());
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          // 🚀 2. 로그인 경로는 토큰 주입에서 제외해야 합니다!
+          if (options.path.contains('/auth/login')) {
+            return handler.next(options);
+          }
+
+          final token = await _storage.read(key: 'accessToken');
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          return handler.next(options);
+        },
+      ),
+    );
   }
 
   // 핵심: 비동기 초기화 함수 추가

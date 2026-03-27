@@ -10,11 +10,13 @@ import 'package:palipay_app/core/widgets/pali_button.dart';
 
 class TransferResultView extends StatefulWidget {
   final String recipientName;
+  final String bankName; // 🚀 [추가] 은행 이름 필수화
   final int amount;
 
   const TransferResultView({
     super.key,
     required this.recipientName,
+    required this.bankName, // 🚀 이게 빠져있으면 여기서 빨간줄!
     required this.amount,
   });
 
@@ -64,7 +66,7 @@ class _TransferResultViewState extends State<TransferResultView> {
           child: Column(
             children: [
               const SizedBox(height: 20),
-              
+
               // 1. 성공 체크 아이콘 및 헤더 (시안 #4 스타일)
               Center(
                 child: Container(
@@ -92,19 +94,23 @@ class _TransferResultViewState extends State<TransferResultView> {
               const SizedBox(height: 10),
               Text(
                 'transfer_result.payment_amount'.tr(),
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.disabledFont),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.disabledFont,
+                ),
               ),
               const SizedBox(height: 8),
               // 금액 강조 (시안 #4처럼 진한 파란색 대형 폰트)
               Text(
-              'transfer_confirm.amount_krw'.tr(namedArgs: {'amount': formattedAmount}), 
-              style: AppTextStyles.titleLarge.copyWith(
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-                color: AppColors.mainBlue,
+                'transfer_confirm.amount_krw'.tr(
+                  namedArgs: {'amount': formattedAmount},
+                ),
+                style: AppTextStyles.titleLarge.copyWith(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.mainBlue,
+                ),
               ),
-            ),
-              
+
               const SizedBox(height: 40),
 
               // 2. 영수증 상세 카드 영역 (시안 #4 핵심 스타일)
@@ -129,19 +135,28 @@ class _TransferResultViewState extends State<TransferResultView> {
                       children: [
                         const CircleAvatar(
                           backgroundColor: Color(0xFFE8EAF6),
-                          child: Icon(Icons.storefront, color: Color(0xFF3F51B5)),
+                          child: Icon(
+                            Icons.storefront,
+                            color: Color(0xFF3F51B5),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('transfer_result.recipient'.tr(),
-                                style: AppTextStyles.bodySmall
-                                    .copyWith(color: Colors.grey)),
+                            Text(
+                              'transfer_result.recipient'.tr(),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: Colors.grey,
+                              ),
+                            ),
                             const SizedBox(height: 4),
-                            Text(widget.recipientName,
-                                style: AppTextStyles.bodyLarge
-                                    .copyWith(fontWeight: FontWeight.bold)),
+                            Text(
+                              widget.recipientName,
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -149,17 +164,26 @@ class _TransferResultViewState extends State<TransferResultView> {
                     const SizedBox(height: 20),
                     const Divider(thickness: 1, color: Color(0xFFEEEEEE)),
                     const SizedBox(height: 20),
-                    
+
                     // 상세 항목들 (Row 스타일)
-                    _buildReceiptRow('transfer.result.sender'.tr(), "James Cooper"), // 가짜 보낸이
-                    _buildReceiptRow('transfer.result.transaction_date'.tr(), dateFormat.format(now)),
-                    _buildReceiptRow('transfer.result.transaction_id'.tr(), transactionId),
+                    _buildReceiptRow(
+                      'transfer.result.sender'.tr(),
+                      "James Cooper",
+                    ), // 가짜 보낸이
+                    _buildReceiptRow(
+                      'transfer.result.transaction_date'.tr(),
+                      dateFormat.format(now),
+                    ),
+                    _buildReceiptRow(
+                      'transfer.result.transaction_id'.tr(),
+                      transactionId,
+                    ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 30),
-              
+
               // 3. [제안 UX] 메모 입력 필드 (와이어프레임 #2 반영)
               TextField(
                 controller: _memoController,
@@ -207,10 +231,17 @@ class _TransferResultViewState extends State<TransferResultView> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyles.bodyMedium.copyWith(color: Colors.grey)),
-          Text(value,
-              style: AppTextStyles.bodyMedium
-                  .copyWith(fontWeight: FontWeight.bold, color: Colors.black)),
+          Text(
+            label,
+            style: AppTextStyles.bodyMedium.copyWith(color: Colors.grey),
+          ),
+          Text(
+            value,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
         ],
       ),
     );

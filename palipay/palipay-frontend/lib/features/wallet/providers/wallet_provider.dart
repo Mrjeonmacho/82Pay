@@ -134,7 +134,13 @@ class WalletProvider extends ChangeNotifier {
     }
   }
 
-  // --- [4] UI 계산 로직 ---
+  // ✅ [추가] 에러 메시지를 수동으로 비워주는 메서드
+  void clearError() {
+    if (_errorMessage != null) {
+      _errorMessage = null;
+      notifyListeners(); // UI에 에러가 사라졌음을 알림
+    }
+  }
 
   void initForTopup({String? currency}) =>
       _initForAction(isTopup: true, currency: currency ?? "USD");
@@ -158,6 +164,17 @@ class WalletProvider extends ChangeNotifier {
     }
     _validateAmount();
     notifyListeners();
+  }
+
+  void updateBalanceManually(int newBalance) {
+    // 1. wallet 객체 업데이트 (copyWith 사용)
+    wallet = wallet.copyWith(currentBalance: newBalance);
+
+    // 2. walletInfo 객체 업데이트 (UI 연동용)
+    walletInfo = walletInfo.copyWith(amount: newBalance.toDouble());
+
+    debugPrint('💰 잔액 업데이트 완료: $newBalance');
+    notifyListeners(); // UI에 즉시 반영
   }
 
   void updateKrwAmountFromText(String text) {

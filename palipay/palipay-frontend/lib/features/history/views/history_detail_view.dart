@@ -1,15 +1,19 @@
-// lib/features/history/views/history_detail_view.dart
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+// Theme & Widgets
 import 'package:palipay_app/core/theme/app_colors.dart';
 import 'package:palipay_app/core/theme/app_text_styles.dart';
 import 'package:palipay_app/core/widgets/pali_button.dart';
 import 'package:palipay_app/core/widgets/pali_nav_bars.dart';
+
+// Features & Models
 import 'package:palipay_app/features/history/models/transaction_model.dart';
 import 'package:palipay_app/features/history/providers/history_provider.dart';
-import 'package:provider/provider.dart';
+
+// Utils
 import 'package:palipay_app/core/utils/date_formatter_util.dart';
 import 'package:palipay_app/core/utils/currency_input_formatter.dart';
 
@@ -33,7 +37,7 @@ class HistoryDetailView extends StatelessWidget {
           children: [
             const SizedBox(height: 48),
 
-            // 1. 상태 아이콘 (일관된 메인 블루 적용)
+            // 1. 상태 아이콘
             Center(
               child: Container(
                 padding: const EdgeInsets.all(20),
@@ -51,7 +55,7 @@ class HistoryDetailView extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // 2. 상태 배지 (TRANSFER SUCCESSFUL)
+            // 2. 상태 배지
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
@@ -76,11 +80,12 @@ class HistoryDetailView extends StatelessWidget {
               style: AppTextStyles.headlineLarge.copyWith(
                 color: AppColors.mainBlue,
                 fontWeight: FontWeight.w900,
+                fontSize: 32,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Sent to ${transaction.otherAccountName ?? 'Unknown'}',
+              '${isOutput ? "Sent to" : "Received from"} ${transaction.otherAccountName ?? 'Unknown'}',
               style: AppTextStyles.titleMedium.copyWith(
                 color: const Color(0xFF64748B),
                 fontWeight: FontWeight.w500,
@@ -89,103 +94,117 @@ class HistoryDetailView extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            // 4. 영수증 상세 카드 (RECEIPT DETAILS)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white, // 매우 연한 회색/네이비 톤 배경
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'history.detail.receipt_details'.tr(),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: const Color(0xFF94A3B8),
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                      ),
+            // 4. 영수증 상세 카드
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'history.detail.receipt_details'.tr().toUpperCase(),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: const Color(0xFF94A3B8),
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
                     ),
-                    const SizedBox(height: 20),
-                    _buildReceiptRow(
-                      'Transaction Type',
-                      isOutput ? 'Withdrawal' : 'Deposit',
-                    ),
-                    _buildReceiptRow(
-                      'Transaction ID',
-                      'TRX-${transaction.id.toString().padLeft(8, '0')}',
-                    ),
-                    _buildReceiptRow(
-                      'Date',
-                      DateFormatterUtil.formatHistoryHeader(
-                        context,
-                        transaction.createdAt,
-                      ),
-                    ),
-                    _buildReceiptRow(
-                      'Time',
-                      DateFormat.jm(
-                        context.locale.toString(),
-                      ).format(transaction.createdAt),
-                    ),
+                  ),
+                  const SizedBox(height: 20),
 
-                    // 환율 정보가 있을 경우 추가 표시 (기존 002 API 로직 유지)
-                    FutureBuilder(
-                      future: context
-                          .read<HistoryProvider>()
-                          .fetchCurrencyDetail(transaction.id),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data != null) {
-                          final detail = snapshot.data!;
-                          return Column(
-                            children: [
-                              _buildReceiptRow(
-                                'USD Amount',
-                                '\$ ${detail.exchangedAmount.toStringAsFixed(2)}',
-                              ),
-                              _buildReceiptRow(
-                                'Exchange Rate',
-                                '1 ₩ = ${detail.exchangeRate}',
-                              ),
-                            ],
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
+                  _buildReceiptRow(
+                    'Transaction Type',
+                    isOutput ? 'Withdrawal' : 'Deposit',
+                  ),
 
-                    const Divider(height: 32, color: Color(0xFFE2E8F0)),
-                    _buildReceiptRow(
-                      'Payment Method',
-                      'PaliPay Wallet',
-                      icon: Icons.account_balance_wallet_outlined,
-                    ),
+                  // ✅ 모델에서 .id 게터를 만들었으므로 에러가 사라집니다.
+                  _buildReceiptRow(
+                    'Transaction ID',
+                    'TRX-${transaction.id.toString().padLeft(8, '0')}',
+                  ),
 
-                    _buildReceiptRow(
-                      'Payment Method',
-                      'Visa •••• 4242',
-                      icon: Icons.credit_card,
+                  _buildReceiptRow(
+                    'Date',
+                    DateFormatterUtil.formatHistoryHeader(
+                      context,
+                      transaction.createdAt, // ✅ DateTime이므로 그대로 전달
                     ),
-                    const SizedBox(height: 40),
-                  ],
-                ),
+                  ),
+
+                  _buildReceiptRow(
+                    'Time',
+                    DateFormat.jm(
+                      context.locale.toString(),
+                    ).format(transaction.createdAt), // ✅ DateTime 반영
+                  ),
+
+                  // 🚀 환율 정보 표시 (FINANCE_HISTORY_002 연동)
+                  FutureBuilder(
+                    future: context.read<HistoryProvider>().fetchCurrencyDetail(
+                      transaction.id,
+                    ), // ✅ id 게터 사용
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0),
+                          child: LinearProgressIndicator(minHeight: 2),
+                        );
+                      }
+                      if (snapshot.hasData && snapshot.data != null) {
+                        final detail = snapshot.data!;
+                        return Column(
+                          children: [
+                            const Divider(height: 32, color: Color(0xFFF1F5F9)),
+                            _buildReceiptRow(
+                              '${detail.targetCurrency} Amount',
+                              '${detail.targetCurrency == "USD" ? "\$" : ""} ${detail.exchangedAmount.toStringAsFixed(2)}',
+                            ),
+                            _buildReceiptRow(
+                              'Exchange Rate',
+                              '1 ${detail.sourceCurrency} = ${detail.exchangeRate}',
+                            ),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+
+                  const Divider(height: 32, color: Color(0xFFF1F5F9)),
+
+                  _buildReceiptRow(
+                    'Payment Method',
+                    'PaliPay Wallet',
+                    icon: Icons.account_balance_wallet_outlined,
+                  ),
+
+                  if (transaction.otherBankCode != null)
+                    _buildReceiptRow(
+                      'Target Bank',
+                      'Bank Code: ${transaction.otherBankCode}',
+                      icon: Icons.account_balance,
+                    ),
+                ],
               ),
             ),
 
             const SizedBox(height: 40),
 
             // 5. 하단 홈 버튼
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: PaliButton(
-                text: 'Back',
-                backgroundColor: AppColors.mainBlue,
-                onPressed: () => Navigator.pop(context),
-              ),
+            PaliButton(
+              text: 'common.back'.tr(),
+              backgroundColor: AppColors.mainBlue,
+              onPressed: () => Navigator.pop(context),
             ),
             const SizedBox(height: 24),
           ],
@@ -194,7 +213,6 @@ class HistoryDetailView extends StatelessWidget {
     );
   }
 
-  // 영수증 카드 내부의 한 줄(Row)을 구성하는 위젯
   Widget _buildReceiptRow(String label, String value, {IconData? icon}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),

@@ -1,0 +1,50 @@
+spring:
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6378
+
+  datasource:
+
+    kr:
+      xa-data-source-class-name: com.mysql.cj.jdbc.MysqlXADataSource
+      unique-resource-name: kr-db
+      xa-properties:
+        user: root
+        password: root
+        url: jdbc:mysql://localhost:3306/kr_bank
+
+    jp:
+      xa-data-source-class-name: com.mysql.cj.jdbc.MysqlXADataSource
+      unique-resource-name: jp-db
+      xa-properties:
+        user: root
+        password: root
+        url: jdbc:mysql://localhost:3306/jp_bank
+
+    ch:
+      xa-data-source-class-name: com.mysql.cj.jdbc.MysqlXADataSource
+      unique-resource-name: ch-db
+      xa-properties:
+        user: root
+        password: root
+        url: jdbc:mysql://localhost:3306/ch_bank
+
+    us:
+      xa-data-source-class-name: com.mysql.cj.jdbc.MysqlXADataSource
+      unique-resource-name: us-db
+      xa-properties:
+        user: root
+        password: root
+        url: jdbc:mysql://localhost:3306/us_bank
+
+jwt:
+  secret: "YourVeryLongAndSecureSecretKeyForWorldBankProject2026!@#"
+  at-validity: 1800000        # 30분 (ms 단위)
+  rt-validity: 604800000      # 7일 (ms 단위)

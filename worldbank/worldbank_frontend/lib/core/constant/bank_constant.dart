@@ -105,57 +105,75 @@ class BankConstants {
       'banks': [
         {
           'name': 'KB국민',
-          'bankCode': '004',
+          'bankCode': 'KDB',
           'logo': 'assets/images/banks/kr/kr_kb.png',
         },
         {
           'name': '신한',
-          'bankCode': '088',
+          'bankCode': 'SHINHAN',
           'logo': 'assets/images/banks/kr/kr_shinhan.png',
         },
         {
           'name': '우리',
-          'bankCode': '020',
+          'bankCode': 'WOORI',
           'logo': 'assets/images/banks/kr/kr_woori.png',
         },
         {
           'name': '하나',
-          'bankCode': '081',
+          'bankCode': 'HANA',
           'logo': 'assets/images/banks/kr/kr_hana.png',
         },
         {
           'name': 'NH농협',
-          'bankCode': '011',
+          'bankCode': 'NH',
           'logo': 'assets/images/banks/kr/kr_nh.png',
         },
         {
           'name': 'IBK기업',
-          'bankCode': '003',
+          'bankCode': 'IBK',
           'logo': 'assets/images/banks/kr/kr_ibk.png',
         },
         {
           'name': '카카오',
-          'bankCode': '090',
+          'bankCode': 'KAKAO',
           'logo': 'assets/images/banks/kr/kr_kakao.png',
         },
         {
           'name': '토스',
-          'bankCode': '092',
+          'bankCode': 'TOSS',
           'logo': 'assets/images/banks/kr/kr_toss.png',
         },
-        {
-          'name': '케이',
-          'bankCode': '089',
-          'logo': 'assets/images/banks/kr/kr_kbank.png',
-        },
+        // {
+        //   'name': '케이',
+        //   'bankCode': 'CITI_KR',
+        //   'logo': 'assets/images/banks/kr/kr_kbank.png',
+        // },
         {
           'name': 'SC제일',
-          'bankCode': '023',
+          'bankCode': 'SC',
           'logo': 'assets/images/banks/kr/kr_sc.png',
         },
       ],
     },
   };
+
+  // bankCode로 은행 정보 전체를 찾는 헬퍼 메서드
+  static Map<String, dynamic>? findBankByCode(String? bankCode) {
+    if (bankCode == null) return null;
+
+    for (var country in countryData.values) {
+      final List<Map<String, dynamic>> banks = List<Map<String, dynamic>>.from(
+        country['banks'],
+      );
+
+      for (var bank in banks) {
+        if (bank['bankCode'] == bankCode) {
+          return bank; // 매칭되는 은행 객체 {name, bankCode, logo} 반환
+        }
+      }
+    }
+    return null; // 못 찾았을 경우
+  }
 
   // 특정 국가의 통화 코드를 가져오는 헬퍼 메서드
   static String getDefaultCurrency(String countryCode) {
