@@ -79,7 +79,7 @@ class _TopupViewState extends State<TopupView> {
                   children: [
                     // 1. 금액 입력 섹션
                     CurrencyAmountInput(
-                      label: 'AMOUNT TO TOP-UP',
+                      // label: 'AMOUNT TO TOP-UP',
                       controller: _controller,
                       // 💡 FocusNode를 연결하여 커서 자동 깜빡임 제어
                       focusNode: _focusNode,
@@ -245,7 +245,7 @@ class _TopupViewState extends State<TopupView> {
         );
 
         // 4. 결과 화면 이동
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => WalletResultView(
@@ -254,6 +254,7 @@ class _TopupViewState extends State<TopupView> {
                   '₩ ${CurrencyInputFormatter.format(provider.krwAmount.toInt())}',
             ),
           ),
+          (route) => route.isFirst, // 메인 화면(첫 화면)만 남기고 모두 제거
         );
       }
     }

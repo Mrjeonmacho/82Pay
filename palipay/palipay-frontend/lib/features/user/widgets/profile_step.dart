@@ -34,13 +34,9 @@ class ProfileStep extends StatelessWidget {
             child: PaliInputField(
               hintText: 'sign_up.hint_name'.tr(),
               controller: provider.nameController,
-              maxLength: 20,
-              showCounter: true,
-              highlightMaxLength: true,
-              validator: (value) =>
-                  value == null || value.isEmpty
-                      ? 'sign_up.error_empty_name'.tr()
-                      : null,
+              validator: (value) => value == null || value.isEmpty
+                  ? 'sign_up.error_empty_name'.tr()
+                  : null,
             ),
           ),
           SizedBox(height: spacing),
