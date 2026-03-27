@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
+import 'package:palipay_app/core/providers/user_provider.dart';
 import 'package:palipay_app/features/pin/models/pin_request_dto.dart';
+import 'package:palipay_app/features/wallet/services/wallet_service.dart';
 import '../models/bank_account_model.dart';
 import '../services/account_service.dart';
+import '../../../core/constants/bank_constants.dart';
 
 class AccountProvider extends ChangeNotifier {
   final AccountService _service = AccountService();
+  final WalletService _walletService = WalletService();
 
   BankAccount? _linkedAccount;
   bool _isLoading = false;
   String? _walletId;
 
-  bool get hasWallet => _linkedAccount != null;
+  bool get hasWallet =>
+      _linkedAccount != null && _linkedAccount!.accountNumber.isNotEmpty;
   BankAccount? get linkedAccount => _linkedAccount;
   bool get isLoading => _isLoading;
   String? get walletId => _walletId;
@@ -161,6 +167,53 @@ class AccountProvider extends ChangeNotifier {
       return false;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// [USER_ACCOUNT_005] 서버에서 최신 지갑/계좌 정보 가져오기
+  Future<void> refreshWalletInfo(BuildContext context) async {
+    final userCountry = context.read<UserProvider>().countryCode ?? 'US';
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // 1. 서비스 호출
+      final walletInfo = await _walletService.fetchWalletInfo();
+      print("walletInfo: $walletInfo");
+      // 2. 데이터가 정상적으로 왔는지 확인 (walletId가 있다면 지갑이 있는 것)
+      if (walletInfo.walletId != null) {
+        final List<Map<String, dynamic>> countryBanks = BankConstants.getBanks(
+          userCountry,
+        );
+        final String currency = BankConstants.getDefaultCurrency(userCountry);
+
+        // final bankInfo = countryBanks.firstWhere(
+        //   (bank) => bank['bankCode'] == walletInfo.bankCode,
+        //   orElse: () => <String, dynamic>{
+        //     'name': 'Unknown Bank',
+        //     'logo': 'assets/images/banks/default_logo.png', // 기본 로고 설정
+        //   },
+        // );
+
+        _linkedAccount = BankAccount(
+          walletId: walletInfo.walletId.toString(),
+          bankName: 'Unknown',
+          accountNumber: walletInfo.accountNumber ?? '',
+          accountUsername: walletInfo.accountUsername ?? '',
+          amount: walletInfo.amount?.toInt() ?? 0,
+          // password나 bankCode는 보안상 서버에서 안 오므로 기존 값을 유지하거나 비워둠
+          accountPassword: _linkedAccount?.accountPassword ?? '',
+          bankCode: _linkedAccount?.bankCode ?? '',
+          moneyCode: currency,
+        );
+      } else {
+        _linkedAccount = null; // 지갑 정보가 없으면 null 처리
+      }
+    } catch (e) {
+      debugPrint('🚨 지갑 정보 갱신 실패: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }

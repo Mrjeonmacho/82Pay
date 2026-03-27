@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:palipay_app/core/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -9,8 +10,22 @@ import '../../home/widgets/empty_wallet_card.dart';
 import '../providers/account_provider.dart';
 import '../models/bank_account_model.dart';
 
-class AccountManagementView extends StatelessWidget {
+class AccountManagementView extends StatefulWidget {
   const AccountManagementView({super.key});
+
+  @override
+  State<AccountManagementView> createState() => _AccountManagementViewState();
+}
+
+class _AccountManagementViewState extends State<AccountManagementView> {
+  @override
+  void initState() {
+    super.initState();
+    // 화면 진입 시 계좌 정보 즉시 로드
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AccountProvider>().refreshWalletInfo(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -197,20 +212,22 @@ class AccountManagementView extends StatelessWidget {
               Navigator.pop(dialogContext); // 다이얼로그 닫기
 
               // PIN 인증 화면으로 이동
-              final bool? isAuthenticated = await Navigator.push<bool>(
+              final dynamic pinResult = await Navigator.push<dynamic>(
                 parentContext,
                 MaterialPageRoute(
                   builder: (_) => const PinScreen(mode: PinMode.auth),
                 ),
               );
 
+              bool isAuthenticated =
+                  pinResult != null && pinResult.toString().length == 6;
+
               if (isAuthenticated == true && parentContext.mounted) {
-                // TODO: 실제 토큰 연동 필요 (임시 토큰 사용)
-                // 1. 로딩 인디케이터 표시 (선택)
+                final String token =
+                    parentContext.read<UserProvider>().accessToken ?? "";
                 final success = await parentContext
                     .read<AccountProvider>()
-                    .unlinkAccount("TEMP_TOKEN");
-
+                    .unlinkAccount(token);
                 if (success && parentContext.mounted) {
                   // 2. 성공 메시지 출력
                   ScaffoldMessenger.of(parentContext).showSnackBar(

@@ -36,7 +36,7 @@ class AccountService {
     try {
       // Path Variable로 walletId(bigint) 전달
       return await _dio.delete(
-        '/api/users/accounts/$walletId',
+        '/wallet/accounts/$walletId',
         options: Options(headers: {'accesstoken': token}),
       );
     } catch (e) {

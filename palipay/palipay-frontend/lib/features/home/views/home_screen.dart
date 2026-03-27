@@ -50,9 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // 2. 지갑 유무 판단 기준 변경
     // WalletProvider에 walletId가 저장되어 있고, 서버에서 가져온 지갑 정보(accountNumber)가 있다면 지갑이 있는 것으로 간주합니다.
-    final bool hasWallet =
-        walletProvider.walletId != null &&
-        walletProvider.walletInfo.accountNumber != null;
+    final bool hasWallet = walletProvider.walletId != null;
 
     return Scaffold(
       extendBody: true,
