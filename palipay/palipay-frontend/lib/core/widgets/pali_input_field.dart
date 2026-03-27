@@ -19,6 +19,7 @@ class PaliInputField extends StatelessWidget {
   final AutovalidateMode? autovalidateMode; // 추가된 변수(회원가입 시 실시간 검증 위함)
   final List<TextInputFormatter>? inputFormatters; // ⭐️ 추가: 숫자만 입력 등 제한용
   final bool showCounter;
+  final bool highlightMaxLength; 
 
   const PaliInputField({
     super.key,
@@ -36,10 +37,21 @@ class PaliInputField extends StatelessWidget {
     this.autovalidateMode,
     this.inputFormatters,
     this.showCounter = true,
+    this.highlightMaxLength = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    Widget buildField () {
+    final currentLength = controller?.text.length ?? 0;
+    final fieldMaxLength = maxLength;
+
+    // [추가] 최대 길이 도달 여부
+    final bool isMaxReached =
+        highlightMaxLength &&
+        fieldMaxLength != null &&
+        currentLength >= fieldMaxLength;
+
     final input = TextFormField(
       controller: controller,
       obscureText: isPassword,
@@ -50,17 +62,34 @@ class PaliInputField extends StatelessWidget {
       onChanged: onChanged,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       style: AppTextStyles.bodyMedium, // 입력 시 16pt, Bold
+      buildCounter: (context,
+        {required currentLength, required isFocused, required maxLength}) {
+      if (!showCounter || maxLength == null) return null;
+
+      final isLimitReached = highlightMaxLength && currentLength >= maxLength;
+
+      return Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            '$currentLength/$maxLength',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: isLimitReached
+                  ? AppColors.warningRed
+                  : AppColors.exampleFont,
+            ),
+          ),
+      );
+    },
       decoration: InputDecoration(
         hintText: hintText,
-        counterText: showCounter ? null : '',
         hintStyle: const TextStyle(
           color: AppColors.exampleFont,
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
-        errorText: useExternalErrorText
-            ? (errorText != null ? ' ' : null)
-            : errorText,
+        errorText: useExternalErrorText ? null : errorText,
 
         errorMaxLines: 2,
 
@@ -85,11 +114,11 @@ class PaliInputField extends StatelessWidget {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.disabledBackground),
+          borderSide: BorderSide(color: isMaxReached ? AppColors.warningRed : AppColors.disabledBackground),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.mainBlue, width: 2),
+          borderSide: BorderSide(color: isMaxReached ? AppColors.warningRed : AppColors.mainBlue, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -120,4 +149,15 @@ class PaliInputField extends StatelessWidget {
       child: input,
     );
   }
+  if (controller != null) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller!,
+      builder: (context, value, child) {
+        return buildField();
+      },
+    );
+  }
+
+  return buildField();
+}
 }
