@@ -187,17 +187,14 @@ class AccountProvider extends ChangeNotifier {
         );
         final String currency = BankConstants.getDefaultCurrency(userCountry);
 
-        // final bankInfo = countryBanks.firstWhere(
-        //   (bank) => bank['bankCode'] == walletInfo.bankCode,
-        //   orElse: () => <String, dynamic>{
-        //     'name': 'Unknown Bank',
-        //     'logo': 'assets/images/banks/default_logo.png', // 기본 로고 설정
-        //   },
-        // );
+        final bankName = BankConstants.getBankName(
+          userCountry,
+          walletInfo.bankCode ?? '',
+        );
 
         _linkedAccount = BankAccount(
           walletId: walletInfo.walletId.toString(),
-          bankName: 'Unknown',
+          bankName: bankName,
           accountNumber: walletInfo.accountNumber ?? '',
           accountUsername: walletInfo.accountUsername ?? '',
           amount: walletInfo.amount?.toInt() ?? 0,

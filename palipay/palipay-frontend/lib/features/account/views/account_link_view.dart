@@ -56,12 +56,12 @@ class _AccountLinkViewState extends State<AccountLinkView> {
   Future<void> _handleNextStep() async {
     // 💡 형식 체크 추가
     if (!_isAccountValid) {
-      _showErrorSnackBar('계좌번호 형식이 올바르지 않습니다. (예: KR-1234-5678-9012)');
+      _showErrorSnackBar('account_link.msg_invalid_account_format'.tr());
       return;
     }
 
     if (_usernameController.text.isEmpty || _accountController.text.isEmpty) {
-      _showErrorSnackBar('모든 필드를 입력해주세요.');
+      _showErrorSnackBar('account_link.fill_all_fields'.tr());
       return;
     }
 
@@ -93,7 +93,7 @@ class _AccountLinkViewState extends State<AccountLinkView> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const PaliTopBar(title: 'Account Information'),
+      appBar: PaliTopBar(title: 'account_link.title'.tr()),
       body: SafeArea(
         child: Column(
           children: [
@@ -104,14 +104,14 @@ class _AccountLinkViewState extends State<AccountLinkView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildFixedInfoTile(
-                      'Selected Bank',
+                      'account_link.selected_bank'.tr(),
                       widget.bankName,
                       Icons.account_balance,
                     ),
                     const SizedBox(height: 32),
-                    _buildSectionTitle('Account Holder'),
+                    _buildSectionTitle('account_link.account_holder'.tr()),
                     PaliInputField(
-                      hintText: 'Enter full name',
+                      hintText: 'account_link.enter_full_name'.tr(),
                       controller: _usernameController,
                     ),
                     const SizedBox(height: 24),
@@ -136,7 +136,9 @@ class _AccountLinkViewState extends State<AccountLinkView> {
               padding: const EdgeInsets.all(20.0),
               child: PaliButton(
                 // 💡 형식이 맞을 때만 버튼 활성화 (선택 사항)
-                text: isLoading ? 'Linking...' : 'Link Account',
+                text: isLoading
+                    ? 'account_link.linking'.tr()
+                    : 'account_link.link_account'.tr(),
                 backgroundColor: (isLoading || !_isAccountValid)
                     ? AppColors.disabledBackground
                     : AppColors.mainBlue,
@@ -151,7 +153,6 @@ class _AccountLinkViewState extends State<AccountLinkView> {
     );
   }
 
-  // 3. 헬퍼 위젯들 (클래스 내부)
   Widget _buildFixedInfoTile(String label, String value, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -163,22 +164,29 @@ class _AccountLinkViewState extends State<AccountLinkView> {
         children: [
           Icon(icon, color: AppColors.mainBlue),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.exampleFont,
+          // 💡 핵심: Column을 Expanded로 감싸서 남은 가로 공간만 쓰게 합니다.
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.exampleFont,
+                  ),
                 ),
-              ),
-              Text(
-                value,
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontWeight: FontWeight.bold,
+                Text(
+                  value,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  // 💡 추가: 텍스트가 너무 길면 '...' 처리하고 최대 1줄만 허용
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  softWrap: false,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

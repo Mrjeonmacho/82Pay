@@ -49,7 +49,7 @@ class BankConstants {
         {
           'name': 'Agricultural Bank of China',
           'bankCode': 'ABOCCNBJ',
-          'logo': 'assets/images/banks/cn/cn_aboc.png',
+          'logo': 'assets/images/banks/cn/cn_aboc.jpg',
         },
         {
           'name': 'Bank of China',
@@ -63,7 +63,7 @@ class BankConstants {
         },
         {
           'name': 'Postal Savings Bank of China',
-          'bankCode': 'PSBCCNBJ',
+          'bankCode': 'PSBCCNBJXXX',
           'logo': 'assets/images/banks/cn/cn_psbc.jpg',
         },
       ],
@@ -183,5 +183,16 @@ class BankConstants {
   // 특정 국가의 은행 리스트만 가져오는 헬퍼 메서드
   static List<Map<String, dynamic>> getBanks(String countryCode) {
     return countryData[countryCode]?['banks'] ?? [];
+  }
+
+  // 특정 국가의 은행 이름을 가져오는 헬퍼 메서드
+  static String getBankName(String countryCode, String bankCode) {
+    final banks = getBanks(countryCode);
+    for (var bank in banks) {
+      if (bank['bankCode'] == bankCode) {
+        return bank['name'];
+      }
+    }
+    return 'Unknown Bank';
   }
 }

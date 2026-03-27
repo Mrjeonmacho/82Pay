@@ -119,7 +119,11 @@ class BankSelectionSheet extends StatelessWidget {
     final logoSize = _clamp(screenWidth * 0.10, 34, 44);
     final logoTextGap = _clamp(screenHeight * 0.015, 10, 14);
 
-    final labelFontSize = _clamp(screenWidth * 0.05, 15, 18);
+    double labelFontSize = _clamp(screenWidth * 0.05, 15, 18);
+
+    if (countryCode != 'KR') {
+      labelFontSize = _clamp(screenWidth * 0.05, 11, 14);
+    }
 
     return InkWell(
       onTap: () {
