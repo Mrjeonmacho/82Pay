@@ -6,6 +6,7 @@ class WalletInfoModel {
   final String? bankCode; // 💡 추가: 서버에서 내려주는 은행 식별 코드 (예: '081', 'wb_kr')
   final double? amount;
   final String? message;
+  final String? bankCode;
 
   // 💡 모든 필드가 final이므로 const 생성자를 쓰는 것이 성능상 좋습니다.
   const WalletInfoModel({
@@ -15,6 +16,7 @@ class WalletInfoModel {
     this.bankCode,
     this.amount,
     this.message,
+    this.bankCode,
   });
 
   // 빈 모델 초기화용
