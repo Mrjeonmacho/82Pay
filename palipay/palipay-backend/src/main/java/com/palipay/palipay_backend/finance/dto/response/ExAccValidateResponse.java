@@ -6,6 +6,7 @@ public record ExAccValidateResponse(
         Boolean isValid,
         BigDecimal maxAmount,
         Long workplaceId,
+        String accountName,
         String message
 ) {
 }

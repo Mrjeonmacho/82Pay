@@ -80,12 +80,12 @@ public class FinanceValidationService {
         if (!response.success()) {
             String errorMsg = (response.message() != null) ? response.message() : "외부 은행에서 계좌를 찾을 수 없습니다.";
             log.error("❌ 계좌 검증 실패 사유: {}", errorMsg); // 백엔드 로그에 찍기
-            return new ExAccValidateResponse(false, null, null, errorMsg);
+            return new ExAccValidateResponse(false, null, null, null, errorMsg);
         }
 
         Long workplaceId = workplaceService.getWorkplaceId(request.otherAccountNumber())
                 .orElse(null);
 
-        return new ExAccValidateResponse(true, response.amount(), workplaceId, "계좌 검증 성공");
+        return new ExAccValidateResponse(true, response.amount(), workplaceId, response.accountName(), "계좌 검증 성공");
     }
 }
