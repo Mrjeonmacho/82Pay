@@ -25,9 +25,7 @@ class ProfileStep extends StatelessWidget {
     return SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       physics: const ClampingScrollPhysics(),
-      padding: EdgeInsets.only(
-        bottom: keyboardOpen ? 120 : 24,
-      ),
+      padding: EdgeInsets.only(bottom: keyboardOpen ? 120 : 24),
       child: Column(
         children: [
           StepLayout(
@@ -36,10 +34,9 @@ class ProfileStep extends StatelessWidget {
             child: PaliInputField(
               hintText: 'sign_up.hint_name'.tr(),
               controller: provider.nameController,
-              validator: (value) =>
-                  value == null || value.isEmpty
-                      ? 'sign_up.error_empty_name'.tr()
-                      : null,
+              validator: (value) => value == null || value.isEmpty
+                  ? 'sign_up.error_empty_name'.tr()
+                  : null,
             ),
           ),
           SizedBox(height: spacing),
@@ -63,9 +60,15 @@ class ProfileStep extends StatelessWidget {
                         isExpanded: true,
                         value: provider.selectedCountryCode,
                         items: const [
-                          DropdownMenuItem(value: '+1', child: Text('🇺🇸 +1')),
-                          DropdownMenuItem(value: '+86', child: Text('🇨🇳 +86')),
-                          DropdownMenuItem(value: '+81', child: Text('🇯🇵 +81')),
+                          DropdownMenuItem(value: 'US', child: Text('🇺🇸 +1')),
+                          DropdownMenuItem(
+                            value: 'CN',
+                            child: Text('🇨🇳 +86'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'JP',
+                            child: Text('🇯🇵 +81'),
+                          ),
                         ],
                         onChanged: (value) => provider.setCountryCode(value!),
                       ),
@@ -79,9 +82,7 @@ class ProfileStep extends StatelessWidget {
                     hintText: 'sign_up.hint_phone_number'.tr(),
                     controller: provider.phoneController,
                     keyboardType: TextInputType.phone,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Enter phone number';
@@ -98,6 +99,6 @@ class ProfileStep extends StatelessWidget {
           ),
         ],
       ),
-    );    
+    );
   }
 }

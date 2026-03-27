@@ -213,6 +213,7 @@
         "recipient": "Recipient"
     },
     "login": {
+        "auto_login": "Auto Login",
         "title": "Login",
         "hint_email": "Email",
         "hint_password": "Password",

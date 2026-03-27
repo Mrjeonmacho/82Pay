@@ -56,13 +56,13 @@ class CurrencyAmountInput extends StatelessWidget {
                   color: AppColors.mainBlue,
                   fontWeight: FontWeight.w900,
                 ),
-                decoration: const InputDecoration(
-                  hintText: '0',
-                  border: InputBorder.none,
-                  hintStyle: TextStyle(color: AppColors.abledFont),
-                  isDense: true, // 불필요한 패딩 제거
-                  contentPadding: EdgeInsets.zero,
-                ),
+                // decoration: const InputDecoration(
+                //   hintText: '0',
+                //   border: InputBorder.none,
+                //   hintStyle: TextStyle(color: AppColors.abledFont),
+                //   isDense: true, // 불필요한 패딩 제거
+                //   contentPadding: EdgeInsets.zero,
+                // ),
                 onChanged: onChanged,
               ),
             ),

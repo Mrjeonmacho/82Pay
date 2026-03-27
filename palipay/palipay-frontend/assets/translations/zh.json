@@ -213,6 +213,7 @@
         "recipient": "收款人"
     },
     "login": {
+        "auto_login": "自动登录",
         "title": "登录",
         "hint_email": "邮箱",
         "hint_password": "密码",
