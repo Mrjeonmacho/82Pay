@@ -8,6 +8,7 @@ public record ExternalCheckResponse (
         @JsonProperty("check") Boolean success,
         String message,
         BigDecimal amount,
-        String currency
+        String currency,
+        String accountName
 ){
 }

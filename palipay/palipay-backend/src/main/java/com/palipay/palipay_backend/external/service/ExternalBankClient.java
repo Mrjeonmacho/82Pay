@@ -85,6 +85,7 @@ public class ExternalBankClient {
                         Boolean.FALSE,
                         "서버 응답 없음",
                         null,
+                        null,
                         null
                 );
             }
@@ -96,12 +97,14 @@ public class ExternalBankClient {
                     Boolean.FALSE,
                     "계좌 확인에 실패했습니다." + e.getMessage(),
                     null,
+                    null,
                     null
             );
         } catch (Exception e){
             return new ExternalCheckResponse(
                     Boolean.FALSE,
                     "먼가 이상한 오류임" + e.getMessage(),
+                    null,
                     null,
                     null
             );

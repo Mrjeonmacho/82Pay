@@ -34,12 +34,14 @@ public class BankUSStrategy implements BankStrategy {
                         .message("계좌 조회가 성공했습니다.")
                         .amount(account.getAmount())
                         .currency(getBankCurrency())
+                        .accountName(account.getUserName())
                         .check(true)
                         .build())
                 .orElse(CheckResponseDto.builder()
                         .message("존재하지 않는 계좌입니다.")
                         .amount(null)
                         .currency(null)
+                        .accountName(null)
                         .check(false)
                         .build());
     }
@@ -51,16 +53,17 @@ public class BankUSStrategy implements BankStrategy {
                         .message("사용자 계좌 조회가 성공했습니다.")
                         .amount(account.getAmount())
                         .currency(getBankCurrency())
+                        .accountName(account.getUserName())
                         .check(true)
                         .build())
                 .orElse(CheckResponseDto.builder()
                         .message("존재하지 않는 사용자 계좌입니다.")
                         .amount(null)
                         .currency(null)
+                        .accountName(null)
                         .check(false)
                         .build());
     }
-
     @Override
     public void withdraw(TransferRequestDto request) {
         BankUS account = bankRepository

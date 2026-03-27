@@ -13,5 +13,6 @@ public class CheckResponseDto {
     String message;
     BigDecimal amount;
     String currency;
+    String accountName;
     Boolean check;
 }
