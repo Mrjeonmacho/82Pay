@@ -9,6 +9,7 @@ import '../../../core/widgets/pali_input_oneline_field.dart';
 import '../../../core/widgets/pali_nav_bars.dart';
 import '../../../core/widgets/pali_bank_selection_sheet.dart';
 import 'amount_input_screen.dart';
+import '../../../core/constants/bank_constants.dart';
 
 class AccountInputScreen extends StatefulWidget {
   final String? initialBankName;
@@ -46,6 +47,20 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
       text: widget.initialAccountNumber ?? '',
     );
     _bankController = TextEditingController(text: widget.initialBankName ?? '');
+
+    // OCR로 은행명이 들어온 경우 bankCode도 같이 세팅
+    final initialBankName = widget.initialBankName?.trim();
+    if (initialBankName != null && initialBankName.isNotEmpty) {
+      final banks = BankConstants.getBanks('KR');
+
+      final matchedBanks = banks.where(
+        (bank) => (bank['name']?.toString().trim() ?? '') == initialBankName,
+      );
+
+      if (matchedBanks.isNotEmpty) {
+        _selectedBankCode = matchedBanks.first['bankCode']?.toString();
+      }
+    }
   }
 
   @override
