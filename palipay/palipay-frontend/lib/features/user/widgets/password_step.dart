@@ -33,6 +33,9 @@ class PasswordStep extends StatelessWidget {
             child: PaliInputField(
               hintText: 'sign_up.hint_set_password'.tr(),
               controller: provider.passwordController,
+              maxLength: 50,
+              showCounter: true,
+              highlightMaxLength: true,
               isPassword: true,
               // 🚀 입력할 때마다 실시간 검증 호출
               onChanged: (_) => provider.checkPasswordLogic(),

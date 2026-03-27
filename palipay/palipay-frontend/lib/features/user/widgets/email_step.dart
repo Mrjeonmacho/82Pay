@@ -33,6 +33,9 @@ class EmailStep extends StatelessWidget {
             child: PaliInputField(
               hintText: 'sign_up.hint_email'.tr(),
               controller: provider.emailController,
+              maxLength: 50,
+              showCounter: true,
+              highlightMaxLength: true,
               onChanged: (value) => provider.checkEmailAvailability(),
               autovalidateMode: AutovalidateMode.onUserInteraction,
               suffixIcon: provider.isCheckingEmail

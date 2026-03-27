@@ -25,6 +25,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     // WidgetsBinding.instance.addPostFrameCallback((_) {
     //   context.read<ProfileProvider>().fetchProfile();
     // });
@@ -61,7 +62,7 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const ProfileCard(),
+              const ProfileCard(), 
               const SizedBox(height: 24),
 
               // [Service Section]
@@ -121,6 +122,7 @@ class ProfileScreen extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (_) => const PinScreen(
                             mode: PinMode.change,
+                            walletId: 12345,
                           ),
                         ),
                       );
@@ -130,12 +132,14 @@ class ProfileScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 16),
+
             ],
           ),
         ),
       ),
     );
   }
+
 
   // 1. 언어 선택 팝업 함수 (모달 다이얼로그로 변경)
   void _showLanguagePicker(BuildContext context) {

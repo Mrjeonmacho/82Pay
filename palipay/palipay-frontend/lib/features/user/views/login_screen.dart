@@ -115,12 +115,18 @@ class _LoginScreenState extends State<LoginScreen>
                           PaliInputField(
                             hintText: 'login.hint_email'.tr(),
                             controller: provider.emailController,
+                            maxLength: 50,
+                            showCounter: false,
+                            highlightMaxLength: true,
                             keyboardType: TextInputType.emailAddress,
                           ),
                           const SizedBox(height: 16),
                           PaliInputField(
                             hintText: 'login.hint_password'.tr(),
                             controller: provider.passwordController,
+                            maxLength: 50,
+                            showCounter: false,
+                            highlightMaxLength: true,
                             isPassword: true,
                           ),
                         ],
