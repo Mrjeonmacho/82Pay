@@ -58,6 +58,13 @@ public class AccountHistoryService {
         int page = request.page() == null ? 0 : request.page().intValue();
         int size = request.size() == null ? 20 : request.size().intValue();
 
+        LocalDateTime from = request.from() == null
+                ? LocalDateTime.of(1970, 1, 1, 0, 0, 0)
+                : request.from();
+
+        LocalDateTime to = request.to() == null
+                ? LocalDateTime.of(2999, 12, 31, 23, 59, 59)
+                : request.to();
 
         Pageable pageable = PageRequest.of(
                 page,
@@ -67,8 +74,8 @@ public class AccountHistoryService {
 
         Page<AccountHistory> historyPage = accountHistoryRepository.findByWalletIdAndCreatedAtBetween(
                 request.walletId(),
-                request.from(),
-                request.to(),
+                from,
+                to,
                 pageable
         );
 
@@ -87,7 +94,6 @@ public class AccountHistoryService {
 
         FinanceHistoryResponse.FinanceHistoryData data =
                 new FinanceHistoryResponse.FinanceHistoryData(items, pageInfo);
-
 
         return new FinanceHistoryResponse(
                 "거래 내역 조회에 성공했습니다.",
