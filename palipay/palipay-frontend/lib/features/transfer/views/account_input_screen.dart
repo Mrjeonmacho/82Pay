@@ -31,10 +31,12 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
   late final TextEditingController _bankController;
 
   String? _accountErrorText;
+  String? _selectedBankCode;
 
   bool get _canProceed =>
       _accountController.text.trim().isNotEmpty &&
       _bankController.text.trim().isNotEmpty &&
+      _selectedBankCode != null &&
       _accountController.text.trim().length <= 20;
 
   @override
@@ -81,8 +83,9 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
           countryCode: 'KR', // 한국 은행 고정
           onSelect: (selectedBank) {
             setState(() {
-              _bankController.text = selectedBank['name'];
-              // 추후 bankCode도 저장/전송할 수 있음: selectedBank['bankCode']
+              _bankController.text = selectedBank['name'] ?? '';
+              // 🚀 [해결 포인트 3] 선택된 은행 코드를 변수에 저장합니다.
+              _selectedBankCode = selectedBank['bankCode']?.toString();
             });
           },
         );
@@ -111,8 +114,11 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            AmountInputScreen(bankName: bank, accountNumber: account),
+        builder: (_) => AmountInputScreen(
+          bankName: bank,
+          accountNumber: account,
+          bankCode: _selectedBankCode!,
+        ),
       ),
     );
   }
@@ -216,7 +222,7 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
                       ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 8),
                   PaliButton(
                     text: 'transfer.btn_next'.tr(),
                     onPressed: _canProceed ? _onNext : null,

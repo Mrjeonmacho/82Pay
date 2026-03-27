@@ -1,13 +1,16 @@
-// lib/features/transfer/views/transfer_confirm_view.dart
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:palipay_app/features/wallet/providers/wallet_provider.dart';
 import 'package:provider/provider.dart';
+
+// Theme & Widgets
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_button.dart';
 import '../../../core/widgets/pali_nav_bars.dart';
-import '../../../core/utils/currency_input_formatter.dart'; // 공통 유틸 활용
+import '../../../core/utils/currency_input_formatter.dart';
+
+// Features & Providers
 import '../../pin/views/pin_screen.dart';
 import '../models/transfer_model.dart';
 import '../providers/transfer_provider.dart';
@@ -16,6 +19,7 @@ import 'transfer_result_view.dart';
 
 class TransferConfirmView extends StatelessWidget {
   final String bankName;
+  final String bankCode;
   final String accountNumber;
   final String recipientName;
   final int amount;
@@ -23,12 +27,31 @@ class TransferConfirmView extends StatelessWidget {
   const TransferConfirmView({
     super.key,
     required this.bankName,
+    required this.bankCode,
     required this.accountNumber,
     required this.recipientName,
     required this.amount,
   });
 
+  /// 🚀 송금 실행 핸들러
   void _handleSend(BuildContext context) async {
+    final transferProvider = context.read<TransferProvider>();
+    final walletProvider = context.read<WalletProvider>();
+
+    // 0. 시작 전 에러 메시지 초기화 (이전 에러가 잔상처럼 남지 않게)
+    transferProvider.clearError();
+
+    // 1. walletId를 WalletProvider에서 가져오기
+    final int walletId = walletProvider.walletId ?? 0;
+
+    if (walletId <= 0) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('지갑 정보가 올바르지 않습니다.')));
+      return;
+    }
+
+    // 2. PIN 인증 화면 호출
     final authenticatedPin = await Navigator.push<String?>(
       context,
       MaterialPageRoute(
@@ -36,39 +59,51 @@ class TransferConfirmView extends StatelessWidget {
       ),
     );
 
+    // 3. 인증 성공 시 송금 프로세스 진행
     if (authenticatedPin != null && context.mounted) {
-      final provider = context.read<TransferProvider>();
-      final accountProvider = context.read<AccountProvider>();
-      final walletId = accountProvider.linkedAccount?.walletId ?? "tempWalletId";
-
-      final response = await provider.performTransfer(
+      final response = await transferProvider.performTransfer(
         TransferRequest(
-          walletId: walletId, // 실제 지갑 ID 연동
-          otherBankCode: bankName,
+          walletId: walletId,
+          otherBankCode: bankCode,
           otherAccountNumber: accountNumber,
           otherAccountName: recipientName,
           amount: amount.toDouble(),
-          pinNumber: authenticatedPin, // PIN 번호 추가
+          accountCurrency: "KRW",
+          pinNumber: authenticatedPin,
         ),
       );
-      final success = response != null;
 
-      if (success && context.mounted) {
+      if (!context.mounted) return;
+
+      if (response != null) {
+        // ✅ [핵심 추가] 송금 성공 시 WalletProvider 잔액 업데이트
+        if (response.currentBalance != null) {
+          walletProvider.updateBalanceManually(
+            response.currentBalance!.toInt(),
+          );
+        }
+
+        // ✅ [추가] 성공 화면으로 가기 전 에러 메시지 지우기
+        transferProvider.clearError();
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => TransferResultView(
               recipientName: recipientName,
               amount: amount,
+              bankName: bankName,
             ),
           ),
         );
-      } else if (context.mounted) {
-        // 에러 발생 시 피드백 제공
+      } else {
+        // ❌ 실패 시 스낵바 표시
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(provider.errorMessage ?? '송금 처리 중 오류가 발생했습니다.'),
-            backgroundColor: Colors.red,
+            content: Text(
+              transferProvider.errorMessage ?? 'transfer.error.failed'.tr(),
+            ),
+            backgroundColor: AppColors.warningRed,
           ),
         );
       }
@@ -81,49 +116,48 @@ class TransferConfirmView extends StatelessWidget {
     final String formattedAmount = CurrencyInputFormatter.format(amount);
 
     return Scaffold(
-      // 결과 페이지와 통일된 배경색
       backgroundColor: const Color(0xFFF8F9FB),
-      appBar: PaliTopBar(
-        title: 'transfer.confirm.title'.tr(),
-      ),
+      appBar: PaliTopBar(title: 'transfer.confirm.title'.tr()),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
               const SizedBox(height: 40),
-              
-              // 1. 헤더 영역: 질문 뉘앙스
+
+              // --- 1. 헤더 영역 ---
               Text(
                 'transfer_confirm.send_money'.tr(),
                 style: AppTextStyles.bodyMedium.copyWith(
-                  fontSize: 32,
-                  color: AppColors.disabledFont,
+                  fontSize: 20,
+                  color: AppColors.abledFont,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
-                'transfer_confirm.amount_krw'.tr(namedArgs: {'amount': formattedAmount}),
+                '₩ $formattedAmount',
                 style: AppTextStyles.titleLarge.copyWith(
-                  fontSize: 40,
+                  fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0D1B63), // 결과창과 동일한 네이비
+                  color: const Color(0xFF0D1B63),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'transfer_confirm.to_recipient'.tr(namedArgs: {'name': recipientName}),
+                'transfer_confirm.to_recipient'.tr(
+                  namedArgs: {'name': recipientName},
+                ),
                 style: AppTextStyles.bodyLarge.copyWith(
-                  fontSize: 32,
+                  fontSize: 24,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
               ),
-              
-              const SizedBox(height: 48),
 
-              // 2. 이체 정보 카드 (결과창 영수증과 통일)
+              const SizedBox(height: 40),
+
+              // --- 2. 이체 정보 카드 ---
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -149,42 +183,58 @@ class TransferConfirmView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
-                    // 수취 은행 및 계좌
+
                     Row(
                       children: [
                         const CircleAvatar(
                           backgroundColor: Color(0xFFF0F2F5),
-                          child: Icon(Icons.account_balance, color: Color(0xFF0D1B63), size: 20),
+                          child: Icon(
+                            Icons.account_balance,
+                            color: Color(0xFF0D1B63),
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 16),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(bankName,
-                                style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+                            Text(
+                              bankName,
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 4),
-                            Text(accountNumber,
-                                style: AppTextStyles.bodySmall.copyWith(color: Colors.grey)),
+                            Text(
+                              accountNumber,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: Colors.grey,
+                              ),
+                            ),
                           ],
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 24),
                     const Divider(thickness: 1, color: Color(0xFFF1F1F1)),
                     const SizedBox(height: 24),
 
-                    // 추가 정보 (출금 계좌 등)
-                    _buildConfirmRow('transfer.confirm.withdraw_from'.tr(), 'transfer.confirm.my_wallet'.tr()),
-                    _buildConfirmRow('transfer.confirm.transfer_fee'.tr(), 'transfer.confirm.free'.tr()),
+                    _buildConfirmRow(
+                      'transfer.confirm.withdraw_from'.tr(),
+                      'transfer.confirm.my_wallet'.tr(),
+                    ),
+                    _buildConfirmRow(
+                      'transfer.confirm.transfer_fee'.tr(),
+                      'transfer.confirm.free'.tr(),
+                    ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
-              // 보안 안내 문구 (심리적 안정감)
+
+              // --- 3. 보안 안내 ---
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -200,32 +250,34 @@ class TransferConfirmView extends StatelessWidget {
           ),
         ),
       ),
-      
-      // 3. 하단 버튼 영역
+
+      // --- 4. 하단 버튼 영역 ---
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 40), // 하단 여백 확보
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
         child: Row(
           children: [
-            // 취소 버튼 (보조 버튼)
             Expanded(
               flex: 1,
               child: PaliButton(
                 text: 'common.cancel'.tr(),
                 backgroundColor: Colors.white,
-                // 테두리가 있는 스타일을 원하시면 PaliButton 내부에서 처리하거나 
-                // 아래처럼 스타일을 조정하세요.
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  // ✅ [추가] 취소 시에도 에러 메시지를 지우고 나갑니다.
+                  context.read<TransferProvider>().clearError();
+                  Navigator.pop(context);
+                },
               ),
             ),
             const SizedBox(width: 12),
-            // 송금 버튼 (주요 버튼)
             Expanded(
-              flex: 2, // 송금 버튼을 더 넓게 배치하여 강조
+              flex: 2,
               child: PaliButton(
-                text: transferProvider.isLoading ? 'transfer.confirm.btn_sending'.tr() : 'transfer.confirm.btn_send_now'.tr(),
+                text: transferProvider.isLoading
+                    ? 'transfer.confirm.btn_sending'.tr()
+                    : 'transfer.confirm.btn_send_now'.tr(),
                 backgroundColor: const Color(0xFF0D1B63),
-                onPressed: transferProvider.isLoading 
-                    ? null 
+                onPressed: transferProvider.isLoading
+                    ? null
                     : () => _handleSend(context),
               ),
             ),
@@ -235,19 +287,23 @@ class TransferConfirmView extends StatelessWidget {
     );
   }
 
-  // 정보 한 줄을 그리는 보조 위젯
   Widget _buildConfirmRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyles.bodyMedium.copyWith(color: Colors.grey)),
-          Text(value,
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              )),
+          Text(
+            label,
+            style: AppTextStyles.bodyMedium.copyWith(color: Colors.grey),
+          ),
+          Text(
+            value,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
         ],
       ),
     );

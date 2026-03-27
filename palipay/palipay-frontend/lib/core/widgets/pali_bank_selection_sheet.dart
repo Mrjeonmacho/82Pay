@@ -51,57 +51,57 @@ class BankSelectionSheet extends StatelessWidget {
     final childAspectRatio = width < 360 ? 0.82 : 0.88;
 
     return Container(
-      height: sheetHeight,
+      height: sheetHeight, // 여기서 이미 높이를 고정했기 때문에 Expanded를 쓸 수 있습니다.
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(sheetRadius)),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: topGap),
-            // 핸들러 바
-            Container(
-              width: handleWidth,
-              height: handleHeight,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(999),
-              ),
+      // 🚀 수정: SingleChildScrollView를 제거했습니다.
+      child: Column(
+        children: [
+          SizedBox(height: topGap),
+          // 핸들러 바
+          Container(
+            width: handleWidth,
+            height: handleHeight,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(999),
             ),
-            SizedBox(height: handleBottomGap),
+          ),
+          SizedBox(height: handleBottomGap),
 
-            Text(
-              'bank.selection.title'.tr(namedArgs: {'country': countryCode}),
-              style: AppTextStyles.titleMedium.copyWith(
-                fontSize: titleFontSize,
-                fontWeight: FontWeight.w800,
-                color: AppColors.abledFont,
-              ),
-              textAlign: TextAlign.center,
+          Text(
+            'bank.selection.title'.tr(namedArgs: {'country': countryCode}),
+            style: AppTextStyles.titleMedium.copyWith(
+              fontSize: titleFontSize,
+              fontWeight: FontWeight.w800,
+              color: AppColors.abledFont,
             ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: titleBottomGap),
 
-            SizedBox(height: titleBottomGap),
-
-            Expanded(
-              child: GridView.builder(
-                padding: EdgeInsets.only(bottom: gridBottomPadding),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: gridMainSpacing,
-                  crossAxisSpacing: gridCrossSpacing,
-                  childAspectRatio: childAspectRatio,
-                ),
-                itemCount: banks.length,
-                itemBuilder: (context, index) {
-                  final bank = banks[index];
-                  return _buildBankItem(context, bank, width, height);
-                },
+          // 🚀 이제 Column 안의 Expanded가 정상 작동합니다.
+          // GridView가 남은 공간을 꽉 채우고 내부에서 스크롤됩니다.
+          Expanded(
+            child: GridView.builder(
+              padding: EdgeInsets.only(bottom: gridBottomPadding),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: gridMainSpacing,
+                crossAxisSpacing: gridCrossSpacing,
+                childAspectRatio: childAspectRatio,
               ),
+              itemCount: banks.length,
+              itemBuilder: (context, index) {
+                final bank = banks[index];
+                return _buildBankItem(context, bank, width, height);
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
