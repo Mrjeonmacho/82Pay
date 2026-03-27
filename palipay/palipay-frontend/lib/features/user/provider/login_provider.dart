@@ -1,100 +1,98 @@
-// providers/login_provider.dart
+// lib/features/user/provider/login_provider.dart
 
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:palipay_app/core/network/dio_client.dart';
+import 'package:provider/provider.dart';
 import 'package:palipay_app/core/providers/user_provider.dart';
-import 'package:palipay_app/features/wallet/providers/wallet_provider.dart';
-import 'package:provider/provider.dart'; // 👈 추가 필요
-import '../services/auth_service.dart';
+import 'package:palipay_app/features/user/services/auth_service.dart';
 
 class LoginProvider extends ChangeNotifier {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
   final _authService = AuthService();
 
-  bool isLoading = false;
-  String? errorMessage;
-  bool _isAutoLogin = false;
-  bool get isAutoLogin => _isAutoLogin;
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
-  // 비밀번호 변경 완료 메시지 상태
-  bool showOverlayMessage = false;
+  bool _isLoading = false;
+  bool _isAutoLogin = false;
+  bool _showOverlayMessage = false;
+  String? _errorMessage;
+
+  bool get isLoading => _isLoading;
+  bool get isAutoLogin => _isAutoLogin;
+  bool get showOverlayMessage => _showOverlayMessage;
+  String? get errorMessage => _errorMessage;
 
   void setAutoLogin(bool value) {
     _isAutoLogin = value;
     notifyListeners();
   }
 
-  // 1. 비밀번호 변경 성공 메시지 로직 (Screen에서 이동)
-  void triggerPasswordChangedMessage() async {
-    showOverlayMessage = true;
+  void triggerPasswordChangedMessage() {
+    _showOverlayMessage = true;
     notifyListeners();
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    showOverlayMessage = false;
-    notifyListeners();
-  }
-
-  // 자동 로그인 인지 판단 로직
-  Future<bool> trySilentLogin() async {
-    bool isEnabled = await _authService.isAutoLoginEnabled();
-    if (isEnabled) {
-      return await _authService.reissueToken();
-    }
-    return false;
-  }
-
-  // 2. 로그인 로직
-  Future<bool> login(BuildContext context) async {
-    final email = emailController.text.trim();
-    final password = passwordController.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      errorMessage = "Please enter both email and password.";
+    Future.delayed(const Duration(seconds: 3), () {
+      _showOverlayMessage = false;
       notifyListeners();
-      return false;
-    }
+    });
+  }
 
-    isLoading = true;
-    errorMessage = null;
+  /// 🚀 로그인 실행
+  Future<bool> login(BuildContext context) async {
+    _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      // 1. AuthService를 통해 로그인 시도 (토큰/유저정보 세팅됨)
-      int statusCode = await _authService.login(context, email, password);
+      final Map<String, dynamic>? response = await _authService.login(
+        emailController.text.trim(),
+        passwordController.text.trim(),
+      );
 
-      if (statusCode == 200) {
-        final String? token = context.read<UserProvider>().accessToken;
+      // 🔍 디버깅: 서버 응답 구조 확인용
+      debugPrint("🔥 [LoginProvider] 서버 응답: $response");
 
-        if (token != null) {
-          // Dio 헤더에 즉시 주입 (다음 API 호출을 위해)
-          DioClient().dio.options.headers["Authorization"] = "Bearer $token";
+      // 1. [체크] 서버 로그에 찍힌 키값 'accessToken' (T 대문자) 사용
+      if (response != null && response['accessToken'] != null) {
+        // 2. [핵심] 유저 정보는 'userInfo' 내부에 있음
+        final Map<String, dynamic>? userInfo =
+            response['userInfo'] as Map<String, dynamic>?;
+
+        if (context.mounted) {
+          final userProvider = Provider.of<UserProvider>(
+            context,
+            listen: false,
+          );
+
+          // 3. 데이터 매칭 (userInfo에서 이름과 국가코드를 꺼냄)
+          await userProvider.setUserInfo(
+            token: response['accessToken'].toString(),
+            name: userInfo?['name']?.toString() ?? "User",
+            countryCode: userInfo?['countryCode']?.toString() ?? 'JP',
+            // 만약 서버에서 walletId를 userInfo 밖에서 주면 response['walletId']로 수정
+            walletId: userInfo?['userId']?.toString(),
+            context: context,
+          );
         }
 
-        // 2. 그 다음 지갑 정보 로드
-        final walletProvider = context.read<WalletProvider>();
-        await walletProvider.initWalletData();
-
-        debugPrint('✅ [Login] 지갑 정보 로드 완료: ${walletProvider.walletId}');
-
-        if (_isAutoLogin) {
-          // 자동 로그인 관련 추가 로직이 필요하다면 여기에 작성
-        }
+        await _authService.setAutoLogin(_isAutoLogin);
+        debugPrint("✅ 로그인 조건 통과! 메인으로 이동합니다.");
         return true;
       } else {
-        errorMessage = "Please check your email or password.";
+        // 토큰을 찾지 못한 경우
+        _errorMessage = 'login.error_invalid';
         return false;
       }
     } catch (e) {
       debugPrint('🚨 Login Error: $e');
-      errorMessage = "Connection error. Please check your network.";
+      _errorMessage = 'login.error_network';
       return false;
     } finally {
-      isLoading = false;
+      _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<bool> trySilentLogin() async {
+    return await _authService.isAutoLoginEnabled();
   }
 
   @override

@@ -1,10 +1,19 @@
+// lib/features/user/views/login_screen.dart
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:palipay_app/features/user/provider/login_provider.dart';
-import 'package:palipay_app/features/user/views/sign_up_screen.dart';
-import 'package:palipay_app/features/user/widgets/step_layout.dart';
-import 'package:palipay_app/main_screen.dart';
 import 'package:provider/provider.dart';
+
+// Providers & Models
+import 'package:palipay_app/features/user/provider/login_provider.dart';
+import 'package:palipay_app/core/providers/user_provider.dart';
+
+// Views
+import 'package:palipay_app/features/user/views/sign_up_screen.dart';
+import 'package:palipay_app/main_screen.dart';
+
+// Widgets & Theme
+import 'package:palipay_app/features/user/widgets/step_layout.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_input_field.dart';
@@ -25,18 +34,24 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
-    // 화면이 뜨자마자 Provider에게 물어봅니다.
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       final provider = context.read<LoginProvider>();
 
-      // ⭐️ 로직은 Provider가, 화면 이동은 Screen이!
+      // 1. 자동 로그인 여부 확인
       bool canLoginSilently = await provider.trySilentLogin();
-
       if (canLoginSilently && mounted) {
+        // 이미 main.dart에서 UserProvider가 체크하지만, 이중 방어로 유지
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const MainScreen()),
+          MaterialPageRoute(builder: (_) => const MainScreen()),
         );
+      }
+
+      // 2. 비밀번호 변경 성공 메시지 처리
+      if (widget.showPasswordChangedMessage) {
+        provider.triggerPasswordChangedMessage();
       }
     });
 
@@ -44,34 +59,29 @@ class _LoginScreenState extends State<LoginScreen>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    // 화면이 뜨자마자 메시지 표시 여부 확인
-    if (widget.showPasswordChangedMessage) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<LoginProvider>().triggerPasswordChangedMessage();
-      });
-    }
   }
 
   @override
   void dispose() {
-    // ⭐️ 4. 컨트롤러 dispose 필수!
     _shakeController.dispose();
     super.dispose();
   }
 
-  // ⭐️ 5. 흔들기 실행 함수 (ProfileStep 등과 동일 로직)
   void _shake() {
     _shakeController.forward(from: 0.0);
   }
 
   @override
   Widget build(BuildContext context) {
+    // watch를 사용하여 상태 변화를 감지
     final provider = context.watch<LoginProvider>();
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(0),
-        child: AppBar(backgroundColor: AppColors.background, elevation: 0),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 0,
       ),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
@@ -80,42 +90,43 @@ class _LoginScreenState extends State<LoginScreen>
           children: [
             SafeArea(
               child: SingleChildScrollView(
-                padding: EdgeInsets.zero,
+                padding: const EdgeInsets.symmetric(vertical: 40),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 80),
+                    const SizedBox(height: 60),
                     Text(
                       'login.welcome'.tr(),
                       style: AppTextStyles.titleLarge.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.mainBlue, // 앱 기본 텍스트 색상
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.mainBlue,
+                        fontSize: 28,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 40),
 
-                    // 이메일 입력창
-                    // 1. 이메일 입력 (Provider 연결)
+                    // 입력 영역
                     StepLayout(
-                      title: '', // 또는 원하는 문구
+                      title: '',
                       shakeController: _shakeController,
                       child: Column(
                         children: [
                           PaliInputField(
-                            hintText: 'Email',
+                            hintText: 'login.hint_email'.tr(),
                             controller: provider.emailController,
                             keyboardType: TextInputType.emailAddress,
                           ),
                           const SizedBox(height: 16),
                           PaliInputField(
-                            hintText: 'Password',
+                            hintText: 'login.hint_password'.tr(),
                             controller: provider.passwordController,
                             isPassword: true,
                           ),
                         ],
                       ),
                     ),
+
                     const SizedBox(height: 24),
 
                     Padding(
@@ -123,36 +134,34 @@ class _LoginScreenState extends State<LoginScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const SizedBox(height: 24),
-
                           // 에러 메시지
                           if (provider.errorMessage != null)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 16.0),
                               child: Text(
-                                provider.errorMessage!,
+                                provider.errorMessage!.tr(),
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
+                                  color: Colors.redAccent,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
+
+                          // 자동 로그인 체크
                           Row(
                             children: [
                               SizedBox(
                                 width: 24,
                                 height: 24,
                                 child: Checkbox(
-                                  value: provider
-                                      .isAutoLogin, // Provider에 변수 추가 필요
-                                  onChanged: (value) {
-                                    provider.setAutoLogin(value ?? false);
-                                  },
+                                  value: provider.isAutoLogin,
+                                  onChanged: (value) =>
+                                      provider.setAutoLogin(value ?? false),
                                   activeColor: AppColors.mainBlue,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
+                                    borderRadius: BorderRadius.circular(6),
                                   ),
                                 ),
                               ),
@@ -162,15 +171,18 @@ class _LoginScreenState extends State<LoginScreen>
                                   !provider.isAutoLogin,
                                 ),
                                 child: Text(
-                                  'Auto Login',
+                                  'login.auto_login'.tr(),
                                   style: AppTextStyles.bodySmall.copyWith(
                                     color: Colors.grey[700],
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+
+                          const SizedBox(height: 32),
+
                           // 로그인 버튼
                           ElevatedButton(
                             onPressed: provider.isLoading
@@ -183,8 +195,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) =>
-                                              const MainScreen(),
+                                          builder: (_) => const MainScreen(),
                                         ),
                                       );
                                     } else {
@@ -194,87 +205,41 @@ class _LoginScreenState extends State<LoginScreen>
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.mainBlue,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              disabledBackgroundColor: AppColors.mainBlue
+                                  .withOpacity(0.5),
+                              padding: const EdgeInsets.symmetric(vertical: 18),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
                               ),
+                              elevation: 0,
                             ),
                             child: provider.isLoading
                                 ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
+                                    height: 22,
+                                    width: 22,
                                     child: CircularProgressIndicator(
                                       color: Colors.white,
-                                      strokeWidth: 2,
+                                      strokeWidth: 2.5,
                                     ),
                                   )
-                                : const Text(
-                                    'Login',
-                                    style: AppTextStyles.labelLarge,
+                                : Text(
+                                    'common.login'.tr(),
+                                    style: AppTextStyles.labelLarge.copyWith(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                           ),
 
-                          const SizedBox(height: 15),
+                          const SizedBox(height: 24),
 
-                          // 구분선 (Or)
-                          // const Row(
-                          //   children: [
-                          //     Expanded(
-                          //       child: Divider(color: AppColors.mainBlue),
-                          //     ),
-                          //     Padding(
-                          //       padding: EdgeInsets.symmetric(
-                          //         horizontal: 20,
-                          //         vertical: 10,
-                          //       ),
-                          //       child: Text(
-                          //         'Or',
-                          //         style: AppTextStyles.bodySmall,
-                          //       ),
-                          //     ),
-                          //     Expanded(
-                          //       child: Divider(color: AppColors.mainBlue),
-                          //     ),
-                          //   ],
-                          // ),
-
-                          // const SizedBox(height: 15),
-
-                          // 구글 로그인 버튼
-                          // OutlinedButton(
-                          //   onPressed: () {},
-                          //   style: OutlinedButton.styleFrom(
-                          //     padding: const EdgeInsets.symmetric(vertical: 15),
-                          //     side: const BorderSide(color: AppColors.mainBlue),
-                          //     shape: RoundedRectangleBorder(
-                          //       borderRadius: BorderRadius.circular(8),
-                          //     ),
-                          //   ),
-                          //   child: Row(
-                          //     mainAxisAlignment: MainAxisAlignment.center,
-                          //     children: [
-                          //       Image.asset(
-                          //         'assets/images/logos/google.png',
-                          //         height: 24,
-                          //       ),
-                          //       const SizedBox(width: 12),
-                          //       Text(
-                          //         'Continue with Google',
-                          //         style: AppTextStyles.bodyLarge.copyWith(
-                          //           color: AppColors.mainBlue,
-                          //         ),
-                          //       ),
-                          //     ],
-                          //   ),
-                          // ),
-                          const SizedBox(height: 12),
-
-                          // 회원가입 안내
+                          // 회원가입 링크
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                "Don't have an account?",
+                                "login.no_account".tr(),
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   color: Colors.grey[600],
                                 ),
@@ -284,13 +249,12 @@ class _LoginScreenState extends State<LoginScreen>
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SignUpScreen(),
+                                      builder: (_) => const SignUpScreen(),
                                     ),
                                   );
                                 },
                                 child: Text(
-                                  'Sign Up',
+                                  'common.signup'.tr(),
                                   style: AppTextStyles.bodyMedium.copyWith(
                                     color: AppColors.mainBlue,
                                     fontWeight: FontWeight.bold,
@@ -313,31 +277,30 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // 오버레이 위젯 추출 (가독성용)
   Widget _buildPasswordChangedOverlay() {
     return IgnorePointer(
       child: Align(
-        alignment: const Alignment(0, -0.8),
+        alignment: const Alignment(0, -0.85),
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 24),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
             color: AppColors.mainBlue,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.12),
+                color: Colors.black.withOpacity(0.15),
                 blurRadius: 12,
-                offset: const Offset(0, 6),
+                offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: const Text(
-            'Your password has been changed successfully. Please log in again.',
+          child: Text(
+            'login.password_changed_msg'.tr(),
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
               height: 1.4,
             ),

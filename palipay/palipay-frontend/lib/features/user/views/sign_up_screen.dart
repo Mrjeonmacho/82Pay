@@ -23,7 +23,6 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen>
     with SingleTickerProviderStateMixin {
-  // 페이지 이동을 제어하기 위한 컨트롤러
   final PageController _pageController = PageController();
   final _formKey = GlobalKey<FormState>();
   late AnimationController _shakeController;
@@ -31,18 +30,14 @@ class _SignUpScreenState extends State<SignUpScreen>
   @override
   void initState() {
     super.initState();
-    // 화면이 생성될 때 데이터를 초기화합니다.
+    // 화면 초기화 시 데이터 리셋
     Future.microtask(() {
+      if (!mounted) return;
       final provider = context.read<SignUpProvider>();
-
-      // 1. 데이터 초기화 (TextController들 비우기)
       provider.resetData();
 
-      // 2. ⭐️ Form 에러 상태 초기화 (빨간 줄 제거)
-      // reset()은 모든 필드의 에러 메시지를 지우고 초기 상태로 되돌립니다.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _formKey.currentState?.reset();
-      });
+      // Form 에러 초기화
+      _formKey.currentState?.reset();
     });
 
     _shakeController = AnimationController(
@@ -58,50 +53,43 @@ class _SignUpScreenState extends State<SignUpScreen>
     super.dispose();
   }
 
-  // 다음 버튼 클릭 로직
+  /// 🚀 다음 버튼 클릭 로직
   void _onNextPressed(SignUpProvider provider) async {
-    // --- 1. 이메일 단계(Index 0)일 때 특수 로직 ---
+    // 1. 이메일 단계 (Index 0)
     if (provider.currentIndex == 0) {
-      // 아직 중복 체크를 안 했거나 형식이 틀렸다면 체크 함수 실행
       if (!provider.isEmailAvailable) {
         await provider.checkEmailAvailability();
       }
 
-      // 2. 모든 검증 통과 시 페이지 이동
       if (provider.isEmailAvailable && provider.isEmailValid) {
         provider.setCurrentIndex(1);
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
-
-        // 페이지가 넘어가자마자 메일 발송 시작! (기다리지 않고 호출)
-        provider.sendEmailCode();
+        provider.sendEmailCode(); // 인증 코드 발송
       } else {
         _shakeController.forward(from: 0.0);
       }
       return;
     }
 
-    // --- 3. 인증 코드 단계(Index 1)일 때 ---
+    // 2. 인증 코드 단계 (Index 1)
     if (provider.currentIndex == 1) {
-      // 서버와 코드 검증 통신 (예시)
       bool isCorrect = await provider.verifyEmailCode();
-
       if (isCorrect) {
         provider.setCurrentIndex(2);
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
-        return;
       } else {
-        _shakeController.forward(from: 0.0); // 🫨 흔들기 효과 발동!
-        return;
+        _shakeController.forward(from: 0.0);
       }
+      return;
     }
 
-    // 2. 폼 유효성 검사 (Step 위젯들의 validator 호출)
+    // 3. 프로필 및 비밀번호 단계 (Index 2, 3)
     if (_formKey.currentState!.validate()) {
       if (provider.currentIndex < 3) {
         provider.setCurrentIndex(provider.currentIndex + 1);
@@ -110,9 +98,10 @@ class _SignUpScreenState extends State<SignUpScreen>
           curve: Curves.easeInOut,
         );
       } else {
-        // 성공 시 이동
+        // 🚀 최종 회원가입 시 context를 전달하여 언어 설정을 연동함
         final success = await provider.finalSignUp(context);
-        if (success) {
+
+        if (success && mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => const SignUpSuccessScreen(),
@@ -129,12 +118,10 @@ class _SignUpScreenState extends State<SignUpScreen>
 
   @override
   Widget build(BuildContext context) {
-    // ⭐️ Provider 구독: 데이터 창고와 연결
-    final provider = Provider.of<SignUpProvider>(context);
+    final provider = context.watch<SignUpProvider>(); // watch 사용 권장
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
-    final bottomInset = mediaQuery.viewInsets.bottom;
-    final isKeyboardOpen = bottomInset > 0;
+    final isKeyboardOpen = mediaQuery.viewInsets.bottom > 0;
     final horizontalPadding = screenWidth * 0.08;
 
     return GestureDetector(
@@ -152,11 +139,9 @@ class _SignUpScreenState extends State<SignUpScreen>
             ),
             onPressed: () {
               if (provider.currentIndex == 2) {
-                // profile -> email step으로 바로 이동
                 provider.resetEmailFlow();
                 provider.setCurrentIndex(0);
                 _formKey.currentState?.reset();
-
                 _pageController.animateToPage(
                   0,
                   duration: const Duration(milliseconds: 300),
@@ -174,9 +159,7 @@ class _SignUpScreenState extends State<SignUpScreen>
             },
           ),
         ),
-
-      // 버튼을 body 밖으로 분리
-       bottomNavigationBar: SafeArea(
+        bottomNavigationBar: SafeArea(
           top: false,
           child: Container(
             color: AppColors.background,
@@ -186,17 +169,20 @@ class _SignUpScreenState extends State<SignUpScreen>
               horizontalPadding,
               20,
             ),
-            child: PaliButton(
-              text: provider.currentIndex == 3
-                  ? 'sign_up.btn_sign_up'.tr()
-                  : 'sign_up.btn_next'.tr(),
-              onPressed: () => _onNextPressed(provider),
-              backgroundColor: AppColors.mainBlue,
-            ),
+            child: provider.isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.mainBlue),
+                  )
+                : PaliButton(
+                    text: provider.currentIndex == 3
+                        ? 'sign_up.btn_sign_up'.tr()
+                        : 'sign_up.btn_next'.tr(),
+                    onPressed: () => _onNextPressed(provider),
+                    backgroundColor: AppColors.mainBlue,
+                  ),
           ),
         ),
-
-      body: SafeArea(
+        body: SafeArea(
           top: false,
           child: Form(
             key: _formKey,
@@ -204,7 +190,6 @@ class _SignUpScreenState extends State<SignUpScreen>
               children: [
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut,
                   padding: EdgeInsets.only(
                     top: isKeyboardOpen ? 12 : 32,
                     bottom: isKeyboardOpen ? 12 : 28,
@@ -214,8 +199,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                     height: isKeyboardOpen ? 72 : 100,
                   ),
                 ),
-
-                // 2. 타이틀 및 스텝 바
+                // 스텝 인디케이터
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: Row(
@@ -232,8 +216,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                   ),
                 ),
                 SizedBox(height: isKeyboardOpen ? 12 : 24),
-
-                // 3. 단계별 콘텐츠 (PageView)
+                // 콘텐츠 영역
                 Expanded(
                   child: PageView(
                     controller: _pageController,
@@ -254,7 +237,6 @@ class _SignUpScreenState extends State<SignUpScreen>
     );
   }
 
-  // --- 스텝 바 위젯 (내부 유지) ---
   Widget _buildStepItem(int index, String label, SignUpProvider provider) {
     bool isCurrent = provider.currentIndex == index;
     bool isDone = provider.currentIndex > index;
@@ -279,9 +261,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 : Text(
                     '${index + 1}',
                     style: TextStyle(
-                      color: isCurrent || isDone
-                          ? Colors.white
-                          : Colors.black38,
+                      color: isCurrent ? Colors.white : Colors.black38,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),

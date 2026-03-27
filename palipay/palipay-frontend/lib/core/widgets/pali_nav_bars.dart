@@ -3,19 +3,26 @@ import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
-// Top Bar
+// --- 1. 상단 바 (PaliTopBar) ---
 class PaliTopBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final List<Widget>? actions;
-  // 왼쪽 뒤로가기 넣기 위해 추가
   final Widget? leading;
 
-  const PaliTopBar({super.key, required this.title, this.actions, this.leading,});
+  const PaliTopBar({
+    super.key,
+    required this.title,
+    this.actions,
+    this.leading,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // 🚀 언어 변경 감지를 위한 트리거
+    context.locale;
+
     return AppBar(
-      toolbarHeight: 64, //
+      toolbarHeight: 64,
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
       shadowColor: Colors.transparent,
@@ -24,8 +31,11 @@ class PaliTopBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: true,
       leading: leading,
       title: Text(
-        title,
-        style: AppTextStyles.headlineLarge.copyWith(color: AppColors.mainBlue),
+        title, // 호출하는 곳에서 'key'.tr()로 넘겨주어야 합니다.
+        style: AppTextStyles.headlineLarge.copyWith(
+          color: AppColors.mainBlue,
+          fontWeight: FontWeight.w900,
+        ),
       ),
       actions: actions,
     );
@@ -35,6 +45,7 @@ class PaliTopBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(64);
 }
 
+// --- 2. 하단 바 (PaliBottomNavigationBar) ---
 class PaliBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
@@ -47,15 +58,18 @@ class PaliBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 🚀 [중요] 이 한 줄이 있어야 다국어 변경 시 내비바가 리빌드됩니다.
+    context.locale;
+
     return Stack(
-      clipBehavior: Clip.none, // 중앙 버튼 돌출을 위해 설정
+      clipBehavior: Clip.none, // 중앙 버튼 돌출을 위해 필수
       alignment: Alignment.bottomCenter,
       children: [
-        // 하단 바 본체 (배경: #FFFFFF, 높이: 64h)
+        // 하단 바 본체
         Container(
-          height: 64, //
+          height: 64,
           decoration: const BoxDecoration(
-            color: Colors.white, //
+            color: Colors.white,
             boxShadow: [
               BoxShadow(
                 color: Colors.black12,
@@ -76,7 +90,7 @@ class PaliBottomNavigationBar extends StatelessWidget {
 
         // 돌출형 Scan 버튼 레이아웃
         Positioned(
-          top: -28, // 이미지와 동일하게 바 위로 돌출
+          top: -28, // 바 위로 돌출되는 높이
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -86,9 +100,9 @@ class PaliBottomNavigationBar extends StatelessWidget {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: AppColors.mainBlue, // #121380
+                    color: AppColors.mainBlue,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 4), // 흰색 테두리
+                    border: Border.all(color: Colors.white, width: 4),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.15),
@@ -106,11 +120,11 @@ class PaliBottomNavigationBar extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'common.scan'.tr(),
+                'common.scan'.tr(), // 실시간 번역 적용
                 style: AppTextStyles.bodySmall.copyWith(
                   color: currentIndex == 2
                       ? AppColors.mainBlue
-                      : AppColors.exampleFont, //
+                      : AppColors.exampleFont,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -125,26 +139,28 @@ class PaliBottomNavigationBar extends StatelessWidget {
   // 개별 아이콘 및 라벨 생성 함수
   Widget _buildNavItem(IconData icon, String label, int index) {
     final isSelected = currentIndex == index;
-    final color = isSelected
-        ? AppColors.mainBlue
-        : AppColors.exampleFont; // #121380 vs #BCB6B6
+    final color = isSelected ? AppColors.mainBlue : AppColors.exampleFont;
 
     return GestureDetector(
       onTap: () => onTap(index),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 24), // 24pt 규격
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: color,
-              fontSize: 11,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 60,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: color,
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

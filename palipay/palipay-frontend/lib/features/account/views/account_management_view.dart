@@ -224,7 +224,7 @@ class _AccountManagementViewState extends State<AccountManagementView> {
 
               if (isAuthenticated == true && parentContext.mounted) {
                 final String token =
-                    parentContext.read<UserProvider>().accessToken ?? "";
+                    parentContext.read<UserProvider>().accesstoken ?? "";
                 final success = await parentContext
                     .read<AccountProvider>()
                     .unlinkAccount(token);

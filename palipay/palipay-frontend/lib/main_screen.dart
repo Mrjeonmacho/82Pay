@@ -17,8 +17,8 @@ class _MainScreenState extends State<MainScreen> {
   // [수정] ScanScreen을 탭 페이지 목록에서 제거
   // -> 카메라 화면은 navbar 내부 탭이 아니라 별도 화면으로 push
   final List<Widget> _pages = const [
-    HomeScreen(),     // index 0
-    ProfileScreen(),  // index 1
+    HomeScreen(), // index 0
+    ProfileScreen(), // index 1
   ];
 
   Future<void> _handleNavTap(int index) async {
@@ -26,9 +26,7 @@ class _MainScreenState extends State<MainScreen> {
     if (index == 2) {
       await Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => const ScanScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const ScanScreen()),
       );
       return;
     }
@@ -41,10 +39,8 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      // appBar: PaliTopBar(title: 'home.title'.tr()),
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: PaliBottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _handleNavTap,

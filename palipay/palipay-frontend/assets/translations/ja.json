@@ -3,7 +3,7 @@
         "home": "ホーム",
         "scan": "スキャン",
         "wallet": "ウォレット",
-        "profile": "プロフィール",
+        "profile": "私の情報",
         "confirm": "確認",
         "cancel": "キャンセル",
         "delete": "削除",
@@ -213,6 +213,7 @@
         "recipient": "受取人"
     },
     "login": {
+        "auto_login": "自動ログイン",
         "title": "ログイン",
         "hint_email": "メールアドレス",
         "hint_password": "パスワード",
