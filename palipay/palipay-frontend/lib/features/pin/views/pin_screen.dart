@@ -427,11 +427,20 @@ class _PinScreenState extends State<PinScreen>
                   final height = constraints.maxHeight;
                   final width = constraints.maxWidth;
 
-                  final topSpace = height * 0.06;
-                  final titleGap = height * 0.03;
-                  final dotGap = height * 0.06;
-                  final bottomPadding =
-                      MediaQuery.of(context).viewPadding.bottom + 16;
+                  final topSpace = height * 0.055;
+                  final titleGap = height * 0.025;
+                  final dotGap = height * 0.05;
+                  // [핵심] 작은 기기에서 키패드가 너무 아래로 눌리지 않게 보정
+                  final bottomPadding = width < 360
+                      ? MediaQuery.of(context).viewPadding.bottom + 8
+                      : MediaQuery.of(context).viewPadding.bottom + 16;
+
+                  // [핵심] 키패드 왼쪽 로고도 화면 따라 살짝 줄이기
+                  final double keypadLogoWidth = width < 360
+                      ? 28
+                      : width < 420
+                          ? 34
+                          : 40;
 
                   return Column(
                     children: [
@@ -513,14 +522,13 @@ class _PinScreenState extends State<PinScreen>
                           onNumberTap: _onKeyTap,
                           onBackspace: _onBackspace,
                           enabled: !_isLoading && !isPinLocked,
-                          leftButton: Center(
-                            child: Image.asset(
+                          leftButton: Image.asset(
                               'assets/images/logos/palilogo1.png',
-                              width: width * 0.1 > 40 ? 40 : width * 0.1,
+                              width: keypadLogoWidth,
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ),
-                      ),
                     ],
                   );
                 },
