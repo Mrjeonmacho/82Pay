@@ -52,7 +52,10 @@ public class FinanceTransferService {
                 TransactionCategory.OUTPUT
         );
 
-        return financeCommonService.transfer(
+        System.out.println("transfercommon input= "+ walletPali.getWalletId());
+        System.out.println(financeCommonDto.toString());/////////////////////////////////fixme
+
+        FinanceTransferResponse repose = financeCommonService.transfer(
                 userId,
                 idempotencyKey,
                 walletPali,
@@ -60,5 +63,11 @@ public class FinanceTransferService {
                 request.pinNumber(),
                 request.workplaceId()
         );
+
+
+        System.out.println("transfercommon result= "+ walletPali.getWalletId());
+        System.out.println(repose.toString());
+
+        return repose;
     }
 }
