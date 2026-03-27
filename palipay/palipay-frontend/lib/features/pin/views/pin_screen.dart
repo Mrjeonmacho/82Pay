@@ -25,11 +25,14 @@ class PinScreen extends StatefulWidget {
   final String? firstPin; // Confirm 모드일 때 비교를 위한 첫 번째 입력값
   final int? walletId; // [추가] create, change API에 사용할 walletId
 
+   final Future<void> Function(BuildContext context)? onAuthSuccess;
+
   const PinScreen({
     super.key,
     required this.mode,
     this.firstPin,
     this.walletId,
+    this.onAuthSuccess,
   });
 
   @override
@@ -275,7 +278,12 @@ class _PinScreenState extends State<PinScreen>
 
         if (isValid) {
           pinProvider.resetPinLockState();
-          Navigator.pop(context, _inputPin);
+
+          if (widget.onAuthSuccess != null) {
+            await widget.onAuthSuccess!(context);
+          } else {
+            Navigator.pop(context, true);
+          }
         } else {
           _handleError(
             message: pinProvider.errorMessage ?? 'pin.error_mismatch'.tr(),
