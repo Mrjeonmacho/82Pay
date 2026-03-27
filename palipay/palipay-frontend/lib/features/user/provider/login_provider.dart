@@ -1,8 +1,11 @@
 // lib/features/user/provider/login_provider.dart
+// lib/features/user/provider/login_provider.dart
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:provider/provider.dart';
 import 'package:palipay_app/core/providers/user_provider.dart';
+import 'package:palipay_app/features/user/services/auth_service.dart';
 import 'package:palipay_app/features/user/services/auth_service.dart';
 
 class LoginProvider extends ChangeNotifier {
@@ -66,6 +69,7 @@ class LoginProvider extends ChangeNotifier {
           await userProvider.setUserInfo(
             token: response['accessToken'].toString(),
             name: userInfo?['name']?.toString() ?? "User",
+            email: userInfo?['email'], // 👈 여기서 이메일을 꼭 넘겨주고 있는지 확인!
             countryCode: userInfo?['countryCode']?.toString() ?? 'JP',
             // 만약 서버에서 walletId를 userInfo 밖에서 주면 response['walletId']로 수정
             walletId: userInfo?['userId']?.toString(),

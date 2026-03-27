@@ -17,7 +17,6 @@ enum PinMode {
   change, // PIN 변경
 }
 
-/// [추가] Change PIN 내부 단계를 위한 enum
 enum ChangePinStep { verifyCurrentPin, enterNewPin, confirmNewPin, completed }
 
 class PinScreen extends StatefulWidget {
@@ -25,7 +24,7 @@ class PinScreen extends StatefulWidget {
   final String? firstPin; // Confirm 모드일 때 비교를 위한 첫 번째 입력값
   final int? walletId; // [추가] create, change API에 사용할 walletId
 
-   final Future<void> Function(BuildContext context)? onAuthSuccess;
+  final Future<void> Function(BuildContext context)? onAuthSuccess;
 
   const PinScreen({
     super.key,
@@ -282,7 +281,7 @@ class _PinScreenState extends State<PinScreen>
           if (widget.onAuthSuccess != null) {
             await widget.onAuthSuccess!(context);
           } else {
-            Navigator.pop(context, true);
+            Navigator.pop(context, _inputPin);
           }
         } else {
           _handleError(
@@ -447,8 +446,8 @@ class _PinScreenState extends State<PinScreen>
                   final double keypadLogoWidth = width < 360
                       ? 28
                       : width < 420
-                          ? 34
-                          : 40;
+                      ? 34
+                      : 40;
 
                   return Column(
                     children: [
@@ -531,12 +530,12 @@ class _PinScreenState extends State<PinScreen>
                           onBackspace: _onBackspace,
                           enabled: !_isLoading && !isPinLocked,
                           leftButton: Image.asset(
-                              'assets/images/logos/palilogo1.png',
-                              width: keypadLogoWidth,
-                              fit: BoxFit.contain,
-                            ),
+                            'assets/images/logos/palilogo1.png',
+                            width: keypadLogoWidth,
+                            fit: BoxFit.contain,
                           ),
                         ),
+                      ),
                     ],
                   );
                 },

@@ -229,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                   )
                                 : Text(
-                                    'common.login'.tr(),
+                                    'login.btn_login'.tr(),
                                     style: AppTextStyles.labelLarge.copyWith(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -244,12 +244,6 @@ class _LoginScreenState extends State<LoginScreen>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                "login.no_account".tr(),
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: Colors.grey[600],
-                                ),
-                              ),
                               TextButton(
                                 onPressed: () {
                                   Navigator.push(
@@ -260,7 +254,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   );
                                 },
                                 child: Text(
-                                  'common.signup'.tr(),
+                                  'sign_up.create_your_account'.tr(),
                                   style: AppTextStyles.bodyMedium.copyWith(
                                     color: AppColors.mainBlue,
                                     fontWeight: FontWeight.bold,

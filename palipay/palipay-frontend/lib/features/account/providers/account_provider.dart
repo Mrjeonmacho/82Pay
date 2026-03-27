@@ -102,10 +102,15 @@ class AccountProvider extends ChangeNotifier {
   Future<bool> unlinkAccount(String token) async {
     if (_linkedAccount == null) return false;
     _setLoading(true);
+    debugPrint('🌐 [API Request] 계좌 삭제 시도');
 
     try {
       final int targetId = int.parse(_linkedAccount!.walletId);
       final response = await _service.unlinkAccount(targetId, token);
+
+      // 🚀 2. 응답 로그: 서버에서 뭐라고 답변하는지 확인
+      debugPrint('✅ [API Response] Status Code: ${response.statusCode}');
+      debugPrint('📄 Data: ${response.data}');
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         _linkedAccount = null;

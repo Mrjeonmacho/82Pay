@@ -29,7 +29,7 @@ class _AccountLinkViewState extends State<AccountLinkView> {
   final _passwordController = TextEditingController();
 
   bool get _isAccountValid =>
-      RegExp(r'^[A-Z]{2}-\d{4}-\d{4}-\d{4}$').hasMatch(_accountController.text);
+      RegExp(r'^\d{4}-\d{4}-\d{4}$').hasMatch(_accountController.text);
 
   @override
   void dispose() {
@@ -218,13 +218,15 @@ class _CustomAccountInput extends StatelessWidget {
     return TextFormField(
       controller: controller,
       onChanged: onChanged,
-      // 💡 문자2개-숫자12개 포매터 적용
+      // 💡 숫자12개 포매터 적용
+      keyboardType: TextInputType.number,
       inputFormatters: [
+        // 🚀 [수정] 숫자 전용 포매터와 길이 제한(14자: 숫자12 + 하이픈2)
         _AccountNumberFormatter(),
-        LengthLimitingTextInputFormatter(17), // AA-0000-0000-0000 총 17자
+        LengthLimitingTextInputFormatter(14),
       ],
       decoration: InputDecoration(
-        hintText: 'KR-0000-0000-0000',
+        hintText: '0000-0000-0000',
         filled: true,
         fillColor: const Color(0xFFF8F8FB),
         border: OutlineInputBorder(
@@ -247,24 +249,24 @@ class _AccountNumberFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    var text = newValue.text.toUpperCase();
-    if (text.length < oldValue.text.length) return newValue; // 백스페이스 허용
+    var text = newValue.text;
 
-    final cleanText = text.replaceAll(RegExp(r'[^A-Z0-9]'), '');
+    // 백스페이스 허용을 위해 이전보다 길지 않으면 그대로 반환
+    if (text.length < oldValue.text.length) return newValue;
+
+    // 숫자 이외의 모든 문자 제거
+    final cleanText = text.replaceAll(RegExp(r'[^0-9]'), '');
     StringBuffer buffer = StringBuffer();
 
     for (int i = 0; i < cleanText.length; i++) {
-      // 0~1번 인덱스는 문자만, 나머지는 숫자만 (정교한 제한)
-      if (i < 2) {
-        if (RegExp(r'[A-Z]').hasMatch(cleanText[i])) buffer.write(cleanText[i]);
-      } else {
-        if (RegExp(r'[0-9]').hasMatch(cleanText[i])) buffer.write(cleanText[i]);
-      }
+      buffer.write(cleanText[i]);
 
-      // 하이픈 위치: 2자, 6자, 10자 뒤
-      if (cleanText.length > 2 && i == 1) buffer.write('-');
-      if (cleanText.length > 6 && i == 5) buffer.write('-');
-      if (cleanText.length > 10 && i == 9) buffer.write('-');
+      // 하이픈 위치: 4번째 숫자 뒤, 8번째 숫자 뒤
+      if (i == 3 && cleanText.length > 4) {
+        buffer.write('-');
+      } else if (i == 7 && cleanText.length > 8) {
+        buffer.write('-');
+      }
     }
 
     final result = buffer.toString();

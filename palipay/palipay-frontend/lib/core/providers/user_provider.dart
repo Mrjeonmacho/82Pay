@@ -1,13 +1,16 @@
 // lib/core/providers/user_provider.dart
+// lib/core/providers/user_provider.dart
 
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class UserProvider extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
 
   int? _userId;
+
   String? _userName;
   String? _userEmail;
   String? _countryCode = 'US';
@@ -40,6 +43,7 @@ class UserProvider extends ChangeNotifier {
         _accesstoken = token;
         _walletId = await _storage.read(key: 'walletId');
         _userName = await _storage.read(key: 'userName');
+        _userEmail = await _storage.read(key: 'userEmail'); // 👈 이 줄을 추가하세요!
         _countryCode = await _storage.read(key: 'countryCode') ?? 'US';
 
         debugPrint('✅ [UserProvider] 복구 성공: $_userName ($_countryCode)');
@@ -74,6 +78,8 @@ class UserProvider extends ChangeNotifier {
     await _storage.write(key: 'accesstoken', value: token);
     await _storage.write(key: 'countryCode', value: _countryCode ?? 'US');
     if (name != null) await _storage.write(key: 'userName', value: name);
+    if (email != null)
+      await _storage.write(key: 'userEmail', value: email); // 👈 이 줄을 추가하세요!
     if (walletId != null)
       await _storage.write(key: 'walletId', value: walletId);
 
@@ -101,7 +107,7 @@ class UserProvider extends ChangeNotifier {
   /// 🌐 공통 언어 적용 로직
   void _applyLocaleByCountry(String countryCode, BuildContext context) {
     final Map<String, Locale> countryToLocale = {
-      'KR': const Locale('ko'),
+      // 'KR': const Locale('ko'),
       'JP': const Locale('ja'),
       'CN': const Locale('zh'),
       'US': const Locale('en'),

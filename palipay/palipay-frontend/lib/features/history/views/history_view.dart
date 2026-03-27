@@ -51,7 +51,10 @@ class _HistoryViewState extends State<HistoryView> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F7), // bgLight
       appBar: AppBar(
-        title: Text('history.title'.tr(), style: AppTextStyles.titleMedium),
+        title: Text(
+          'history.view.title'.tr(),
+          style: AppTextStyles.titleMedium,
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: AppColors.mainBlue,

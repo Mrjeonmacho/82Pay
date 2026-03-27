@@ -73,7 +73,6 @@ class _ExchangeViewState extends State<ExchangeView> {
                   children: [
                     // ===== 1. 금액 입력 섹션 =====
                     CurrencyAmountInput(
-                      label: 'AMOUNT TO REFUND',
                       controller: _controller,
                       focusNode: _focusNode,
                       onChanged: (val) => provider.updateKrwAmountFromText(val),
@@ -127,7 +126,7 @@ class _ExchangeViewState extends State<ExchangeView> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'TRANSFER DETAILS',
+                        'transfer.details'.tr(),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.abledFont,
                           letterSpacing: 1.2,
@@ -202,12 +201,13 @@ class _ExchangeViewState extends State<ExchangeView> {
                     ? AppColors.mainBlue
                     : AppColors.disabledBackground,
                 text: 'common.cash_out'.tr(),
+                // 하단 환급 버튼 onPressed 로직 수정
                 onPressed:
                     provider.errorMessage == null &&
                         provider.krwAmount > 0 &&
                         !provider.isLoading
                     ? () async {
-                        // 1. PIN 입력 화면 호출 (사용자 실제 PIN 입력 대기)
+                        // 1. PIN 입력 화면 호출 (검증된 PIN 번호를 받아옴)
                         final String? pinNumber = await Navigator.push<String>(
                           context,
                           MaterialPageRoute(
@@ -216,38 +216,41 @@ class _ExchangeViewState extends State<ExchangeView> {
                           ),
                         );
 
-                        // 2. PIN 입력 성공 시 거래 실행
+                        // 2. PIN 입력이 완료되었고 화면이 여전히 살아있는지 확인
                         if (pinNumber != null && mounted) {
+                          // 3. 실제 환급 API 호출
                           final success = await provider.refundWallet(
                             pinNumber: pinNumber,
                           );
 
                           if (success && mounted) {
+                            // 4. 외부 계좌 잔액 업데이트 (입금액 반영)
                             final accountProvider = context
                                 .read<AccountProvider>();
-
-                            // 외부 계좌 잔액 업데이트 (입금액 반영)
                             final currentBankBalance =
                                 accountProvider.linkedAccount?.amount ?? 0;
+
                             accountProvider.updateBalance(
                               currentBankBalance + provider.krwAmount.toInt(),
                             );
 
-                            // 거래 내역 갱신
+                            // 5. 거래 내역 갱신
                             context.read<HistoryProvider>().fetchHistory(
                               walletId: provider.walletId!,
                             );
 
-                            // 결과 화면 이동
-                            Navigator.pushReplacement(
+                            // ✅ 6. [핵심] 결과 화면(WalletResultView)으로 이동
+                            // pushAndRemoveUntil을 사용하여 메인 화면(isFirst)만 남기고 이동하면 깔끔합니다.
+                            Navigator.pushAndRemoveUntil(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => WalletResultView(
-                                  isRecharge: false,
+                                  isRecharge: false, // 환급 모드
                                   amount:
                                       '₩ ${CurrencyInputFormatter.format(provider.krwAmount.toInt())}',
                                 ),
                               ),
+                              (route) => route.isFirst,
                             );
                           }
                         }
