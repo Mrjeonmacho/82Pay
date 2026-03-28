@@ -49,21 +49,20 @@ class DioClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          // 🔒 1. 금고에서 토큰 및 국적 읽기
           final token = await _storage.read(key: 'accessToken');
           final countryCode = await _storage.read(key: 'countryCode') ?? 'US';
 
           // 🌐 2. 서버에 언어 설정 전달 (Accept-Language)
-          final langMap = {'KR': 'ko', 'JP': 'ja', 'CN': 'zh', 'US': 'en'};
+          const langMap = {'JP': 'ja', 'CN': 'zh', 'US': 'en'};
           options.headers['Accept-Language'] = langMap[countryCode] ?? 'en';
 
-          final isLogin = options.path == '/auth/login';
-          final isReissue = options.path == '/auth/reissue';
+          final isAuthPath =
+              options.path == '/auth/login' || options.path == '/auth/reissue';
 
-          // 🔐 3. 토큰 주입 (auth 경로는 제외 가능)
-          if (token != null && token != 'null' && !isLogin && !isReissue ) {
+          // 🔐 3. 토큰 주입 (auth 경로 제외)
+          if (token != null && token.isNotEmpty && !isAuthPath) {
             options.headers['Authorization'] = 'Bearer $token';
-            options.headers['accesstoken'] = token; // 특정 백엔드 대응용
+            options.headers['accessToken'] = token;
           }
 
           return handler.next(options);
@@ -72,16 +71,17 @@ class DioClient {
           debugPrint(
             '❌ [API Error] ${e.response?.statusCode} | ${e.requestOptions.path}',
           );
-          debugPrint('❌❌❌ [DIO ERROR FULL]');
-          debugPrint('👉 PATH: ${e.requestOptions.path}');
-          debugPrint('👉 METHOD: ${e.requestOptions.method}');
-          debugPrint('👉 REQUEST DATA: ${e.requestOptions.data}');
-          debugPrint('👉 HEADERS: ${e.requestOptions.headers}');
-          debugPrint('👉 STATUS: ${e.response?.statusCode}');
-          debugPrint('👉 RESPONSE DATA: ${e.response?.data}');
-          debugPrint('👉 ERROR TYPE: ${e.type}');
-          debugPrint('👉 MESSAGE: ${e.message}');
-          debugPrint('────────────────────────────');
+
+          if (kDebugMode) {
+            debugPrint('👉 METHOD: ${e.requestOptions.method}');
+            debugPrint('👉 REQUEST DATA: ${e.requestOptions.data}');
+            debugPrint('👉 HEADERS: ${e.requestOptions.headers}');
+            debugPrint('👉 RESPONSE DATA: ${e.response?.data}');
+            debugPrint('👉 ERROR TYPE: ${e.type}');
+            debugPrint('👉 MESSAGE: ${e.message}');
+            debugPrint('────────────────────────────');
+          }
+
           return handler.next(e);
         },
       ),

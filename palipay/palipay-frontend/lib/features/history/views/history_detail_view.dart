@@ -76,7 +76,7 @@ class HistoryDetailView extends StatelessWidget {
 
             // 3. 금액 및 대상
             Text(
-              '${isOutput ? '-' : '+'} ₩ ${CurrencyInputFormatter.format(transaction.amount.toInt())}',
+              '${isOutput ? '-' : '+'} ${CurrencyInputFormatter.format(transaction.amount.toInt())} ₩',
               style: AppTextStyles.headlineLarge.copyWith(
                 color: AppColors.mainBlue,
                 fontWeight: FontWeight.w900,
@@ -202,7 +202,7 @@ class HistoryDetailView extends StatelessWidget {
 
             // 5. 하단 홈 버튼
             PaliButton(
-              text: 'common.back'.tr(),
+              text: 'transfer.result.btn_back_home'.tr(),
               backgroundColor: AppColors.mainBlue,
               onPressed: () => Navigator.pop(context),
             ),

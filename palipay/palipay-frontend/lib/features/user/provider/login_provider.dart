@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:palipay_app/core/providers/user_provider.dart';
+import 'package:palipay_app/features/account/providers/account_provider.dart';
 import 'package:palipay_app/features/user/services/auth_service.dart';
 
 class LoginProvider extends ChangeNotifier {
@@ -58,12 +59,10 @@ class LoginProvider extends ChangeNotifier {
         passwordController.text.trim(),
       );
 
-      // 🔍 디버깅: 서버 응답 구조 확인용
       debugPrint("🔥 [LoginProvider] 서버 응답: $response");
 
-      // 1. [체크] 서버 로그에 찍힌 키값 'accessToken' (T 대문자) 사용
+      // 백엔드 키 기준 소문자 'accessToken'으로 통일
       if (response != null && response['accessToken'] != null) {
-        // 2. [핵심] 유저 정보는 'userInfo' 내부에 있음
         final Map<String, dynamic>? userInfo =
             response['userInfo'] as Map<String, dynamic>?;
 
@@ -72,23 +71,29 @@ class LoginProvider extends ChangeNotifier {
             context,
             listen: false,
           );
+          final accountProvider = Provider.of<AccountProvider>(
+            context,
+            listen: false,
+          );
 
-          // 3. 데이터 매칭 (userInfo에서 이름과 국가코드를 꺼냄)
+          // 1. 유저 정보 저장 (walletId 제거 — AccountProvider가 관리)
           await userProvider.setUserInfo(
             token: response['accessToken'].toString(),
-            name: userInfo?['name']?.toString() ?? "User",
-            countryCode: userInfo?['countryCode']?.toString() ?? 'JP',
-            // 만약 서버에서 walletId를 userInfo 밖에서 주면 response['walletId']로 수정
-            walletId: userInfo?['userId']?.toString(),
+            name: userInfo?['name']?.toString() ?? 'User',
+            countryCode: userInfo?['countryCode']?.toString() ?? 'US',
+            email: userInfo?['email']?.toString(), // 이게 빠져있을 가능성 높음
+
             context: context,
           );
+
+          // 2. 지갑 연동 상태 확인 (walletId 확정은 여기서)
+          await accountProvider.refreshWalletInfo(context);
         }
 
         await _authService.setAutoLogin(_isAutoLogin);
         debugPrint("✅ 로그인 조건 통과! 메인으로 이동합니다.");
         return true;
       } else {
-        // 토큰을 찾지 못한 경우
         _errorMessage = 'login.error_invalid';
         return false;
       }

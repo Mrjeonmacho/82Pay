@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // 1. Provider 추가
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/providers/user_provider.dart';
+import '../../../core/providers/user_provider.dart'; // 2. UserProvider 추가
 
 class ProfileCard extends StatelessWidget {
   const ProfileCard({super.key}); // 3. 인자값(name, email) 삭제
@@ -10,10 +10,6 @@ class ProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
-
-    // 데이터가 없을 경우를 대비한 기본값 처리 (방어 코드)
-    final String name = userProvider.userName ?? 'Guest User';
-    final String email = userProvider.userEmail ?? 'Please login';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),

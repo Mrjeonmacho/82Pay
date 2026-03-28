@@ -54,11 +54,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   void _refreshAllData() {
     final walletProvider = context.read<WalletProvider>();
-    // 지갑 정보 초기화 및 데이터 로드
-    walletProvider.initWalletData();
+    final accountProvider = context.read<AccountProvider>();
 
-    final walletId = walletProvider.walletId;
-    if (walletId != null && walletId > 0) {
+    // AccountProvider가 단일 출처 — 없으면 0으로 넘기고 서버 응답으로 보완
+    final walletId = int.tryParse(accountProvider.walletId ?? '0') ?? 0;
+    walletProvider.initWalletData(walletId);
+
+    // walletId 확정 후 히스토리 갱신
+    if (walletId > 0) {
       context.read<HistoryProvider>().fetchHistory(walletId: walletId);
     }
   }
@@ -73,7 +76,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     // 2. 지갑 유무 판단 기준 변경
     // WalletProvider에 walletId가 저장되어 있고, 서버에서 가져온 지갑 정보(accountNumber)가 있다면 지갑이 있는 것으로 간주합니다.
-    final bool hasWallet = walletProvider.walletId != null;
+    final accountProvider = context.watch<AccountProvider>();
+    final bool hasWallet = accountProvider.hasWallet;
 
     return Scaffold(
       extendBody: true,

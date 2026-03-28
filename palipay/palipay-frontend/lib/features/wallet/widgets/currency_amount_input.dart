@@ -38,39 +38,44 @@ class CurrencyAmountInput extends StatelessWidget {
         const SizedBox(height: 16),
 
         // 2. 메인 금액 입력창 (KRW 기준)
+        // 2. 메인 금액 입력창 (KRW 기준) 부분 수정
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
+          crossAxisAlignment:
+              CrossAxisAlignment.center, // baseline 대신 center 권장
           children: [
-            // IntrinsicWidth를 써야 글자 수에 맞춰 TextField 너비가 조절되어 가운데 정렬이 유지됩니다.
-            IntrinsicWidth(
+            // IntrinsicWidth 대신 텍스트 길이에 따라 늘어나는 방식 적용
+            Flexible(
+              // 혹은 Expanded 대신 Flexible을 사용해 중앙 정렬 유지
               child: TextField(
                 controller: controller,
                 focusNode: focusNode,
                 keyboardType: TextInputType.number,
-                inputFormatters: [CurrencyInputFormatter()], // 기존 유틸 사용
-                textAlign: TextAlign.center,
+                inputFormatters: [CurrencyInputFormatter()],
+                textAlign: TextAlign.right, // 오른쪽 정렬로 KRW와 붙임
                 style: AppTextStyles.headlineLarge.copyWith(
                   fontSize: 48,
                   color: AppColors.mainBlue,
                   fontWeight: FontWeight.w900,
                 ),
-                // decoration: const InputDecoration(
-                //   hintText: '0',
-                //   border: InputBorder.none,
-                //   hintStyle: TextStyle(color: AppColors.abledFont),
-                //   isDense: true, // 불필요한 패딩 제거
-                //   contentPadding: EdgeInsets.zero,
-                // ),
+                decoration: const InputDecoration(
+                  hintText: '0',
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
                 onChanged: onChanged,
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              'KRW',
-              style: AppTextStyles.titleLarge.copyWith(
-                color: AppColors.abledFont,
+            GestureDetector(
+              // KRW 글자를 눌러도 키보드가 올라오도록 추가
+              onTap: () => focusNode?.requestFocus(),
+              child: Text(
+                'KRW',
+                style: AppTextStyles.titleLarge.copyWith(
+                  color: AppColors.abledFont,
+                ),
               ),
             ),
           ],
