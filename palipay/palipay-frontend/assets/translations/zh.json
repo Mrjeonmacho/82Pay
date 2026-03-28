@@ -222,7 +222,9 @@
         "or": "或者",
         "msg_password_changed": "密码已修改。请重新登录。",
         "welcome": "欢迎！",
-        "google": "通过 Google 继续"
+        "google": "通过 Google 继续",
+        "no_account": "没有账户？",
+        "error_invalid": "无效的邮箱或密码。"
     },
     "sign_up": {
         "create_your_account": "创建您的账户",
@@ -293,6 +295,9 @@
             "transaction_id": "交易ID",
             "memo_hint": "添加备注 (选填)",
             "btn_back_home": "返回首页"
+        },
+        "error": {
+            "failed": "转账失败。请重试。"
         }
     },
     "gallery_crop": {
