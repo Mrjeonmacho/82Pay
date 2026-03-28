@@ -24,30 +24,8 @@ class TransactionsSection extends StatefulWidget {
 }
 
 class _TransactionsSectionState extends State<TransactionsSection> {
-  // 🚀 한 번 불러왔으면 다시 부르지 않게 막아주는 플래그
-  bool _hasFetched = false;
-
   @override
   Widget build(BuildContext context) {
-    // 1. WalletProvider를 'watch'해서 데이터 변화를 계속 지켜봅니다.
-    final walletProvider = context.watch<WalletProvider>();
-    final walletId = walletProvider.walletId;
-
-    // 2. [핵심 로직] walletId가 드디어 0보다 큰 '진짜 값'이 되었을 때!
-    if (!_hasFetched && walletId != null && walletId > 0) {
-      _hasFetched = true; // "이제 불러왔어!"라고 표시
-
-      // build 도중에 다른 Provider를 수정하면 에러가 날 수 있으므로 microtask 사용
-      Future.microtask(() {
-        if (context.mounted) {
-          debugPrint(
-            '🎯 [TransactionsSection] walletId 발견($walletId)! 내역 조회를 시작합니다.',
-          );
-          context.read<HistoryProvider>().fetchHistory(walletId: walletId);
-        }
-      });
-    }
-
     final historyProvider = context.watch<HistoryProvider>();
 
     return Padding(

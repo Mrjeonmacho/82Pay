@@ -9,6 +9,7 @@ import 'package:palipay_app/core/network/dio_client.dart';
 import 'package:palipay_app/core/providers/user_provider.dart';
 import 'package:palipay_app/core/theme/app_colors.dart';
 import 'package:palipay_app/core/theme/app_text_styles.dart';
+import 'package:palipay_app/core/utils/route_observers.dart';
 
 // Features - Providers
 import 'package:palipay_app/features/transfer/services/transfer_service.dart';
@@ -91,7 +92,7 @@ class PaliPayApp extends StatelessWidget {
           return MaterialApp(
             title: 'PaliPay',
             debugShowCheckedModeBanner: false,
-
+            navigatorObservers: [routeObserver],
             // --- 다국어 설정 연결 ---
             localizationsDelegates: context.localizationDelegates,
             supportedLocales: context.supportedLocales,

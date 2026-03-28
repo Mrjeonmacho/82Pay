@@ -222,7 +222,9 @@
         "or": "または",
         "msg_password_changed": "パスワードが変更されました。再度ログインしてください。",
         "welcome": "ようこそ！",
-        "google": "Googleで続ける"
+        "google": "Googleで続ける",
+        "no_account": "アカウントをお持ちではありませんか？",
+        "error_invalid": "無効なメールアドレスまたはパスワードです。"
     },
     "sign_up": {
         "create_your_account": "アカウント作成",
@@ -293,6 +295,9 @@
             "transaction_id": "取引ID",
             "memo_hint": "ライブメモを追加する（任意)",
             "btn_back_home": "ホームに戻る"
+        },
+        "error": {
+            "failed": "送金に失敗しました。もう一度お試しください。"
         }
     },
     "gallery_crop": {

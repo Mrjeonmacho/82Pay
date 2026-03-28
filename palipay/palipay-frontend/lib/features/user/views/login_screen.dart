@@ -229,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                   )
                                 : Text(
-                                    'common.login'.tr(),
+                                    'login.title'.tr(),
                                     style: AppTextStyles.labelLarge.copyWith(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -260,7 +260,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   );
                                 },
                                 child: Text(
-                                  'common.signup'.tr(),
+                                  'sign_up.btn_sign_up'.tr(),
                                   style: AppTextStyles.bodyMedium.copyWith(
                                     color: AppColors.mainBlue,
                                     fontWeight: FontWeight.bold,

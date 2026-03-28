@@ -222,7 +222,9 @@
         "or": "Or",
         "msg_password_changed": "Your password has been changed successfully. Please log in again.",
         "welcome": "Welcome!",
-        "google": "Continue with Google"
+        "google": "Continue with Google",
+        "no_account": "Don't have an account?",
+        "error_invalid": "Invalid email or password."
     },
     "sign_up": {
         "create_your_account": "Create Your Account",
@@ -293,6 +295,9 @@
             "transaction_id": "Transaction ID",
             "memo_hint": "Add a live memo (optional)",
             "btn_back_home": "Back to Home"
+        },
+        "error": {
+            "failed": "Transfer failed. Please try again."
         }
     },
     "gallery_crop": {
