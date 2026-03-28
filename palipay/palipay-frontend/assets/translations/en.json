@@ -198,7 +198,8 @@
         "to_bank": "To {bankName}",
         "amount": "Amount",
         "enter_in_krw": "Please enter in Korean Won",
-        "withdrawable_amount": "Withdrawable amount is ₩ {balance}"
+        "withdrawable_amount": "Withdrawable amount is ₩ {balance}",
+        "unknown": "unknown"
     },
     "transfer_confirm": {
         "send_money": "Send Money?",

@@ -101,7 +101,6 @@ class UserProvider extends ChangeNotifier {
   /// 🌐 공통 언어 적용 로직
   void _applyLocaleByCountry(String countryCode, BuildContext context) {
     final Map<String, Locale> countryToLocale = {
-      'KR': const Locale('ko'),
       'JP': const Locale('ja'),
       'CN': const Locale('zh'),
       'US': const Locale('en'),
@@ -115,12 +114,14 @@ class UserProvider extends ChangeNotifier {
   }
 
   /// 🧹 로그아웃
-  Future<void> logout() async {
+  Future<void> logout(BuildContext context) async {
     _accesstoken = null;
     _userId = null;
     _userName = null;
+    _userEmail = null;
     _walletId = null;
-    await _storage.deleteAll();
+    _isFirstCheck = false;
+
     notifyListeners();
   }
 }

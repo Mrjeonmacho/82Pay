@@ -51,7 +51,7 @@ void main() async {
         Locale('en'),
         Locale('ja'),
         Locale('zh'),
-        Locale('ko'),
+        // Locale('ko'),
       ],
       path: 'assets/translations',
       fallbackLocale: const Locale('en'),

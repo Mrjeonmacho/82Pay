@@ -198,7 +198,8 @@
         "to_bank": "转入 {bankName}",
         "amount": "金额",
         "enter_in_krw": "请输入韩元金额",
-        "withdrawable_amount": "可提现金额为 ₩ {balance}"
+        "withdrawable_amount": "可提现金额为 ₩ {balance}",
+        "unknown": "未知"
     },
     "transfer_confirm": {
         "send_money": "确认转账？",
