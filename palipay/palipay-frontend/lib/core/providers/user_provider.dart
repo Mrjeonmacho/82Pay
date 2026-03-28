@@ -11,8 +11,7 @@ class UserProvider extends ChangeNotifier {
   String? _userName;
   String? _userEmail;
   String? _countryCode = 'US';
-  String? _accesstoken;
-  String? _walletId;
+  String? _accessToken;
 
   bool _isFirstCheck = true;
 
@@ -21,12 +20,8 @@ class UserProvider extends ChangeNotifier {
   String? get userName => _userName;
   String? get userEmail => _userEmail;
   String? get countryCode => _countryCode;
-  String? get accesstoken => _accesstoken;
-  String? get walletId => _walletId;
-  bool get isLoggedIn =>
-      _accesstoken != null &&
-      _accesstoken != 'null' &&
-      _accesstoken!.isNotEmpty;
+  String? get accessToken => _accessToken;
+  bool get isLoggedIn => _accessToken != null && _accessToken!.isNotEmpty;
   bool get isFirstCheck => _isFirstCheck;
 
   /// 🚀 [1. 앱 시작 시] 저장된 정보를 복구하고 언어를 설정
@@ -35,11 +30,11 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final token = await _storage.read(key: 'accesstoken');
-      if (token != null && token.isNotEmpty && token != 'null') {
-        _accesstoken = token;
-        _walletId = await _storage.read(key: 'walletId');
+      final token = await _storage.read(key: 'accessToken');
+      if (token != null && token.isNotEmpty) {
+        _accessToken = token;
         _userName = await _storage.read(key: 'userName');
+        _userEmail = await _storage.read(key: 'userEmail');
         _countryCode = await _storage.read(key: 'countryCode') ?? 'US';
 
         debugPrint('✅ [UserProvider] 복구 성공: $_userName ($_countryCode)');
@@ -60,22 +55,19 @@ class UserProvider extends ChangeNotifier {
     String? name,
     String? email,
     String? countryCode,
-    String? walletId,
     required BuildContext context,
   }) async {
-    _accesstoken = token;
+    _accessToken = token;
     _userId = userId ?? _userId;
     _userName = name ?? _userName;
     _userEmail = email ?? _userEmail;
     _countryCode = countryCode ?? _countryCode;
-    _walletId = walletId ?? _walletId;
 
-    // 💾 금고에 영구 저장
-    await _storage.write(key: 'accesstoken', value: token);
+    // 💾 SecureStorage 저장 (백엔드 기준 소문자 키로 통일)
+    await _storage.write(key: 'accessToken', value: token);
     await _storage.write(key: 'countryCode', value: _countryCode ?? 'US');
     if (name != null) await _storage.write(key: 'userName', value: name);
-    if (walletId != null)
-      await _storage.write(key: 'walletId', value: walletId);
+    if (email != null) await _storage.write(key: 'userEmail', value: email);
 
     // 🌐 언어 적용
     if (context.mounted) _applyLocaleByCountry(_countryCode!, context);
@@ -100,10 +92,10 @@ class UserProvider extends ChangeNotifier {
 
   /// 🌐 공통 언어 적용 로직
   void _applyLocaleByCountry(String countryCode, BuildContext context) {
-    final Map<String, Locale> countryToLocale = {
-      'JP': const Locale('ja'),
-      'CN': const Locale('zh'),
-      'US': const Locale('en'),
+    const countryToLocale = {
+      'JP': Locale('ja'),
+      'CN': Locale('zh'),
+      'US': Locale('en'),
     };
     final targetLocale = countryToLocale[countryCode] ?? const Locale('en');
 
@@ -115,11 +107,14 @@ class UserProvider extends ChangeNotifier {
 
   /// 🧹 로그아웃
   Future<void> logout(BuildContext context) async {
-    _accesstoken = null;
+    // SecureStorage 전체 삭제 (토큰 포함 모든 캐시 제거)
+    await _storage.deleteAll();
+
+    _accessToken = null;
     _userId = null;
     _userName = null;
     _userEmail = null;
-    _walletId = null;
+    _countryCode = 'US';
     _isFirstCheck = false;
 
     notifyListeners();
