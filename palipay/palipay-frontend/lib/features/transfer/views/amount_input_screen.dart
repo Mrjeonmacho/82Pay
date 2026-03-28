@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:palipay_app/features/transfer/providers/transfer_provider.dart';
 import 'package:palipay_app/features/transfer/views/transfer_confirm_view.dart';
 import 'package:provider/provider.dart';
 import '../../../core/utils/currency_input_formatter.dart';
@@ -15,7 +16,6 @@ class AmountInputScreen extends StatefulWidget {
   final String bankName;
   final String bankCode; // 🚀 [추가] 서버 전송을 위한 은행 코드 (예: "081")
   final String accountNumber;
-  final String recipientName;
   final int? walletBalance;
 
   const AmountInputScreen({
@@ -23,7 +23,6 @@ class AmountInputScreen extends StatefulWidget {
     required this.bankName,
     required this.bankCode, // 필수 파라미터 추가
     required this.accountNumber,
-    this.recipientName = "Unknown",
     this.walletBalance,
   });
 
@@ -53,8 +52,10 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
       _didTryExceedAmount ||
       (_enteredAmount > 0 && _enteredAmount > _getWalletBalanceValue(provider));
 
-  bool _getCanProceed(WalletProvider provider) =>
-      _enteredAmount > 0 && _enteredAmount <= _getWalletBalanceValue(provider);
+  bool _getCanProceed(WalletProvider walletprovider, TransferProvider transferProvider,) {
+      return _enteredAmount > 0 && 
+          _enteredAmount <= _getWalletBalanceValue(walletprovider);
+  }
 
   double _clamp(double value, double min, double max) {
     if (value < min) return min;
@@ -76,8 +77,10 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
   }
 
   void _onNext() {
-    final provider = context.read<WalletProvider>();
-    if (!_getCanProceed(provider)) return;
+    final walletProvider = context.read<WalletProvider>();
+    final transferProvider = context.read<TransferProvider>();
+
+    if (!_getCanProceed(walletProvider, transferProvider)) return;
 
     // 🚀 [수정] TransferConfirmView 호출 시 bankCode를 함께 넘겨줍니다.
     Navigator.push(
@@ -87,7 +90,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
           bankName: widget.bankName,
           bankCode: widget.bankCode, // 🚀 추가된 부분
           accountNumber: widget.accountNumber,
-          recipientName: widget.recipientName,
+          recipientName: transferProvider.recipientName ?? 'store',
           amount: _enteredAmount,
         ),
       ),
@@ -111,6 +114,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
   @override
   Widget build(BuildContext context) {
     final walletProvider = context.watch<WalletProvider>();
+    final transferProvider = context.watch<TransferProvider>();
     final walletBalance = _getWalletBalanceValue(walletProvider);
 
     final amountFormatters = <TextInputFormatter>[
@@ -178,24 +182,63 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
                   const SizedBox(height: 30),
 
                   // 2. 받는 분 정보
-                  Text(
-                    'amount_input.to_bank'.tr(
-                      namedArgs: {'bankName': widget.bankName},
-                    ),
-                    style: AppTextStyles.titleMedium.copyWith(
-                      color: AppColors.abledFont,
-                      fontWeight: FontWeight.bold,
-                      fontSize: labelFontSize,
-                    ),
+                  // 👉 1줄: To + 예금주 (or 스피너)
+                  Row(
+                    children: [
+                      Text(
+                        'To ',
+                        style: AppTextStyles.titleMedium.copyWith(
+                          color: AppColors.abledFont,
+                          fontWeight: FontWeight.bold,
+                          fontSize: labelFontSize,
+                        ),
+                      ),
+
+                      if (transferProvider.isRecipientLoading) ...[
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.mainBlue,
+                          ),
+                        ),
+                      ] else if ((transferProvider.recipientName ?? '').isNotEmpty) ...[
+                        Flexible(
+                          child: Text(
+                            transferProvider.recipientName!,
+                            style: AppTextStyles.titleMedium.copyWith(
+                              color: AppColors.abledFont,
+                              fontWeight: FontWeight.bold,
+                              fontSize: labelFontSize,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ] else ...[
+                        Text(
+                          'amount_input.unknown'.tr(),
+                          style: AppTextStyles.titleMedium.copyWith(
+                            color: AppColors.warningRed,
+                            fontWeight: FontWeight.bold,
+                            fontSize: labelFontSize,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
+
                   const SizedBox(height: 8),
+
+                  // 👉 2줄: 은행명 + 계좌번호
                   Text(
-                    widget.accountNumber,
+                    '${widget.bankName}  ${widget.accountNumber}',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.exampleFont,
                       fontSize: valueFontSize,
                     ),
                   ),
+
                   const SizedBox(height: 30),
 
                   // 3. 금액 입력 섹션
@@ -238,7 +281,7 @@ class _AmountInputScreenState extends State<AmountInputScreen> {
                   PaliButton(
                     text: 'transfer.btn_next'.tr(),
                     onPressed:
-                        _getCanProceed(walletProvider) &&
+                        _getCanProceed(walletProvider, transferProvider) &&
                             !walletProvider.isLoading
                         ? _onNext
                         : null,

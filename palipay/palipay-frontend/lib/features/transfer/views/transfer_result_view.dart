@@ -144,18 +144,26 @@ class _TransferResultViewState extends State<TransferResultView> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'transfer_result.recipient'.tr(),
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              widget.recipientName,
-                              style: AppTextStyles.bodyLarge.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  'To ',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Text(
+                                    widget.recipientName.isNotEmpty
+                                        ? widget.recipientName
+                                        : 'common.unknown'.tr(),
+                                    style: AppTextStyles.bodyLarge.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

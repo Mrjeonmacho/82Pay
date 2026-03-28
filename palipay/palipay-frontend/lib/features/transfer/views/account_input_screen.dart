@@ -1,7 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:provider/provider.dart';
+import '../providers/transfer_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_button.dart';
@@ -125,6 +126,17 @@ class _AccountInputScreenState extends State<AccountInputScreen> {
     if (account.isEmpty || bank.isEmpty || account.length > 20) {
       return;
     }
+
+    final transferProvider = context.read<TransferProvider>();
+
+    // ✅ 이전 조회 상태 초기화
+    transferProvider.resetRecipientInfo();
+
+    // ✅ await 없이 바로 요청 시작
+    transferProvider.startRecipientValidation(
+      otherBankCode: _selectedBankCode!,
+      otherAccountNumber: account,
+    );
 
     Navigator.push(
       context,

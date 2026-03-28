@@ -198,7 +198,8 @@
         "to_bank": "{bankName}口座へ",
         "amount": "金額",
         "enter_in_krw": "KRW単位で入力してください",
-        "withdrawable_amount": "出金可能額: ₩ {balance}"
+        "withdrawable_amount": "出金可能額: ₩ {balance}",
+        "unknown": "不明"
     },
     "transfer_confirm": {
         "send_money": "このまま振り込みますか？",

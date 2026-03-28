@@ -31,20 +31,31 @@ class BalanceCheckResponse {
 class TransferValidateResponse {
   final String message;
   final bool isValid; // 🚀 이 값이 false로 파싱되면 다음 단계로 못 가!
+  final String? accountName;
+  final double? maxRefundableAmount;
+  final int? workplaceId;
   final List<ValidationError>? validationErrors;
 
   TransferValidateResponse({
     required this.message,
     required this.isValid,
-    this.validationErrors,
+    this.accountName,
+    this.maxRefundableAmount,
+    this.workplaceId,
+    this.validationErrors = const [],
   });
 
   factory TransferValidateResponse.fromJson(Map<String, dynamic> json) {
-    // ❌ final data = json['data']; <- 이거 있으면 지워! 서비스에서 이미 까서 줬음.
     return TransferValidateResponse(
       // 🚀 json이 비어있거나 필드가 없어도 튕기지 않게 ?? 처리
       message: json['message'] as String? ?? '검증 데이터가 없습니다.',
       isValid: json['isValid'] as bool? ?? false,
+      accountName: json['accountName'] as String?,
+      maxRefundableAmount:
+          (json['maxRefundableAmount'] as num?)?.toDouble(),
+      workplaceId: json['workplaceId'] is int
+          ? json['workplaceId'] as int
+          : int.tryParse(json['workplaceId']?.toString() ?? ''),
       validationErrors:
           (json['validationErrors'] as List?)
               ?.map((e) => ValidationError.fromJson(e as Map<String, dynamic>))

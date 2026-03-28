@@ -35,6 +35,17 @@ class LoginProvider extends ChangeNotifier {
     });
   }
 
+  /// 로그아웃 후 로그인 화면 상태 초기화용
+  void reset() {
+    emailController.clear();
+    passwordController.clear();
+    _isLoading = false;
+    _isAutoLogin = false;
+    _showOverlayMessage = false;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
   /// 🚀 로그인 실행
   Future<bool> login(BuildContext context) async {
     _isLoading = true;
