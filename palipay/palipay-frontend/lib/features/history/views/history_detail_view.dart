@@ -202,7 +202,7 @@ class HistoryDetailView extends StatelessWidget {
 
             // 5. 하단 홈 버튼
             PaliButton(
-              text: 'result.btn_back_to_home'.tr(),
+              text: 'transfer.result.btn_back_home'.tr(),
               backgroundColor: AppColors.mainBlue,
               onPressed: () => Navigator.pop(context),
             ),
