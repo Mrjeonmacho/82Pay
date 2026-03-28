@@ -34,15 +34,16 @@ class _ExchangeViewState extends State<ExchangeView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<WalletProvider>();
+      final walletProvider = context.read<WalletProvider>();
       final accountProvider = context.read<AccountProvider>();
 
       // AccountProvider에서 통화 정보만 참조
       final currency = accountProvider.linkedAccount?.moneyCode ?? 'USD';
+      final walletId = int.parse(accountProvider.walletId ?? '0');
 
-      provider.initForRefund(currency: currency);
-      provider.loadExchangeRateQuote();
-      provider.loadWalletBalance(amount: 0);
+      walletProvider.initWalletData(walletId);
+      walletProvider.initForRefund(currency: currency);
+      walletProvider.loadExchangeRateQuote();
 
       // 화면 진입 시 키보드 자동 방지
       _focusNode.unfocus();
@@ -234,9 +235,12 @@ class _ExchangeViewState extends State<ExchangeView> {
                             );
 
                             // 거래 내역 갱신
-                            context.read<HistoryProvider>().fetchHistory(
-                              walletId: provider.walletId!,
-                            );
+                            final walletId = provider.walletId;
+                            if (walletId != null) {
+                              context.read<HistoryProvider>().fetchHistory(
+                                walletId: walletId,
+                              );
+                            }
 
                             // 결과 화면 이동
                             Navigator.pushReplacement(

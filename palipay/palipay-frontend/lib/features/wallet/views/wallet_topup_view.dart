@@ -39,17 +39,14 @@ class _TopupViewState extends State<TopupView> {
       final walletProvider = context.read<WalletProvider>();
       final accountProvider = context.read<AccountProvider>();
 
-      final linkedAccount = accountProvider.linkedAccount;
-      final currency = linkedAccount?.moneyCode ?? 'USD';
+      final currency = accountProvider.linkedAccount?.moneyCode ?? 'USD';
+      final walletId = int.parse(accountProvider.walletId ?? '0');
 
-      // 1. 충전 모드 초기화 및 환율 정보 로드
+      // walletId 주입 + 지갑 정보 로드를 단일 진입점으로 처리
+      walletProvider.initWalletData(walletId);
       walletProvider.initForTopup(currency: currency);
       walletProvider.loadExchangeRateQuote();
 
-      // 🚀 [수정] walletId 파라미터 삭제 (Provider 내부 캐싱된 ID 사용)
-      walletProvider.loadWalletBalance(amount: 0);
-
-      // 💡 [추가] 화면 진입 시 키보드가 바로 올라오지 않도록 포커스 해제
       _focusNode.unfocus();
     });
   }
@@ -218,7 +215,6 @@ class _TopupViewState extends State<TopupView> {
   }
 
   Future<void> _handleTopup(WalletProvider provider) async {
-    // 🚀 [수정] 하드코딩된 PIN 대신 실제 PIN 입력 화면 호출
     final String? pinNumber = await Navigator.push<String>(
       context,
       MaterialPageRoute(
@@ -227,24 +223,23 @@ class _TopupViewState extends State<TopupView> {
     );
 
     if (pinNumber != null && mounted) {
-      // 🚀 [수정] walletId 파라미터 삭제 (Provider 내부 ID 사용)
       final success = await provider.chargeWallet(pinNumber: pinNumber);
 
       if (success && mounted) {
         final accountProvider = context.read<AccountProvider>();
 
-        // 2. 계좌 잔액 업데이트 (출금 계좌인 외부 은행 계좌 잔액 차감)
+        // 외부 은행 계좌 잔액 차감
         final currentBankBalance = accountProvider.linkedAccount?.amount ?? 0;
         accountProvider.updateBalance(
           currentBankBalance - provider.krwAmount.toInt(),
         );
 
-        // 3. 히스토리 갱신 (Provider에 저장된 최신 walletId 사용)
-        context.read<HistoryProvider>().fetchHistory(
-          walletId: provider.walletId!,
-        );
+        // 히스토리 갱신 — walletId null 안전 처리
+        final walletId = provider.walletId;
+        if (walletId != null) {
+          context.read<HistoryProvider>().fetchHistory(walletId: walletId);
+        }
 
-        // 4. 결과 화면 이동
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

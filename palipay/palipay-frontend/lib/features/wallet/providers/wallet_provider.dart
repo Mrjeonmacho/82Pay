@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../models/wallet_model.dart';
 import '../services/wallet_service.dart';
-import '../../../core/constants/bank_constants.dart'; // 💡 임포트 확인
+import '../../../core/constants/bank_constants.dart';
 
 enum WalletStatus { idle, loading, success, failure }
 
@@ -16,11 +16,13 @@ class WalletProvider extends ChangeNotifier {
   WalletBalanceModel wallet = WalletBalanceModel.empty();
   WalletInfoModel walletInfo = WalletInfoModel.empty();
 
+  // walletId는 AccountProvider가 단일 출처 — initWalletData()로 주입받아 캐싱
   int? _walletId;
+
   double _krwAmount = 0;
   double _foreignAmount = 0;
   double _exchangeRate = 0;
-  String _targetCurrency = "USD";
+  String _targetCurrency = 'USD';
   String? _quoteId;
   String? _rateTimestamp;
   String? _errorMessage;
@@ -30,10 +32,10 @@ class WalletProvider extends ChangeNotifier {
   String? _bankLogo;
 
   // --- [2] Getters ---
+  int? get walletId => _walletId;
   int? get currentBalance =>
       wallet.currentBalance ?? walletInfo.amount?.toInt();
   int? get balance => currentBalance;
-  int? get walletId => _walletId;
   String? get accountNumber => walletInfo.accountNumber;
   String? get accountUsername => walletInfo.accountUsername;
   double? get walletAmount => walletInfo.amount;
@@ -48,22 +50,22 @@ class WalletProvider extends ChangeNotifier {
 
   String get bankName => _bankName ?? 'Unknown Bank';
   String? get bankLogo => _bankLogo;
-  // 1. 마스킹된 계좌번호 게터
+
   String get maskedAccountNumber {
-    final acc = walletInfo.accountNumber ?? "";
-    if (acc.length > 4) {
-      // 뒤에서 4자리만 자르고 앞에 점을 붙임
-      return '•••• ${acc.substring(acc.length - 4)}';
-    }
-    return acc; // 4자리 이하면 그냥 노출
+    final acc = walletInfo.accountNumber ?? '';
+    if (acc.length > 4) return '•••• ${acc.substring(acc.length - 4)}';
+    return acc;
   }
 
-  // --- [3] 데이터 로드 로직 ---
-
-  Future<void> initWalletData() async {
+  // --- [3] 초기화 — walletId를 AccountProvider에서 받아 진입 ---
+  /// View의 initState에서 accountProvider.walletId를 넘겨 호출
+  /// 이 메서드가 walletId 캐싱의 단일 진입점
+  Future<void> initWalletData(int walletId) async {
+    _walletId = walletId;
     status = WalletStatus.loading;
     _errorMessage = null;
     notifyListeners();
+
     try {
       await loadWalletInfo();
       status = WalletStatus.success;
@@ -76,21 +78,20 @@ class WalletProvider extends ChangeNotifier {
 
   Future<void> loadWalletInfo() async {
     try {
-      // 1. 서비스로부터 bankCode가 포함된 모델을 받아옴
       walletInfo = await _service.fetchWalletInfo();
 
       if (walletInfo.walletId != null) {
-        _walletId = walletInfo.walletId;
+        // walletId는 외부 주입값 우선, 없으면 서버 응답값으로 보완
+        _walletId ??= walletInfo.walletId;
 
-        // 2. 모델에 담긴 bankCode로 은행 이름/로고 찾기
-        final String? code = walletInfo.bankCode;
-        final bankData = BankConstants.findBankByCode(code);
-
+        final bankData = BankConstants.findBankByCode(walletInfo.bankCode);
         if (bankData != null) {
           _bankName = bankData['name'];
           _bankLogo = bankData['logo'];
         } else {
-          _bankName = code != null ? 'Bank ($code)' : 'Unknown Bank';
+          _bankName = walletInfo.bankCode != null
+              ? 'Bank (${walletInfo.bankCode})'
+              : 'Unknown Bank';
           _bankLogo = null;
         }
 
@@ -104,7 +105,10 @@ class WalletProvider extends ChangeNotifier {
   }
 
   Future<void> loadWalletBalance({num? amount}) async {
-    if (_walletId == null) return;
+    if (_walletId == null) {
+      debugPrint('⚠️ loadWalletBalance 스킵: walletId가 없습니다.');
+      return;
+    }
     try {
       wallet = await _service.fetchWalletBalance(
         walletId: _walletId!,
@@ -134,18 +138,17 @@ class WalletProvider extends ChangeNotifier {
     }
   }
 
-  // ✅ [추가] 에러 메시지를 수동으로 비워주는 메서드
   void clearError() {
     if (_errorMessage != null) {
       _errorMessage = null;
-      notifyListeners(); // UI에 에러가 사라졌음을 알림
+      notifyListeners();
     }
   }
 
   void initForTopup({String? currency}) =>
-      _initForAction(isTopup: true, currency: currency ?? "USD");
+      _initForAction(isTopup: true, currency: currency ?? 'USD');
   void initForRefund({String? currency}) =>
-      _initForAction(isTopup: false, currency: currency ?? "USD");
+      _initForAction(isTopup: false, currency: currency ?? 'USD');
 
   void _initForAction({required bool isTopup, required String currency}) {
     _isTopupView = isTopup;
@@ -167,14 +170,10 @@ class WalletProvider extends ChangeNotifier {
   }
 
   void updateBalanceManually(int newBalance) {
-    // 1. wallet 객체 업데이트 (copyWith 사용)
     wallet = wallet.copyWith(currentBalance: newBalance);
-
-    // 2. walletInfo 객체 업데이트 (UI 연동용)
     walletInfo = walletInfo.copyWith(amount: newBalance.toDouble());
-
     debugPrint('💰 잔액 업데이트 완료: $newBalance');
-    notifyListeners(); // UI에 즉시 반영
+    notifyListeners();
   }
 
   void updateKrwAmountFromText(String text) {
@@ -196,10 +195,13 @@ class WalletProvider extends ChangeNotifier {
     }
   }
 
-  // --- [5] 트랜잭션 ---
+  // --- [4] 트랜잭션 ---
 
   Future<bool> chargeWallet({required String pinNumber}) async {
-    if (_walletId == null) return false;
+    if (_walletId == null) {
+      debugPrint('🚨 chargeWallet 실패: walletId 없음');
+      return false;
+    }
     return await _executeTransaction(
       walletId: _walletId!,
       pinNumber: pinNumber,
@@ -215,7 +217,10 @@ class WalletProvider extends ChangeNotifier {
   }
 
   Future<bool> refundWallet({required String pinNumber}) async {
-    if (_walletId == null) return false;
+    if (_walletId == null) {
+      debugPrint('🚨 refundWallet 실패: walletId 없음');
+      return false;
+    }
     return await _executeTransaction(
       walletId: _walletId!,
       pinNumber: pinNumber,
@@ -250,7 +255,7 @@ class WalletProvider extends ChangeNotifier {
         notifyListeners();
         return true;
       }
-      throw Exception("Data format error");
+      throw Exception('Data format error');
     } catch (e) {
       status = WalletStatus.failure;
       _errorMessage = errorMsg;
