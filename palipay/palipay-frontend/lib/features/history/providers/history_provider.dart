@@ -99,4 +99,13 @@ class HistoryProvider with ChangeNotifier {
       return null;
     }
   }
+
+  /// 계좌 연동 해제 시 히스토리 초기화
+  void clearHistory() {
+    _items = [];
+    _currentPage = 0;
+    _totalPages = 0;
+    _totalElements = 0;
+    notifyListeners();
+  }
 }

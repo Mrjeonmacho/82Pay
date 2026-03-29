@@ -39,19 +39,26 @@ class AccountProvider extends ChangeNotifier {
 
     try {
       final response = await _service.linkAccount(accountData: requestData);
+      debugPrint('🔍 연동 응답: ${response.data}'); // 추가
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = response.data['data'];
+        // 변경 전
+        // final data = response.data['data'];
+        // _linkedAccount = BankAccount(
+        //   walletId: data['walletId']!,
+
+        // 변경 후 — data 키 없이 바로 참조
+        final responseData = response.data;
 
         _linkedAccount = BankAccount(
-          walletId: data['walletId']!,
+          walletId: responseData['walletId'].toString(),
           bankCode: requestData['bankCode'],
-          bankName: data['bankName'] ?? 'Pali Account',
-          accountNumber: data['accountNumber'] ?? requestData['accountNumber'],
-          accountUsername: data['accountUsername'] ?? 'Unknown',
+          bankName: requestData['bankName'] ?? 'Pali Account',
+          accountNumber: requestData['accountNumber'],
+          accountUsername: requestData['accountUsername'] ?? 'Unknown',
           accountPassword: requestData['accountPassword'],
-          moneyCode: data['moneyCode'] ?? requestData['moneyCode'] ?? 'KRW',
-          amount: (data['amount'] as num?)?.toInt() ?? 0,
+          moneyCode: requestData['moneyCode'] ?? 'KRW',
+          amount: 0,
         );
 
         notifyListeners();

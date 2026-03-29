@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:palipay_app/core/providers/user_provider.dart';
+import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -225,10 +226,14 @@ class _AccountManagementViewState extends State<AccountManagementView> {
               if (isAuthenticated == true && parentContext.mounted) {
                 final String token =
                     parentContext.read<UserProvider>().accessToken ?? "";
+
                 final success = await parentContext
                     .read<AccountProvider>()
                     .unlinkAccount(token);
+
                 if (success && parentContext.mounted) {
+                  parentContext.read<HistoryProvider>().clearHistory();
+
                   // 2. 성공 메시지 출력
                   ScaffoldMessenger.of(parentContext).showSnackBar(
                     SnackBar(

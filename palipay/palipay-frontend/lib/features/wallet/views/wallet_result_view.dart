@@ -34,6 +34,7 @@ class WalletResultView extends StatelessWidget {
             padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Spacer(),
 
@@ -48,6 +49,7 @@ class WalletResultView extends StatelessWidget {
                 // 2. 금액 및 상태 텍스트
                 Text(
                   amount,
+                  textAlign: TextAlign.center,
                   style: AppTextStyles.headlineLarge.copyWith(
                     fontWeight: FontWeight.w900,
                     color: AppColors.mainBlue,
@@ -59,6 +61,7 @@ class WalletResultView extends StatelessWidget {
                   isRecharge
                       ? 'common.add_money_success'.tr()
                       : 'common.cash_out_success'.tr(),
+                  textAlign: TextAlign.center,
                   style: AppTextStyles.titleLarge.copyWith(
                     color: Colors.grey[600],
                     fontWeight: FontWeight.w500,
