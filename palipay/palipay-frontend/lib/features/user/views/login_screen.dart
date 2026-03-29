@@ -229,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                   )
                                 : Text(
-                                    'login.btn_login'.tr(),
+                                    'login.title'.tr(),
                                     style: AppTextStyles.labelLarge.copyWith(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -254,7 +254,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   );
                                 },
                                 child: Text(
-                                  'sign_up.create_your_account'.tr(),
+                                  'sign_up.btn_sign_up'.tr(),
                                   style: AppTextStyles.bodyMedium.copyWith(
                                     color: AppColors.mainBlue,
                                     fontWeight: FontWeight.bold,

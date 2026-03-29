@@ -18,7 +18,7 @@ import '../widgets/wallet_account_card.dart';
 import '../widgets/quick_amount_row.dart';
 import '../widgets/currency_amount_input.dart';
 import '../../wallet/views/wallet_result_view.dart';
-import '../../pin/views/pin_screen.dart'; // 💡 PIN 화면 임포트
+import '../../pin/views/pin_screen.dart';
 
 class TopupView extends StatefulWidget {
   const TopupView({super.key});
@@ -29,7 +29,6 @@ class TopupView extends StatefulWidget {
 
 class _TopupViewState extends State<TopupView> {
   final TextEditingController _controller = TextEditingController();
-  // 💡 커서 깜빡임(자동 키보드) 방지를 위한 FocusNode
   final FocusNode _focusNode = FocusNode();
 
   @override
@@ -39,17 +38,14 @@ class _TopupViewState extends State<TopupView> {
       final walletProvider = context.read<WalletProvider>();
       final accountProvider = context.read<AccountProvider>();
 
-      final linkedAccount = accountProvider.linkedAccount;
-      final currency = linkedAccount?.moneyCode ?? 'USD';
+      final currency = accountProvider.linkedAccount?.moneyCode ?? 'USD';
+      final walletId = int.tryParse(accountProvider.walletId ?? '0') ?? 0;
 
-      // 1. 충전 모드 초기화 및 환율 정보 로드
+      walletProvider.initWalletData(walletId);
       walletProvider.initForTopup(currency: currency);
       walletProvider.loadExchangeRateQuote();
 
-      // 🚀 [수정] walletId 파라미터 삭제 (Provider 내부 캐싱된 ID 사용)
-      walletProvider.loadWalletBalance(amount: 0);
-
-      // 💡 [추가] 화면 진입 시 키보드가 바로 올라오지 않도록 포커스 해제
+      // 충전 화면은 퀵 버튼 방식이라 진입 시 키보드 자동 방지 유지
       _focusNode.unfocus();
     });
   }
@@ -57,7 +53,7 @@ class _TopupViewState extends State<TopupView> {
   @override
   void dispose() {
     _controller.dispose();
-    _focusNode.dispose(); // FocusNode 해제
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -65,75 +61,93 @@ class _TopupViewState extends State<TopupView> {
   Widget build(BuildContext context) {
     final provider = context.watch<WalletProvider>();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: PaliTopBar(title: 'common.add_money'.tr()),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1. 금액 입력 섹션
-                    CurrencyAmountInput(
-                      // label: 'AMOUNT TO TOP-UP',
-                      controller: _controller,
-                      // 💡 FocusNode를 연결하여 커서 자동 깜빡임 제어
-                      focusNode: _focusNode,
-                      onChanged: (val) => provider.updateKrwAmountFromText(val),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // 에러 메시지
-                    if (provider.errorMessage != null)
-                      Text(
-                        provider.errorMessage!,
-                        style: const TextStyle(
-                          color: AppColors.warningRed,
-                          fontWeight: FontWeight.bold,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
+          appBar: PaliTopBar(title: 'common.add_money'.tr()),
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 1. 금액 입력 섹션
+                        CurrencyAmountInput(
+                          label: 'AMOUNT TO TOP-UP',
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          onChanged: (val) =>
+                              provider.updateKrwAmountFromText(val),
                         ),
-                      ),
+                        const SizedBox(height: 8),
 
-                    const SizedBox(height: 48),
+                        if (provider.errorMessage != null)
+                          Text(
+                            provider.errorMessage!,
+                            style: const TextStyle(
+                              color: AppColors.warningRed,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
 
-                    // 2. Transfer Details 섹션
-                    Text(
-                      'TRANSFER DETAILS',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.abledFont,
-                        letterSpacing: 1.2,
-                      ),
+                        const SizedBox(height: 48),
+
+                        // 2. Transfer Details 섹션
+                        Text(
+                          'TRANSFER DETAILS',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.abledFont,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        Transform.scale(
+                          scale: 0.9,
+                          alignment: Alignment.topCenter,
+                          child: _buildTransferCards(provider),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
+                  ),
+                ),
 
-                    Transform.scale(
-                      scale: 0.9,
-                      alignment: Alignment.topCenter,
-                      child: _buildTransferCards(provider),
-                    ),
-                  ],
+                // 하단 액션 바
+                _buildBottomBar(provider),
+              ],
+            ),
+          ),
+        ),
+
+        // ✅ 로딩 오버레이
+        if (provider.isLoading)
+          const Positioned.fill(
+            child: AbsorbPointer(
+              child: ColoredBox(
+                color: Colors.black12,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.mainBlue,
+                    strokeWidth: 3,
+                  ),
                 ),
               ),
             ),
-            // 하단 액션 바
-            _buildBottomBar(provider),
-          ],
-        ),
-      ),
+          ),
+      ],
     );
   }
 
-  // 송금 정보 카드 위젯 분리
   Widget _buildTransferCards(WalletProvider provider) {
     return Column(
       children: [
         Consumer<AccountProvider>(
           builder: (context, accProvider, child) {
             final account = accProvider.linkedAccount;
-            final String bankName = account?.bankName ?? 'Unknown Bank';
             final String accNum = account?.accountNumber ?? '••••';
             final String maskedAcc = accNum.length > 4
                 ? '•••• ${accNum.substring(accNum.length - 4)}'
@@ -150,6 +164,11 @@ class _TopupViewState extends State<TopupView> {
                         width: 30,
                         height: 30,
                         fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.account_balance,
+                              color: AppColors.mainBlue,
+                            ),
                       ),
                     )
                   : const Icon(
@@ -197,7 +216,6 @@ class _TopupViewState extends State<TopupView> {
                 text: newText,
                 selection: TextSelection.collapsed(offset: newText.length),
               );
-              // 💡 퀵 버튼 클릭 시에는 키보드를 올리지 않도록 포커스 해제
               _focusNode.unfocus();
             },
           ),
@@ -207,7 +225,6 @@ class _TopupViewState extends State<TopupView> {
                 ? AppColors.mainBlue
                 : AppColors.disabledBackground,
             text: 'common.add_money'.tr(),
-            // 로딩 중일 때는 버튼 비활성화 (중복 클릭 방지)
             onPressed: canSubmit && !provider.isLoading
                 ? () => _handleTopup(provider)
                 : null,
@@ -218,34 +235,35 @@ class _TopupViewState extends State<TopupView> {
   }
 
   Future<void> _handleTopup(WalletProvider provider) async {
-    // 🚀 [수정] 하드코딩된 PIN 대신 실제 PIN 입력 화면 호출
+    final int pinWalletId =
+        int.tryParse(context.read<AccountProvider>().walletId ?? '0') ?? 0;
+
     final String? pinNumber = await Navigator.push<String>(
       context,
       MaterialPageRoute(
-        builder: (context) => const PinScreen(mode: PinMode.auth),
+        builder: (context) =>
+            PinScreen(mode: PinMode.auth, walletId: pinWalletId),
       ),
     );
 
     if (pinNumber != null && mounted) {
-      // 🚀 [수정] walletId 파라미터 삭제 (Provider 내부 ID 사용)
       final success = await provider.chargeWallet(pinNumber: pinNumber);
 
       if (success && mounted) {
         final accountProvider = context.read<AccountProvider>();
-
-        // 2. 계좌 잔액 업데이트 (출금 계좌인 외부 은행 계좌 잔액 차감)
         final currentBankBalance = accountProvider.linkedAccount?.amount ?? 0;
         accountProvider.updateBalance(
           currentBankBalance - provider.krwAmount.toInt(),
         );
 
-        // 3. 히스토리 갱신 (Provider에 저장된 최신 walletId 사용)
-        context.read<HistoryProvider>().fetchHistory(
-          walletId: provider.walletId!,
-        );
+        final historyWalletId = provider.walletId;
+        if (historyWalletId != null) {
+          context.read<HistoryProvider>().fetchHistory(
+            walletId: historyWalletId,
+          );
+        }
 
-        // 4. 결과 화면 이동
-        Navigator.pushAndRemoveUntil(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => WalletResultView(

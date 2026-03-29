@@ -6,6 +6,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
 import '../providers/account_provider.dart';
 import '../../../core/providers/user_provider.dart';
+import '../../../core/constants/bank_constants.dart';
 import 'bank_password_view.dart';
 import 'package:flutter/services.dart';
 
@@ -26,54 +27,46 @@ class AccountLinkView extends StatefulWidget {
 class _AccountLinkViewState extends State<AccountLinkView> {
   final _accountController = TextEditingController();
   final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
 
+  // ✅ 숫자 12자리만 유효
   bool get _isAccountValid =>
-      RegExp(r'^\d{4}-\d{4}-\d{4}$').hasMatch(_accountController.text);
+      RegExp(r'^\d{12}$').hasMatch(_accountController.text.replaceAll('-', ''));
 
   @override
   void dispose() {
     _accountController.dispose();
     _usernameController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
-  // 1. 스낵바 메서드 정의 (클래스 내부)
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: AppColors.warningRed),
     );
   }
 
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green),
-    );
-  }
-
-  // 2. 계좌 연동 처리 로직
   Future<void> _handleNextStep() async {
-    // 💡 형식 체크 추가
     if (!_isAccountValid) {
       _showErrorSnackBar('account_link.msg_invalid_account_format'.tr());
       return;
     }
 
-    if (_usernameController.text.isEmpty || _accountController.text.isEmpty) {
+    if (_usernameController.text.isEmpty) {
       _showErrorSnackBar('account_link.fill_all_fields'.tr());
       return;
     }
 
-    // 다음 화면으로 넘길 데이터 뭉치
+    // ✅ 국가코드 기반으로 통화코드 자동 결정
+    final countryCode = context.read<UserProvider>().countryCode ?? 'US';
+    final moneyCode = BankConstants.getDefaultCurrency(countryCode);
+
     final partialData = {
       "bankCode": widget.bankCode,
-      "accountNumber": _accountController.text.trim(),
+      "accountNumber": _accountController.text.replaceAll('-', ''),
       "accountUsername": _usernameController.text.trim(),
-      "moneyCode": "KRW",
+      "moneyCode": moneyCode,
     };
 
-    // 💡 비밀번호 입력 화면으로 이동
     if (mounted) {
       Navigator.push(
         context,
@@ -116,10 +109,9 @@ class _AccountLinkViewState extends State<AccountLinkView> {
                     ),
                     const SizedBox(height: 24),
                     _buildSectionTitle('account_input.account_number'.tr()),
-                    // 💡 공통 위젯 대신 여기서 만든 커스텀 필드 사용
                     _CustomAccountInput(
                       controller: _accountController,
-                      onChanged: (val) => setState(() {}), // 버튼 활성화를 위해 상태 갱신
+                      onChanged: (val) => setState(() {}),
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -135,7 +127,6 @@ class _AccountLinkViewState extends State<AccountLinkView> {
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: PaliButton(
-                // 💡 형식이 맞을 때만 버튼 활성화 (선택 사항)
                 text: isLoading
                     ? 'account_link.linking'.tr()
                     : 'account_link.link_account'.tr(),
@@ -164,7 +155,6 @@ class _AccountLinkViewState extends State<AccountLinkView> {
         children: [
           Icon(icon, color: AppColors.mainBlue),
           const SizedBox(width: 16),
-          // 💡 핵심: Column을 Expanded로 감싸서 남은 가로 공간만 쓰게 합니다.
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,7 +170,6 @@ class _AccountLinkViewState extends State<AccountLinkView> {
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
-                  // 💡 추가: 텍스트가 너무 길면 '...' 처리하고 최대 1줄만 허용
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                   softWrap: false,
@@ -218,14 +207,15 @@ class _CustomAccountInput extends StatelessWidget {
     return TextFormField(
       controller: controller,
       onChanged: onChanged,
-      // 💡 숫자12개 포매터 적용
+      // ✅ 숫자 키패드
       keyboardType: TextInputType.number,
       inputFormatters: [
-        // 🚀 [수정] 숫자 전용 포매터와 길이 제한(14자: 숫자12 + 하이픈2)
+        FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(12),
         _AccountNumberFormatter(),
-        LengthLimitingTextInputFormatter(14),
       ],
       decoration: InputDecoration(
+        hintText: '0000-0000-0000',
         hintText: '0000-0000-0000',
         filled: true,
         fillColor: const Color(0xFFF8F8FB),
@@ -242,29 +232,20 @@ class _CustomAccountInput extends StatelessWidget {
   }
 }
 
-// 💡 하이픈 자동 삽입 포매터
+// ✅ 숫자 4자리마다 하이픈 자동 삽입 (표시용: 0000-0000-0000)
 class _AccountNumberFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    var text = newValue.text;
+    final digits = newValue.text.replaceAll('-', '');
+    final buffer = StringBuffer();
 
-    // 백스페이스 허용을 위해 이전보다 길지 않으면 그대로 반환
-    if (text.length < oldValue.text.length) return newValue;
-
-    // 숫자 이외의 모든 문자 제거
-    final cleanText = text.replaceAll(RegExp(r'[^0-9]'), '');
-    StringBuffer buffer = StringBuffer();
-
-    for (int i = 0; i < cleanText.length; i++) {
-      buffer.write(cleanText[i]);
-
-      // 하이픈 위치: 4번째 숫자 뒤, 8번째 숫자 뒤
-      if (i == 3 && cleanText.length > 4) {
-        buffer.write('-');
-      } else if (i == 7 && cleanText.length > 8) {
+    for (int i = 0; i < digits.length; i++) {
+      buffer.write(digits[i]);
+      // 4자리, 8자리 뒤에 하이픈 (마지막 뒤에는 안 붙임)
+      if ((i == 3 || i == 7) && i != digits.length - 1) {
         buffer.write('-');
       }
     }

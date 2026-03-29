@@ -9,7 +9,6 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/pali_keypad.dart';
 
 // 🚀 Providers
-import '../../../core/providers/user_provider.dart';
 import '../providers/account_provider.dart';
 
 class BankPasswordView extends StatefulWidget {
@@ -27,12 +26,11 @@ class BankPasswordView extends StatefulWidget {
 }
 
 class _BankPasswordViewState extends State<BankPasswordView> {
-  String _inputPassword = "";
+  String _inputPassword = '';
   bool _isLoading = false;
 
-  /// 키패드 입력 로직
   void _onKeyTap(String value) {
-    if (_isLoading) return; // 로딩 중 입력 방지
+    if (_isLoading) return;
     if (_inputPassword.length < 4) {
       setState(() => _inputPassword += value);
       if (_inputPassword.length == 4) {
@@ -41,7 +39,6 @@ class _BankPasswordViewState extends State<BankPasswordView> {
     }
   }
 
-  /// 백스페이스 로직
   void _onBackspace() {
     if (_isLoading) return;
     if (_inputPassword.isNotEmpty) {
@@ -57,61 +54,53 @@ class _BankPasswordViewState extends State<BankPasswordView> {
 
     try {
       final accountProvider = context.read<AccountProvider>();
-      final userProvider = context.read<UserProvider>();
 
-      // 1. 요청 데이터 구성
+      final int walletId =
+          int.tryParse(accountProvider.walletId ?? '0') ??
+          0; // 초기값만 0으로 request
+
+      // 1. 요청 데이터 구성 (walletId 불필요 — 서버가 생성해서 응답으로 줌)
       final Map<String, dynamic> requestData = {
         ...widget.partialData,
         'accountPassword': _inputPassword,
-        'walletId': 0, // 초기 연동 시 0 또는 서버 규격에 맞춤
+        'walletId': walletId, // 실제값으로 수정
       };
 
-      // 2. 토큰 읽기
+      // 2. 토큰 읽기 (소문자 키로 통일)
       const storage = FlutterSecureStorage();
-      final realToken = await storage.read(key: 'accesstoken') ?? '';
+      final token = await storage.read(key: 'accessToken') ?? '';
 
-      // 3. API 호출 (계좌 연동)
+      // 3. API 호출 — 성공 시 accountProvider._linkedAccount에 walletId 자동 세팅
       final String result = await accountProvider.linkAccount(
         requestData: requestData,
-        token: realToken,
+        token: token,
       );
 
       if (!mounted) return;
 
-      if (result == "SUCCESS") {
-        // ✅ [성공] 스낵바 표시
-        _showSnackBar('bank.pwd.link_success'.tr(), Colors.green);
-
-        // 💡 [핵심] UserProvider의 정보를 업데이트 (walletId 포함)
-        // 리팩토링된 setUserInfo 규격(token, context 필수)에 맞춤
-        final newWalletId = accountProvider.walletId?.toString();
-
-        await userProvider.setUserInfo(
-          token: realToken,
-          walletId: newWalletId,
-          context: context, // 🌐 언어 상태 유지를 위해 context 전달
+      if (result == 'SUCCESS') {
+        // walletId는 accountProvider.walletId로 바로 참조 가능
+        debugPrint(
+          '✅ [AccountLink] 연동 완료. walletId: ${accountProvider.walletId}',
         );
 
-        debugPrint('✅ [AccountLink] WalletId 동기화 완료: $newWalletId');
-
-        // 메인 화면으로 돌아가기
-        if (mounted) {
-          Navigator.popUntil(context, (route) => route.isFirst);
-        }
+        _showSnackBar('bank.pwd.link_success'.tr(), Colors.green);
+        Navigator.popUntil(context, (route) => route.isFirst);
       } else {
-        // ❌ [실패] 에러 핸들링
         String errorMessage = 'bank.pwd.invalid_msg'.tr();
-        if (result == "SERVER_ERROR") errorMessage = "common.server_error".tr();
-        if (result == "TIMEOUT") errorMessage = "common.timeout_error".tr();
+        if (result == 'SERVER_ERROR') errorMessage = 'bank.pwd.error'.tr();
+        if (result == 'TIMEOUT') errorMessage = 'bank.pwd.timeout'.tr();
+        if (result == 'ALREADY_LINKED')
+          errorMessage = 'account_link.error.already_linked'.tr();
 
         setState(() {
           _isLoading = false;
-          _inputPassword = ""; // 비번 틀리면 초기화
+          _inputPassword = '';
         });
         _showSnackBar(errorMessage, AppColors.warningRed);
       }
     } catch (e) {
-      debugPrint("🚨 Final Link Error: $e");
+      debugPrint('🚨 Final Link Error: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -143,46 +132,82 @@ class _BankPasswordViewState extends State<BankPasswordView> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 60),
-          const Icon(
-            Icons.lock_person_outlined,
-            size: 80,
-            color: AppColors.mainBlue,
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'bank.pwd.title'.tr(),
-            style: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'bank.pwd.desc'.tr(),
-            style: AppTextStyles.bodyMedium.copyWith(color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 60),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              // ✅ physics를 추가해 화면이 작을 때만 스크롤되게 하거나 항상 스크롤되게 조절 가능합니다.
+              physics: const ClampingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight, // 화면 전체 높이만큼 확보
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 20), // 하단 여백
+                  child: Column(
+                    // ✅ 이 설정이 Spacer 역할을 대신합니다.
+                    // 위젯들 사이의 간격을 최대한 벌려 키패드를 바닥으로 보냅니다.
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // --- 상단 콘텐츠 영역 ---
+                      Column(
+                        children: [
+                          const SizedBox(height: 40),
+                          const Icon(
+                            Icons.lock_person_outlined,
+                            size: 80,
+                            color: AppColors.mainBlue,
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'bank.pwd.title'.tr(),
+                            style: AppTextStyles.titleMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              'bank.pwd.desc'.tr(),
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 40),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              4,
+                              (index) => _buildDot(index),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          if (_isLoading)
+                            const CircularProgressIndicator(
+                              color: AppColors.mainBlue,
+                            )
+                          else
+                            const SizedBox(height: 48),
+                        ],
+                      ),
 
-          // 비밀번호 도트 표시
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(4, (index) => _buildDot(index)),
-          ),
-
-          if (_isLoading) ...[
-            const SizedBox(height: 48),
-            const CircularProgressIndicator(color: AppColors.mainBlue),
-          ],
-
-          const Spacer(),
-
-          // 커스텀 키패드
-          PaliKeypad(onNumberTap: _onKeyTap, onBackspace: _onBackspace),
-          const SizedBox(height: 40),
-        ],
+                      // --- 하단 키패드 영역 ---
+                      // Spacer() 대신 여기서 자연스럽게 아래에 위치하게 됩니다.
+                      PaliKeypad(
+                        onNumberTap: _onKeyTap,
+                        onBackspace: _onBackspace,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

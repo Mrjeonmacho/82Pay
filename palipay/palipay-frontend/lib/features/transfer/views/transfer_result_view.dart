@@ -2,11 +2,13 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; // 날짜 및 금액 포맷팅용
 import 'package:palipay_app/core/utils/currency_input_formatter.dart';
 import 'package:palipay_app/core/theme/app_colors.dart';
 import 'package:palipay_app/core/theme/app_text_styles.dart';
 import 'package:palipay_app/core/widgets/pali_button.dart';
+import 'package:palipay_app/features/wallet/providers/wallet_provider.dart';
 
 class TransferResultView extends StatefulWidget {
   final String recipientName;
@@ -36,6 +38,8 @@ class _TransferResultViewState extends State<TransferResultView> {
   @override
   Widget build(BuildContext context) {
     // 포맷팅 처리를 위한 변수들
+    final walletProvider = context.read<WalletProvider>();
+    final String senderName = walletProvider.accountUsername ?? "나의 지갑";
     final String formattedAmount = CurrencyInputFormatter.format(widget.amount);
     final dateFormat = DateFormat('yyyy.MM.dd HH:mm:ss');
     final now = DateTime.now();
@@ -141,23 +145,33 @@ class _TransferResultViewState extends State<TransferResultView> {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'transfer_result.recipient'.tr(),
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: Colors.grey,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'To ',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  Flexible(
+                                    child: Text(
+                                      widget.recipientName.isNotEmpty
+                                          ? widget.recipientName
+                                          : 'common.unknown'.tr(),
+                                      style: AppTextStyles.bodyLarge.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              widget.recipientName,
-                              style: AppTextStyles.bodyLarge.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -168,7 +182,7 @@ class _TransferResultViewState extends State<TransferResultView> {
                     // 상세 항목들 (Row 스타일)
                     _buildReceiptRow(
                       'transfer.result.sender'.tr(),
-                      "James Cooper",
+                      senderName,
                     ), // 가짜 보낸이
                     _buildReceiptRow(
                       'transfer.result.transaction_date'.tr(),

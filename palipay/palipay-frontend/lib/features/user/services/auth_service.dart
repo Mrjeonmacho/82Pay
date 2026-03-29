@@ -110,7 +110,6 @@ class AuthService {
       // 💡 아래 줄을 추가해서 로그를 다시 보세요!
       // 서버가 "비밀번호가 틀렸다" 혹은 "이메일 형식이 아니다"라고 말해줄 겁니다.
       debugPrint("❌ 서버가 보낸 에러 상세: ${e.response?.data}");
-
       debugPrint("❌ 로그인 API 에러: ${e.response?.statusCode}");
       return null;
     } catch (e) {
@@ -140,7 +139,7 @@ class AuthService {
       final response = await _dio.post('/auth/reissue');
       if (response.statusCode == 200) {
         final data = response.data;
-        await _storage.write(key: 'accesstoken', value: data['accesstoken']);
+        await _storage.write(key: 'accessToken', value: data['accessToken']);
         return true;
       }
       return false;
@@ -156,7 +155,13 @@ class AuthService {
     } catch (e) {
       debugPrint('로그아웃 서버 에러: $e');
     } finally {
-      await _storage.deleteAll();
+      // 언어 설정용 countryCode는 남기고,
+      // 로그인/사용자 정보만 삭제
+      await _storage.delete(key: 'accessToken');
+      await _storage.delete(key: 'walletId');
+      await _storage.delete(key: 'userName');
+      await _storage.delete(key: 'userEmail');
+      await _storage.delete(key: 'useAutoLogin');
       await DioClient().cookieJar.deleteAll();
     }
   }

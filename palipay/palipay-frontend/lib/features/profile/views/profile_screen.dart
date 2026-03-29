@@ -32,8 +32,7 @@ class ProfileScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.mainBlue),
             onPressed: () async {
-              final logoutProvider = context.read<LogoutProvider>();
-              await logoutProvider.logout();
+              await context.read<LogoutProvider>().logout(context);
 
               if (!context.mounted) return;
 

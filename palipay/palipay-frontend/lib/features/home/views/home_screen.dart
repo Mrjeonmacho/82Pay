@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:palipay_app/features/history/providers/history_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:palipay_app/core/utils/route_observers.dart';
 
 // [임포트 확인] 프로젝트 구조에 맞게 UserProvider 경로를 확인하세요.
 import 'package:palipay_app/features/home/widgets/empty_wallet_card.dart';
@@ -20,23 +22,47 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with RouteAware {
   @override
   void initState() {
     super.initState();
     // 초기 로드 시 시도
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _syncWalletData();
+      _refreshAllData();
     });
   }
 
-  void _syncWalletData() {
-    final userProvider = context.read<UserProvider>();
-    final walletId = int.tryParse(userProvider.walletId ?? '0') ?? 0;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 🚩 RouteObserver 구독
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
 
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this); // 🚩 해제
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // ⭐ 다른 화면(송금 결과 등)에서 홈으로 돌아오면 자동 실행됨
+    debugPrint('🔄 [Home] 복귀 감지: 데이터 갱신 시작');
+    _refreshAllData();
+  }
+
+  void _refreshAllData() {
+    final walletProvider = context.read<WalletProvider>();
+    final accountProvider = context.read<AccountProvider>();
+
+    // AccountProvider가 단일 출처 — 없으면 0으로 넘기고 서버 응답으로 보완
+    final walletId = int.tryParse(accountProvider.walletId ?? '0') ?? 0;
+    walletProvider.initWalletData(walletId);
+
+    // walletId 확정 후 히스토리 갱신
     if (walletId > 0) {
-      debugPrint('✅ [Home] 초기 동기화 성공: $walletId');
-      context.read<WalletProvider>().initWalletData();
+      context.read<HistoryProvider>().fetchHistory(walletId: walletId);
     }
   }
 
@@ -50,7 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // 2. 지갑 유무 판단 기준 변경
     // WalletProvider에 walletId가 저장되어 있고, 서버에서 가져온 지갑 정보(accountNumber)가 있다면 지갑이 있는 것으로 간주합니다.
-    final bool hasWallet = walletProvider.walletId != null;
+    final accountProvider = context.watch<AccountProvider>();
+    final bool hasWallet = accountProvider.hasWallet;
 
     return Scaffold(
       extendBody: true,

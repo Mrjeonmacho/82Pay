@@ -30,6 +30,38 @@ class TransferService {
     }
   }
 
+  // ✅ 계좌번호/은행코드만으로 먼저 검증
+  Future<ApiResponse<TransferValidateResponse>> validateRecipient({
+    required String otherBankCode,
+    required String otherAccountNumber,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/finance/external-accounts/validate',
+        data: {
+          'otherBankCode': otherBankCode,
+          'otherAccountNumber': otherAccountNumber,
+          'otherAccountName': 'Palipay',
+          'accountCurrency': 'KRW',
+        },
+      );
+
+      debugPrint('✅ [Recipient Validate] ${response.data}');
+
+      return ApiResponse.success(
+        TransferValidateResponse.fromJson(
+          response.data as Map<String, dynamic>,
+        ),
+      );
+    } on DioException catch (e) {
+      debugPrint(
+        '❌ [Recipient Validate Error] ${e.response?.statusCode} | ${e.requestOptions.path}',
+      );
+      debugPrint('💣 Error Data: ${e.response?.data}');
+      throw _handleError(e);
+    }
+  }
+
   // 2단계: 최종 검증 (FINANCE_TRANSFER_001)
   Future<ApiResponse<TransferValidateResponse>> validateTransfer(
     TransferRequest request,

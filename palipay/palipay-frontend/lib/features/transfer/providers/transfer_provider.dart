@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-import 'package:uuid/uuid.dart';
 import 'package:palipay_app/features/transfer/models/transfer_model.dart';
 import 'package:palipay_app/features/transfer/models/transfer_dto.dart';
 import '../services/transfer_service.dart';
@@ -15,6 +14,16 @@ class TransferProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  // ✅ 예금주 조회 상태
+  bool _isRecipientLoading = false;
+  bool get isRecipientLoading => _isRecipientLoading;
+
+  String? _recipientName;
+  String? get recipientName => _recipientName;
+
+  bool _isRecipientValidated = false;
+  bool get isRecipientValidated => _isRecipientValidated;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
@@ -32,8 +41,66 @@ class TransferProvider extends ChangeNotifier {
   void reset() {
     _isLoading = false;
     _errorMessage = null;
+    _isRecipientLoading = false;
+    _recipientName = null;
+    _isRecipientValidated = false;
     notifyListeners();
     debugPrint('🔄 TransferProvider: 모든 상태가 초기화되었습니다.');
+  }
+
+  // ✅ 계좌 입력 단계에서 호출할 초기화
+  void resetRecipientInfo() {
+    _isRecipientLoading = false;
+    _recipientName = null;
+    _isRecipientValidated = false;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  // ✅ await 없이 시작해둘 예금주 조회
+  Future<void> startRecipientValidation({
+    required String otherBankCode,
+    required String otherAccountNumber,
+  }) async {
+    _isRecipientLoading = true;
+    _recipientName = null;
+    _isRecipientValidated = false;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _service.validateRecipient(
+        otherBankCode: otherBankCode,
+        otherAccountNumber: otherAccountNumber,
+      );
+
+      if (!response.isSuccess || response.data == null) {
+        _errorMessage = response.message ?? '계좌 검증에 실패했습니다.';
+        return;
+      }
+
+      final data = response.data!;
+
+      if (!data.isValid) {
+        final errors = data.validationErrors ?? [];
+
+        if (errors.isNotEmpty) {
+          _errorMessage = errors.first.reason;
+        } else {
+          _errorMessage = data.message;
+        }
+        return;
+      }
+
+      _recipientName = data.accountName;
+      _isRecipientValidated = true;
+      _errorMessage = null;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+    } finally {
+      _isRecipientLoading = false;
+      notifyListeners();
+    }
   }
 
   // --- [Step 1: 잔액 체크] ---
@@ -88,40 +155,36 @@ class TransferProvider extends ChangeNotifier {
       // 1. Validate (계좌 유효성 등 확인)
       final validateResult = await _service.validateTransfer(request);
 
+      // 🔍 서버가 보내온 상세 에러 내용 출력
+      debugPrint('❌ Validate Full Response: ${validateResult.data}');
+      if (validateResult.data?.validationErrors != null) {
+        for (var error in validateResult.data!.validationErrors!) {
+          debugPrint('🚩 상세 사유: ${error.reason}, 필드: ${error.field}');
+        }
+      }
+      // 1️⃣ 유효성 검사 자체가 실패했거나 계좌가 올바르지 않은 경우
       if (!validateResult.isSuccess || validateResult.data?.isValid == false) {
-        final errors = validateResult.data?.validationErrors;
-        if (errors != null && errors.isNotEmpty) {
-          _errorMessage = errors.first.reason;
-        } else {
-          _errorMessage = validateResult.message ?? "계좌 정보를 확인해주세요.";
-        }
+        _errorMessage =
+            validateResult.data?.validationErrors?.first.reason ??
+            validateResult.message ??
+            "계좌 정보를 확인해주세요.";
+        return null; // 여기서 종료
+      }
 
-        if (!validateResult.isSuccess ||
-            validateResult.data?.isValid == false) {
-          final errors = validateResult.data?.validationErrors;
-          if (errors != null && errors.isNotEmpty) {
-            _errorMessage = errors.first.reason;
-          } else {
-            _errorMessage = validateResult.message ?? "계좌 정보를 확인해주세요.";
-          }
-          return null;
-        }
+      debugPrint('🚀 [Transfer] 2. 실제 송금 실행 (Idempotency Key 생성)');
+      // 2. Execute (실제 송금 요청)
+      // 중복 결제 방지를 위해 멱등성 키(UUID) 생성
+      final idempotencyKey = _uuid.v4();
+      final result = await _service.executeTransfer(request, idempotencyKey);
 
-        debugPrint('🚀 [Transfer] 2. 실제 송금 실행 (Idempotency Key 생성)');
-        // 2. Execute (실제 송금 요청)
-        // 중복 결제 방지를 위해 멱등성 키(UUID) 생성
-        final idempotencyKey = _uuid.v4();
-        final result = await _service.executeTransfer(request, idempotencyKey);
-
-        if (result.isSuccess && result.data != null) {
-          debugPrint('✅ [Transfer] 송금 성공!');
-          _errorMessage = null;
-          return result.data;
-        } else {
-          _errorMessage = result.message ?? "송금 처리에 실패했습니다.";
-          debugPrint('❌ [Transfer] 송금 실패: $_errorMessage');
-          return null;
-        }
+      if (result.isSuccess && result.data != null) {
+        debugPrint('✅ [Transfer] 송금 성공!');
+        _errorMessage = null;
+        return result.data;
+      } else {
+        _errorMessage = result.message ?? "송금 처리에 실패했습니다.";
+        debugPrint('❌ [Transfer] 송금 실패: $_errorMessage');
+        return null;
       }
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');

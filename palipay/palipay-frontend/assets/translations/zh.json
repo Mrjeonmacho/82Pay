@@ -87,7 +87,8 @@
             "invalid_info": "输入的信息不匹配。",
             "timeout": "服务器连接超时。",
             "title": "输入银行密码",
-            "desc": "请输入4位银行密码"
+            "desc": "请输入4位银行密码",
+            "error": "发生服务器错误。请稍后再试。"
         }
     },
     "account_link": {
@@ -99,7 +100,13 @@
         "link_account": "绑定账户",
         "msg_invalid_account_format": "账号格式不正确。(例如：KR-1234-5678-9012)",
         "currency_info": "根据您的个人资料，币种将设为韩元(KRW)。",
-        "fill_all_fields": "请填写所有字段。"
+        "fill_all_fields": "请填写所有字段。",
+        "error": {
+            "already_linked": "该银行账户已绑定到另一个用户。",
+             "invalid_info": "输入的信息与我们的记录不匹配。",
+             "timeout": "服务器连接超时。请再试一次。",
+             "server_error": "发生服务器错误。请稍后再试。"
+        }
     },
     "account_management": {
         "title": "账户管理",
@@ -202,7 +209,8 @@
         "to_bank": "转入 {bankName}",
         "amount": "金额",
         "enter_in_krw": "请输入韩元金额",
-        "withdrawable_amount": "可提现金额为 ₩ {balance}"
+        "withdrawable_amount": "可提现金额为 ₩ {balance}",
+        "unknown": "未知"
     },
     "transfer_confirm": {
         "send_money": "确认转账？",
@@ -226,7 +234,9 @@
         "or": "或者",
         "msg_password_changed": "密码已修改。请重新登录。",
         "welcome": "欢迎！",
-        "google": "通过 Google 继续"
+        "google": "通过 Google 继续",
+        "no_account": "没有账户？",
+        "error_invalid": "无效的邮箱或密码。"
     },
     "sign_up": {
         "create_your_account": "创建您的账户",
@@ -298,6 +308,9 @@
             "transaction_id": "交易ID",
             "memo_hint": "添加备注 (选填)",
             "btn_back_home": "返回首页"
+        },
+        "error": {
+            "failed": "转账失败。请重试。"
         }
     },
     "gallery_crop": {

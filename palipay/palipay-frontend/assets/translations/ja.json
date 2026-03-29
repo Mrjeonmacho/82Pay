@@ -87,7 +87,8 @@
             "invalid_info": "入力された情報が一致しません。",
             "timeout": "サーバー接続がタイムアウトしました。",
             "title": "銀行パスワード入力",
-            "desc": "銀行の暗証番号4桁を入力してください"
+            "desc": "銀行の暗証番号4桁を入力してください",
+            "error": "サーバーエラーが発生しました。もう一度お試しください。"
         }
     },
     "account_link": {
@@ -99,7 +100,13 @@
         "link_account": "口座を連携する",
         "msg_invalid_account_format": "口座番号の形式が正しくありません。（例：KR-1234-5678-9012）",
         "currency_info": "プロフィールに基づき、通貨がKRWに設定されます。",
-        "fill_all_fields": "すべての項目を入力してください。"
+        "fill_all_fields": "すべての項目を入力してください。",
+        "error": {
+            "already_linked": "この銀行口座はすでに別のユーザーに連携されています。",
+             "invalid_info": "入力された情報が当社の記録と一致しません。",
+             "timeout": "サーバー接続がタイムアウトしました。もう一度お試しください。",
+             "server_error": "サーバーエラーが発生しました。後でもう一度お試しください。"
+        }
     },
     "account_management": {
         "title": "口座管理",
@@ -202,7 +209,8 @@
         "to_bank": "{bankName}口座へ",
         "amount": "金額",
         "enter_in_krw": "KRW単位で入力してください",
-        "withdrawable_amount": "出金可能額: ₩ {balance}"
+        "withdrawable_amount": "出金可能額: ₩ {balance}",
+        "unknown": "不明"
     },
     "transfer_confirm": {
         "send_money": "このまま振り込みますか？",
@@ -225,7 +233,9 @@
         "or": "または",
         "msg_password_changed": "パスワードが変更されました。再度ログインしてください。",
         "welcome": "ようこそ！",
-        "google": "Googleで続ける"
+        "google": "Googleで続ける",
+        "no_account": "アカウントをお持ちではありませんか？",
+        "error_invalid": "無効なメールアドレスまたはパスワードです。"
     },
     "sign_up": {
         "create_your_account": "アカウント作成",
@@ -297,6 +307,9 @@
             "transaction_id": "取引ID",
             "memo_hint": "ライブメモを追加する（任意)",
             "btn_back_home": "ホームに戻る"
+        },
+        "error": {
+            "failed": "送金に失敗しました。もう一度お試しください。"
         }
     },
     "gallery_crop": {

@@ -87,7 +87,8 @@
             "invalid_info": "The information entered does not match.",
             "timeout": "Server connection timed out.",
             "title": "Enter Bank Password",
-            "desc": "Please enter your 4-digit bank password"
+            "desc": "Please enter your 4-digit bank password",
+            "error": "server error occurred. Please try again."
         }
     },
     "account_link": {
@@ -99,7 +100,13 @@
         "link_account": "Link Account",
         "msg_invalid_account_format": "Invalid account number format. (e.g. KR-1234-5678-9012)",
         "currency_info": "Your currency will be set to KRW based on your profile.",
-        "fill_all_fields": "Please fill in all fields."
+        "fill_all_fields": "Please fill in all fields.",
+        "error": {
+            "already_linked": "This bank account is already linked to another user.",
+            "invalid_info": "The information entered does not match our records.",
+            "timeout": "Server connection timed out. Please try again.",
+            "server_error": "A server error occurred. Please try again later."
+        }
     },
     "account_management": {
         "title": "Account management",
@@ -202,7 +209,8 @@
         "to_bank": "To {bankName}",
         "amount": "Amount",
         "enter_in_krw": "Please enter in Korean Won",
-        "withdrawable_amount": "Withdrawable amount is ₩ {balance}"
+        "withdrawable_amount": "Withdrawable amount is ₩ {balance}",
+        "unknown": "unknown"
     },
     "transfer_confirm": {
         "send_money": "Send Money?",
@@ -226,7 +234,9 @@
         "or": "Or",
         "msg_password_changed": "Your password has been changed successfully. Please log in again.",
         "welcome": "Welcome!",
-        "google": "Continue with Google"
+        "google": "Continue with Google",
+        "no_account": "Don't have an account?",
+        "error_invalid": "Invalid email or password."
     },
     "sign_up": {
         "create_your_account": "Create Your Account",
@@ -298,6 +308,9 @@
             "transaction_id": "Transaction ID",
             "memo_hint": "Add a live memo (optional)",
             "btn_back_home": "Back to Home"
+        },
+        "error": {
+            "failed": "Transfer failed. Please try again."
         }
     },
     "gallery_crop": {

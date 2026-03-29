@@ -23,8 +23,8 @@ class DioClient {
     dio = Dio(
       BaseOptions(
         baseUrl: dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8081',
-        connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 20),
+        connectTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 60),
         headers: {'Content-Type': 'application/json'},
       ),
     );
@@ -49,21 +49,24 @@ class DioClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          // 🔒 1. 금고에서 토큰 및 국적 읽기
-          final token = await _storage.read(key: 'accesstoken');
+          final token = await _storage.read(key: 'accessToken');
+          debugPrint('🔑 읽힌 토큰: $token'); // null인지 확인
+
           final countryCode = await _storage.read(key: 'countryCode') ?? 'US';
 
           // 🌐 2. 서버에 언어 설정 전달 (Accept-Language)
-          final langMap = {'KR': 'ko', 'JP': 'ja', 'CN': 'zh', 'US': 'en'};
+          const langMap = {'JP': 'ja', 'CN': 'zh', 'US': 'en'};
           options.headers['Accept-Language'] = langMap[countryCode] ?? 'en';
 
-          // 🔐 3. 토큰 주입 (auth 경로는 제외 가능)
-          if (token != null &&
-              token != 'null' &&
-              !options.path.contains('/auth/')) {
+          final isAuthPath =
+              options.path == '/auth/login' || options.path == '/auth/reissue';
+
+          // 🔐 3. 토큰 주입 (auth 경로 제외)
+          if (token != null && token.isNotEmpty && !isAuthPath) {
             options.headers['Authorization'] = 'Bearer $token';
-            options.headers['accesstoken'] = token; // 특정 백엔드 대응용
-            debugPrint('🔑 [Dio Request] Token & Lang($countryCode) Injected');
+            options.headers['accesstoken'] = token; // 백엔드가 읽는 헤더 추가
+
+            // options.headers['accessToken'] = token;
           }
 
           return handler.next(options);
@@ -72,6 +75,17 @@ class DioClient {
           debugPrint(
             '❌ [API Error] ${e.response?.statusCode} | ${e.requestOptions.path}',
           );
+
+          if (kDebugMode) {
+            debugPrint('👉 METHOD: ${e.requestOptions.method}');
+            debugPrint('👉 REQUEST DATA: ${e.requestOptions.data}');
+            debugPrint('👉 HEADERS: ${e.requestOptions.headers}');
+            debugPrint('👉 RESPONSE DATA: ${e.response?.data}');
+            debugPrint('👉 ERROR TYPE: ${e.type}');
+            debugPrint('👉 MESSAGE: ${e.message}');
+            debugPrint('────────────────────────────');
+          }
+
           return handler.next(e);
         },
       ),

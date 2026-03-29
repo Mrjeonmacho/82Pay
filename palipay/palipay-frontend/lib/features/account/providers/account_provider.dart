@@ -1,3 +1,5 @@
+// lib/features/account/providers/account_provider.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
@@ -14,20 +16,21 @@ class AccountProvider extends ChangeNotifier {
 
   BankAccount? _linkedAccount;
   bool _isLoading = false;
-  String? _walletId;
+
+  // walletId의 단일 출처 — UserProvider에서 완전히 이관
+  String? get walletId => _linkedAccount?.walletId;
 
   bool get hasWallet =>
       _linkedAccount != null && _linkedAccount!.accountNumber.isNotEmpty;
   BankAccount? get linkedAccount => _linkedAccount;
   bool get isLoading => _isLoading;
-  String? get walletId => _walletId;
 
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
 
-  /// [USER_ACCOUNT_001] 계좌 연동 (실제 서버 통신)
+  /// [USER_ACCOUNT_001] 계좌 연동
   Future<String> linkAccount({
     required Map<String, dynamic> requestData,
     required String token,
@@ -35,13 +38,10 @@ class AccountProvider extends ChangeNotifier {
     _setLoading(true);
 
     try {
-      final response = await _service.linkAccount(
-        accountData: requestData,
-        token: token,
-      );
+      final response = await _service.linkAccount(accountData: requestData);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = response.data['data']; // 서버 응답 구조에 맞게 수정
+        final data = response.data['data'];
 
         _linkedAccount = BankAccount(
           walletId: data['walletId']!,
@@ -54,37 +54,29 @@ class AccountProvider extends ChangeNotifier {
           amount: (data['amount'] as num?)?.toInt() ?? 0,
         );
 
-        _walletId = _linkedAccount?.walletId;
-
         notifyListeners();
-        return "SUCCESS";
+        return 'SUCCESS';
       }
 
-      return "FAILED";
+      return 'FAILED';
     } catch (e) {
       debugPrint('🚨 계좌 연동 실패: $e');
 
-      if (e is DioException) {
-        if (e.response != null) {
-          int statusCode = e.response!.statusCode ?? 500;
+      if (e is DioException && e.response != null) {
+        final statusCode = e.response!.statusCode ?? 500;
 
-          // 서버에서 정의한 에러 코드에 따라 분기
-          if (statusCode == 401 || statusCode == 400) {
-            return "INVALID_PASSWORD"; // 비밀번호가 틀렸거나 잘못된 요청
-          } else if (statusCode == 409) {
-            return "ALREADY_LINKED"; // 이미 연동된 계좌
-          } else if (statusCode >= 500) {
-            return "SERVER_ERROR"; // 서버 내부 에러
-          }
-        }
-
-        if (e.type == DioExceptionType.connectionTimeout ||
-            e.type == DioExceptionType.receiveTimeout) {
-          return "TIMEOUT";
-        }
+        if (statusCode == 400 || statusCode == 401) return 'INVALID_PASSWORD';
+        if (statusCode == 409) return 'ALREADY_LINKED';
+        if (statusCode >= 500) return 'SERVER_ERROR';
       }
 
-      return "UNKNOWN_ERROR";
+      if (e is DioException &&
+          (e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.receiveTimeout)) {
+        return 'TIMEOUT';
+      }
+
+      return 'UNKNOWN_ERROR';
     } finally {
       _setLoading(false);
     }
@@ -98,7 +90,7 @@ class AccountProvider extends ChangeNotifier {
     }
   }
 
-  /// [USER_ACCOUNT_002] 계좌 연동 해제 (실제 서버 통신)
+  /// [USER_ACCOUNT_002] 계좌 연동 해제
   Future<bool> unlinkAccount(String token) async {
     if (_linkedAccount == null) return false;
     _setLoading(true);
@@ -114,7 +106,6 @@ class AccountProvider extends ChangeNotifier {
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         _linkedAccount = null;
-        _walletId = null;
         notifyListeners();
         return true;
       }
@@ -127,7 +118,7 @@ class AccountProvider extends ChangeNotifier {
     }
   }
 
-  /// [USER_ACCOUNT_003] 핀(PIN) 번호 생성
+  /// [USER_ACCOUNT_003] PIN 번호 생성
   Future<bool> createPin({
     required String walletId,
     required String pinNumber,
@@ -150,7 +141,7 @@ class AccountProvider extends ChangeNotifier {
     }
   }
 
-  /// [USER_ACCOUNT_004] 핀(PIN) 번호 변경
+  /// [USER_ACCOUNT_004] PIN 번호 변경
   Future<bool> updatePin({
     required String walletId,
     required String oldPinNumber,
@@ -176,23 +167,18 @@ class AccountProvider extends ChangeNotifier {
   }
 
   /// [USER_ACCOUNT_005] 서버에서 최신 지갑/계좌 정보 가져오기
+  /// 로그인 직후 및 앱 재시작 시 호출 — walletId 확정의 단일 진입점
   Future<void> refreshWalletInfo(BuildContext context) async {
     final userCountry = context.read<UserProvider>().countryCode ?? 'US';
     _isLoading = true;
     notifyListeners();
 
     try {
-      // 1. 서비스 호출
       final walletInfo = await _walletService.fetchWalletInfo();
-      print("walletInfo: $walletInfo");
-      // 2. 데이터가 정상적으로 왔는지 확인 (walletId가 있다면 지갑이 있는 것)
-      if (walletInfo.walletId != null) {
-        final List<Map<String, dynamic>> countryBanks = BankConstants.getBanks(
-          userCountry,
-        );
-        final String currency = BankConstants.getDefaultCurrency(userCountry);
 
-        final bankName = BankConstants.getBankName(
+      if (walletInfo.walletId != null) {
+        final String currency = BankConstants.getDefaultCurrency(userCountry);
+        final String bankName = BankConstants.getBankName(
           userCountry,
           walletInfo.bankCode ?? '',
         );
@@ -203,13 +189,12 @@ class AccountProvider extends ChangeNotifier {
           accountNumber: walletInfo.accountNumber ?? '',
           accountUsername: walletInfo.accountUsername ?? '',
           amount: walletInfo.amount?.toInt() ?? 0,
-          // password나 bankCode는 보안상 서버에서 안 오므로 기존 값을 유지하거나 비워둠
           accountPassword: _linkedAccount?.accountPassword ?? '',
           bankCode: _linkedAccount?.bankCode ?? '',
           moneyCode: currency,
         );
       } else {
-        _linkedAccount = null; // 지갑 정보가 없으면 null 처리
+        _linkedAccount = null;
       }
     } catch (e) {
       debugPrint('🚨 지갑 정보 갱신 실패: $e');

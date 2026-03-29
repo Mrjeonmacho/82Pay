@@ -38,76 +38,67 @@ class TransferConfirmView extends StatelessWidget {
     final transferProvider = context.read<TransferProvider>();
     final walletProvider = context.read<WalletProvider>();
 
-    // 0. 시작 전 에러 메시지 초기화 (이전 에러가 잔상처럼 남지 않게)
     transferProvider.clearError();
 
-    // 1. walletId를 WalletProvider에서 가져오기
     final int walletId = walletProvider.walletId ?? 0;
 
     if (walletId <= 0) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('지갑 정보가 올바르지 않습니다.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('지갑 정보가 올바르지 않습니다.')),
+      );
       return;
     }
 
-    // 2. PIN 인증 화면 호출
-    final authenticatedPin = await Navigator.push<String?>(
+    await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const PinScreen(mode: PinMode.auth),
+        builder: (pinContext) => PinScreen(
+          mode: PinMode.auth,
+          onAuthSuccess: (pinContext, authenticatedPin) async {
+            final response = await transferProvider.performTransfer(
+              TransferRequest(
+                walletId: walletId,
+                otherBankCode: bankCode,
+                otherAccountNumber: accountNumber,
+                otherAccountName: recipientName,
+                amount: amount.toDouble(),
+                accountCurrency: "KRW",
+                pinNumber: authenticatedPin,
+              ),
+            );
+
+            if (!pinContext.mounted) return;
+
+            if (response != null) {
+              walletProvider.updateBalanceManually(
+                response.currentBalance.toInt(),
+              );
+
+              transferProvider.clearError();
+
+              Navigator.of(pinContext).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => TransferResultView(
+                    recipientName: recipientName,
+                    amount: amount,
+                    bankName: bankName,
+                  ),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(pinContext).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    transferProvider.errorMessage ?? 'transfer.error.failed'.tr(),
+                  ),
+                  backgroundColor: AppColors.warningRed,
+                ),
+              );
+            }
+          },
+        ),
       ),
     );
-
-    // 3. 인증 성공 시 송금 프로세스 진행
-    if (authenticatedPin != null && context.mounted) {
-      final response = await transferProvider.performTransfer(
-        TransferRequest(
-          walletId: walletId,
-          otherBankCode: bankCode,
-          otherAccountNumber: accountNumber,
-          otherAccountName: recipientName,
-          amount: amount.toDouble(),
-          accountCurrency: "KRW",
-          pinNumber: authenticatedPin,
-        ),
-      );
-
-      if (!context.mounted) return;
-
-      if (response != null) {
-        // ✅ [핵심 추가] 송금 성공 시 WalletProvider 잔액 업데이트
-        if (response.currentBalance != null) {
-          walletProvider.updateBalanceManually(
-            response.currentBalance!.toInt(),
-          );
-        }
-
-        // ✅ [추가] 성공 화면으로 가기 전 에러 메시지 지우기
-        transferProvider.clearError();
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TransferResultView(
-              recipientName: recipientName,
-              amount: amount,
-              bankName: bankName,
-            ),
-          ),
-        );
-      } else {
-        // ❌ 실패 시 스낵바 표시
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              transferProvider.errorMessage ?? 'transfer.error.failed'.tr(),
-            ),
-            backgroundColor: AppColors.warningRed,
-          ),
-        );
-      }
-    }
   }
 
   @override
@@ -144,16 +135,32 @@ class TransferConfirmView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                'transfer_confirm.to_recipient'.tr(
-                  namedArgs: {'name': recipientName},
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'To ',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Flexible(
+                      child: Text(
+                        recipientName.isNotEmpty
+                            ? recipientName
+                            : 'amount_input.unknown'.tr(),
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
 
               const SizedBox(height: 40),
 
@@ -257,7 +264,6 @@ class TransferConfirmView extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              flex: 1,
               child: PaliButton(
                 text: 'common.cancel'.tr(),
                 backgroundColor: Colors.white,
@@ -270,7 +276,6 @@ class TransferConfirmView extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              flex: 2,
               child: PaliButton(
                 text: transferProvider.isLoading
                     ? 'transfer.confirm.btn_sending'.tr()

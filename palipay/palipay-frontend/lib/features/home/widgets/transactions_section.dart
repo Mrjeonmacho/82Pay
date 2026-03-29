@@ -24,38 +24,8 @@ class TransactionsSection extends StatefulWidget {
 }
 
 class _TransactionsSectionState extends State<TransactionsSection> {
-  // 🚀 핵심: 플래그를 통해 '초기 로딩 성공 여부'를 관리
-  bool _isInitialFetched = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // 화면이 그려진 직후 실행 시도
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadHistoryInitially();
-    });
-  }
-
-  /// 🎯 최초 접속 시 한 번만 실행되는 함수
-  void _loadHistoryInitially() {
-    if (!mounted || _isInitialFetched) return;
-
-    final walletProvider = Provider.of<WalletProvider>(context, listen: false);
-    final walletId = walletProvider.walletId;
-
-    if (walletId != null && walletId > 0) {
-      debugPrint('🎯 [TransactionsSection] 최초 1회 내역 조회 (ID: $walletId)');
-      context.read<HistoryProvider>().fetchHistory(walletId: walletId);
-      setState(() {
-        _isInitialFetched = true;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    // 데이터 감시
-    final walletProvider = context.watch<WalletProvider>();
     final historyProvider = context.watch<HistoryProvider>();
 
     // [방어 코드] 진입 시 walletId가 null이었다가 뒤늦게 들어온 경우 처리
