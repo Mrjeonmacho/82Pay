@@ -74,7 +74,7 @@ class _ExchangeViewState extends State<ExchangeView> {
                       children: [
                         // ===== 1. 금액 입력 섹션 =====
                         CurrencyAmountInput(
-                          label: 'AMOUNT TO REFUND',
+                          // label: 'AMOUNT TO REFUND',
                           controller: _controller,
                           focusNode: _focusNode,
                           onChanged: (val) =>

@@ -77,7 +77,7 @@ class _TopupViewState extends State<TopupView> {
                       children: [
                         // 1. 금액 입력 섹션
                         CurrencyAmountInput(
-                          label: 'AMOUNT TO TOP-UP',
+                          // label: 'AMOUNT TO TOP-UP',
                           controller: _controller,
                           focusNode: _focusNode,
                           onChanged: (val) =>
