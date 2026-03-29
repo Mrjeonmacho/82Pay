@@ -30,7 +30,9 @@ public class FinanceAccountService {
         String moneyCode = request.moneyCode();
 
         // TODO 지갑 없을 시 예외 처리
-        WalletPali walletPali = walletService.getWalletPali(walletId);
+        WalletPali walletPali = (walletId == null || walletId == 0)
+                ? walletService.getWalletPaliByUserId(userId)
+                : walletService.getWalletPali(walletId);
         if (!walletPali.isOwnedBy(userId)) {
             throw new IllegalArgumentException("해당 사용자의 지갑이 아닙니다.");
         }
@@ -54,7 +56,7 @@ public class FinanceAccountService {
 
         /* wallet에 계좌 정보 업데이트 */
         walletService.updateWalletPali(
-                walletId,
+                walletPali.getWalletId(), // ✅ 실제 DB의 walletId 사용
                 bankCode,
                 accountNumber,
                 accountUsername,
@@ -62,7 +64,7 @@ public class FinanceAccountService {
 
         return new FinanceAccountResponse(
                 "success",
-                walletId);
+                walletPali.getWalletId());
     }
 
     public WalletResponse createPin(
@@ -106,7 +108,7 @@ public class FinanceAccountService {
         return new WalletResponse("계좌 연동이 성공적으로 해제되었습니다.");
     }
 
-    public WalletInfoResponse getWallet(Long userId){
+    public WalletInfoResponse getWallet(Long userId) {
         WalletPali walletPali = walletService.getWalletPaliByUserId(userId);
 
         // 권한 체크
@@ -126,9 +128,7 @@ public class FinanceAccountService {
                         walletPali.getAmount(),
                         walletPali.getPinNumber(),
                         walletPali.getCreatedAt(),
-                        walletPali.getUpdatedAt()
-                )
-        );
+                        walletPali.getUpdatedAt()));
 
     }
 

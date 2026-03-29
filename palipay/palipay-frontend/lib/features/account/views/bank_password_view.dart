@@ -55,15 +55,20 @@ class _BankPasswordViewState extends State<BankPasswordView> {
     try {
       final accountProvider = context.read<AccountProvider>();
 
+      final int walletId =
+          int.tryParse(accountProvider.walletId ?? '0') ??
+          0; // 초기값만 0으로 request
+
       // 1. 요청 데이터 구성 (walletId 불필요 — 서버가 생성해서 응답으로 줌)
       final Map<String, dynamic> requestData = {
         ...widget.partialData,
         'accountPassword': _inputPassword,
+        'walletId': walletId, // 실제값으로 수정
       };
 
       // 2. 토큰 읽기 (소문자 키로 통일)
       const storage = FlutterSecureStorage();
-      final token = await storage.read(key: 'accesstoken') ?? '';
+      final token = await storage.read(key: 'accessToken') ?? '';
 
       // 3. API 호출 — 성공 시 accountProvider._linkedAccount에 walletId 자동 세팅
       final String result = await accountProvider.linkAccount(
@@ -83,10 +88,10 @@ class _BankPasswordViewState extends State<BankPasswordView> {
         Navigator.popUntil(context, (route) => route.isFirst);
       } else {
         String errorMessage = 'bank.pwd.invalid_msg'.tr();
-        if (result == 'SERVER_ERROR') errorMessage = 'common.server_error'.tr();
-        if (result == 'TIMEOUT') errorMessage = 'common.timeout_error'.tr();
+        if (result == 'SERVER_ERROR') errorMessage = 'bank.pwd.error'.tr();
+        if (result == 'TIMEOUT') errorMessage = 'bank.pwd.timeout'.tr();
         if (result == 'ALREADY_LINKED')
-          errorMessage = 'common.already_linked'.tr();
+          errorMessage = 'account_link.error.already_linked'.tr();
 
         setState(() {
           _isLoading = false;
@@ -127,40 +132,82 @@ class _BankPasswordViewState extends State<BankPasswordView> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 60),
-          const Icon(
-            Icons.lock_person_outlined,
-            size: 80,
-            color: AppColors.mainBlue,
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'bank.pwd.title'.tr(),
-            style: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'bank.pwd.desc'.tr(),
-            style: AppTextStyles.bodyMedium.copyWith(color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 60),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(4, (index) => _buildDot(index)),
-          ),
-          if (_isLoading) ...[
-            const SizedBox(height: 48),
-            const CircularProgressIndicator(color: AppColors.mainBlue),
-          ],
-          const Spacer(),
-          PaliKeypad(onNumberTap: _onKeyTap, onBackspace: _onBackspace),
-          const SizedBox(height: 40),
-        ],
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              // ✅ physics를 추가해 화면이 작을 때만 스크롤되게 하거나 항상 스크롤되게 조절 가능합니다.
+              physics: const ClampingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight, // 화면 전체 높이만큼 확보
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 20), // 하단 여백
+                  child: Column(
+                    // ✅ 이 설정이 Spacer 역할을 대신합니다.
+                    // 위젯들 사이의 간격을 최대한 벌려 키패드를 바닥으로 보냅니다.
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // --- 상단 콘텐츠 영역 ---
+                      Column(
+                        children: [
+                          const SizedBox(height: 40),
+                          const Icon(
+                            Icons.lock_person_outlined,
+                            size: 80,
+                            color: AppColors.mainBlue,
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'bank.pwd.title'.tr(),
+                            style: AppTextStyles.titleMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              'bank.pwd.desc'.tr(),
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 40),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              4,
+                              (index) => _buildDot(index),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          if (_isLoading)
+                            const CircularProgressIndicator(
+                              color: AppColors.mainBlue,
+                            )
+                          else
+                            const SizedBox(height: 48),
+                        ],
+                      ),
+
+                      // --- 하단 키패드 영역 ---
+                      // Spacer() 대신 여기서 자연스럽게 아래에 위치하게 됩니다.
+                      PaliKeypad(
+                        onNumberTap: _onKeyTap,
+                        onBackspace: _onBackspace,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

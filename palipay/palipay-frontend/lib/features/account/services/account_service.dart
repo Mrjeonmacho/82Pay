@@ -9,22 +9,12 @@ class AccountService {
   // 1. 계좌 등록 (POST /api/users/accounts)
   Future<Response> linkAccount({
     required Map<String, dynamic> accountData,
-    required String token,
   }) async {
     try {
-      const String path = '/wallet/accounts'; // 👈 백엔드와 100% 일치해야 함
-
-      // [디버깅] 진짜 어디로 쏘는지 터미널에서 눈으로 확인합시다.
+      const String path = '/wallet/accounts';
       print('📡 최종 전송 URL: ${_dio.options.baseUrl}$path');
-
-      final response = await _dio.post(
-        path,
-        data: accountData,
-        options: Options(headers: {'accesstoken': token}),
-      );
-      return response;
+      return await _dio.post(path, data: accountData);
     } on DioException catch (e) {
-      // 404 에러 시 서버가 주는 상세 메시지가 있다면 출력
       print('❌ 서버 응답 에러 코드: ${e.response?.statusCode}');
       print('❌ 서버 응답 내용: ${e.response?.data}');
       rethrow;
@@ -37,20 +27,20 @@ class AccountService {
       // Path Variable로 walletId(bigint) 전달
       return await _dio.delete(
         '/wallet/accounts/$walletId',
-        options: Options(headers: {'accesstoken': token}),
+        options: Options(headers: {'accessToken': token}),
       );
     } catch (e) {
       rethrow;
     }
   }
 
-  // 3. PIN 번호 생성/수정 (POST, PATCH /api/users/pin)
+  // 3. PIN 번호 생성/수정 (POST, PATCH)
   Future<Response> createPin(PinCreateRequest request, String token) async {
     try {
       return await _dio.post(
-        '/api/users/pin',
+        '/wallet/pin',
         data: request.toJson(), // 모델이 스스로 JSON 변환          },
-        options: Options(headers: {'accesstoken': token}),
+        options: Options(headers: {'accessToken': token}),
       );
     } catch (e) {
       rethrow;
@@ -61,9 +51,9 @@ class AccountService {
   Future<Response> updatePin(PinUpdateRequest request, String token) async {
     try {
       return await _dio.patch(
-        '/api/users/pin',
+        '/wallet/pin',
         data: request.toJson(), // 모델이 스스로 JSON 변환
-        options: Options(headers: {'accesstoken': token}),
+        options: Options(headers: {'accessToken': token}),
       );
     } catch (e) {
       rethrow;

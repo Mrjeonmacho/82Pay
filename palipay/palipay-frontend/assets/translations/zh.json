@@ -83,7 +83,8 @@
             "invalid_info": "输入的信息不匹配。",
             "timeout": "服务器连接超时。",
             "title": "输入银行密码",
-            "desc": "请输入4位银行密码"
+            "desc": "请输入4位银行密码",
+            "error": "发生服务器错误。请稍后再试。"
         }
     },
     "account_link": {
@@ -95,7 +96,13 @@
         "link_account": "绑定账户",
         "msg_invalid_account_format": "账号格式不正确。(例如：KR-1234-5678-9012)",
         "currency_info": "根据您的个人资料，币种将设为韩元(KRW)。",
-        "fill_all_fields": "请填写所有字段。"
+        "fill_all_fields": "请填写所有字段。",
+        "error": {
+            "already_linked": "该银行账户已绑定到另一个用户。",
+             "invalid_info": "输入的信息与我们的记录不匹配。",
+             "timeout": "服务器连接超时。请再试一次。",
+             "server_error": "发生服务器错误。请稍后再试。"
+        }
     },
     "account_management": {
         "title": "账户管理",

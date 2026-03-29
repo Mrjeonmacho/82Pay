@@ -50,6 +50,8 @@ class DioClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final token = await _storage.read(key: 'accessToken');
+          debugPrint('🔑 읽힌 토큰: $token'); // null인지 확인
+
           final countryCode = await _storage.read(key: 'countryCode') ?? 'US';
 
           // 🌐 2. 서버에 언어 설정 전달 (Accept-Language)
@@ -62,7 +64,9 @@ class DioClient {
           // 🔐 3. 토큰 주입 (auth 경로 제외)
           if (token != null && token.isNotEmpty && !isAuthPath) {
             options.headers['Authorization'] = 'Bearer $token';
-            options.headers['accessToken'] = token;
+            options.headers['accesstoken'] = token; // 백엔드가 읽는 헤더 추가
+
+            // options.headers['accessToken'] = token;
           }
 
           return handler.next(options);
