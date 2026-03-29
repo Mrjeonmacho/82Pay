@@ -38,10 +38,7 @@ class AccountProvider extends ChangeNotifier {
     _setLoading(true);
 
     try {
-      final response = await _service.linkAccount(
-        accountData: requestData,
-        token: token,
-      );
+      final response = await _service.linkAccount(accountData: requestData);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data['data'];
