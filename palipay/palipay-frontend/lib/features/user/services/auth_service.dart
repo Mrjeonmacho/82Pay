@@ -139,7 +139,7 @@ class AuthService {
       final response = await _dio.post('/auth/reissue');
       if (response.statusCode == 200) {
         final data = response.data;
-        await _storage.write(key: 'accesstoken', value: data['accesstoken']);
+        await _storage.write(key: 'accessToken', value: data['accessToken']);
         return true;
       }
       return false;
