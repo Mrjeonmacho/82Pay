@@ -49,6 +49,8 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   image: ^4.1.7
   uuid: ^4.5.3
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
 
 dev_dependencies:
   flutter_test:
@@ -124,3 +126,15 @@ flutter:
     - assets/images/banks/cn/
     # --- 다국어 번역 파일 --- 
     - assets/translations/
+
+flutter_native_splash:
+  color: "#FFFFFF"   # 배경색
+  image: assets/images/logos/Splash_Icon.png  # 중앙 로고
+
+  android: true
+  ios: true
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: assets/images/logos/favicon.png

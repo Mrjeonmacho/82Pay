@@ -304,7 +304,7 @@
         },
         "result": {
             "sender": "Sender",
-            "transaction_date": "Transaction Date",
+            "transaction_date": "Date",
             "transaction_id": "Transaction ID",
             "memo_hint": "Add a live memo (optional)",
             "btn_back_home": "Back to Home"
