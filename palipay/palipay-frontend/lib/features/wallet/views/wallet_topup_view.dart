@@ -272,7 +272,6 @@ class _TopupViewState extends State<TopupView> {
                   '₩ ${CurrencyInputFormatter.format(provider.krwAmount.toInt())}',
             ),
           ),
-          (route) => route.isFirst, // 메인 화면(첫 화면)만 남기고 모두 제거
         );
       }
     }

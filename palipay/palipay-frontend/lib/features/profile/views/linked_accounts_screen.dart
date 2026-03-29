@@ -7,8 +7,6 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../core/widgets/pali_bank_selection_sheet.dart';
 import '../../account/providers/account_provider.dart';
-import 'package:palipay_app/core/providers/user_provider.dart';
-
 import 'unlink_pin_auth_screen.dart';
 
 class LinkedAccountsView extends StatefulWidget {
@@ -20,7 +18,6 @@ class LinkedAccountsView extends StatefulWidget {
 
 class _LinkedAccountsViewState extends State<LinkedAccountsView> {
   Future<void> _handleDelete() async {
-    // 1. PIN 인증 화면 호출
     final pinResult = await Navigator.push<bool>(
       context,
       MaterialPageRoute(builder: (_) => const UnlinkPinAuthView()),
@@ -28,21 +25,9 @@ class _LinkedAccountsViewState extends State<LinkedAccountsView> {
 
     if (pinResult != true || !mounted) return;
 
-    // 🚀 [accessToken 선언 및 할당]
-    // UserProvider에서 저장된 토큰을 가져옵니다.
-    final userProvider = context.read<UserProvider>();
-    final String? accessToken = userProvider.accesstoken;
-
-    // 2. 토큰 유효성 검사
-    if (accessToken == null || accessToken.isEmpty) {
-      debugPrint("🚨 [LinkedAccounts] AccessToken이 비어있습니다.");
-      _showCenterMessage('토큰이 없습니다. 다시 로그인해주세요.');
-      return;
-    }
-
-    // 3. 계좌 해지 API 호출
+    const String tempToken = "USER_ACCESS_TOKEN";
     final success = await context.read<AccountProvider>().unlinkAccount(
-      accessToken,
+      tempToken,
     );
 
     if (!mounted) return;
@@ -216,10 +201,8 @@ class _EmptyLinkedAccountCard extends StatelessWidget {
   const _EmptyLinkedAccountCard();
 
   void _handleLink(BuildContext context) {
-    final userProvider = context.read<UserProvider>();
-    final countryCode = userProvider.countryCode ?? 'US';
-
-    _openBankSelection(context, countryCode);
+    // TODO: 유저의 국가 정보를 받아오는 로직이 있다면 'KR' 등 치환
+    _openBankSelection(context, 'KR');
   }
 
   @override

@@ -28,13 +28,6 @@ class _TransactionsSectionState extends State<TransactionsSection> {
   Widget build(BuildContext context) {
     final historyProvider = context.watch<HistoryProvider>();
 
-    // [방어 코드] 진입 시 walletId가 null이었다가 뒤늦게 들어온 경우 처리
-    if (!_isInitialFetched &&
-        walletProvider.walletId != null &&
-        walletProvider.walletId! > 0) {
-      Future.microtask(() => _loadHistoryInitially());
-    }
-
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 24),
       child: Column(
@@ -43,7 +36,7 @@ class _TransactionsSectionState extends State<TransactionsSection> {
     );
   }
 
-  // --- 1. 헤더 영역 ---
+  // --- 1. 헤더 영역 (최근 내역 + 전체보기) ---
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 16, 28, 16),
@@ -55,6 +48,7 @@ class _TransactionsSectionState extends State<TransactionsSection> {
             style: AppTextStyles.titleMedium.copyWith(
               fontWeight: FontWeight.w900,
               fontSize: 18,
+              letterSpacing: -0.5,
               color: const Color(0xFF2E3A59),
             ),
           ),
@@ -81,6 +75,7 @@ class _TransactionsSectionState extends State<TransactionsSection> {
       );
     }
 
+    // 최근 5개만 노출
     final items = provider.items.take(3).toList();
 
     if (items.isEmpty) {
@@ -101,15 +96,20 @@ class _TransactionsSectionState extends State<TransactionsSection> {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       itemCount: items.length,
       separatorBuilder: (_, __) => const SizedBox(height: 16),
-      itemBuilder: (context, index) => _buildTransactionItem(items[index]),
+      itemBuilder: (context, index) {
+        final tx = items[index];
+        return _buildTransactionItem(tx);
+      },
     );
   }
 
-  // --- 3. 개별 거래 아이템 ---
+  // --- 3. 개별 거래 아이템 위젯 (그래스모피즘) ---
   Widget _buildTransactionItem(Transaction tx) {
     final String title = tx.otherAccountName ?? 'Unknown';
     final int amount = tx.amount.toInt();
     final bool isOutput = tx.category == 'OUTPUT';
+
+    // ✅ tx.createdAt이 DateTime이므로 에러 없이 바로 포맷팅 가능
     final String dateText = DateFormat('yy.MM.dd HH:mm').format(tx.createdAt);
     final String amountPrefix = isOutput ? '-' : '+';
 
@@ -120,6 +120,7 @@ class _TransactionsSectionState extends State<TransactionsSection> {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 24,
+            spreadRadius: -5,
             offset: const Offset(0, 10),
           ),
         ],
@@ -129,44 +130,70 @@ class _TransactionsSectionState extends State<TransactionsSection> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: const EdgeInsets.all(1.5),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              color: Colors.white.withOpacity(0.4),
-              border: Border.all(color: Colors.white.withOpacity(0.5)),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.8),
+                  Colors.white.withOpacity(0.0),
+                ],
+              ),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF2E3A59),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        dateText,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.disabledFont,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22.5),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.35),
+                    Colors.white.withOpacity(0.05),
+                  ],
                 ),
-                Text(
-                  '$amountPrefix ${CurrencyInputFormatter.format(amount)} ₩',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xFF2E3A59),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            color: const Color(0xFF2E3A59),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          dateText,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.disabledFont,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Text(
+                    '$amountPrefix ${CurrencyInputFormatter.format(amount)} ₩',
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      color: const Color(0xFF2E3A59),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -174,21 +201,33 @@ class _TransactionsSectionState extends State<TransactionsSection> {
     );
   }
 
-  // --- 4. 글래스모피즘 버튼 ---
+  // --- 4. 그래스모피즘 스타일의 "See All" 버튼 ---
   Widget _buildGlassButton(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: AppColors.mainBlue.withOpacity(0.1),
-        border: Border.all(color: AppColors.mainBlue.withOpacity(0.2)),
-      ),
-      child: Text(
-        text,
-        style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.mainBlue,
-          fontWeight: FontWeight.w800,
-          fontSize: 11,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.4),
+                Colors.white.withOpacity(0.1),
+              ],
+            ),
+            border: Border.all(color: Colors.white.withOpacity(0.5)),
+          ),
+          child: Text(
+            text,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: const Color(0xFFC75146),
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+              fontSize: 12,
+            ),
+          ),
         ),
       ),
     );

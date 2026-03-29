@@ -216,7 +216,6 @@ class _CustomAccountInput extends StatelessWidget {
       ],
       decoration: InputDecoration(
         hintText: '0000-0000-0000',
-        hintText: '0000-0000-0000',
         filled: true,
         fillColor: const Color(0xFFF8F8FB),
         border: OutlineInputBorder(
