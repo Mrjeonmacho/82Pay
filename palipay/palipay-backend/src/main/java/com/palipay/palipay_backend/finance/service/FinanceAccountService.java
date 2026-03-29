@@ -56,7 +56,7 @@ public class FinanceAccountService {
 
         /* wallet에 계좌 정보 업데이트 */
         walletService.updateWalletPali(
-                walletId,
+                walletPali.getWalletId(), // ✅ 실제 DB의 walletId 사용
                 bankCode,
                 accountNumber,
                 accountUsername,
@@ -64,7 +64,7 @@ public class FinanceAccountService {
 
         return new FinanceAccountResponse(
                 "success",
-                walletId);
+                walletPali.getWalletId());
     }
 
     public WalletResponse createPin(
