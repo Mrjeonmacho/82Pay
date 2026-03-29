@@ -244,12 +244,6 @@ class _LoginScreenState extends State<LoginScreen>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                "login.no_account".tr(),
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: Colors.grey[600],
-                                ),
-                              ),
                               TextButton(
                                 onPressed: () {
                                   Navigator.push(

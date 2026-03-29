@@ -21,7 +21,7 @@ class AccountService {
     }
   }
 
-  // 2. 계좌 연동 해제(삭제) (DELETE /api/users/accounts/{accountId})
+  // 2. 계좌 연동 해제(삭제)
   Future<Response> unlinkAccount(int walletId, String token) async {
     try {
       // Path Variable로 walletId(bigint) 전달

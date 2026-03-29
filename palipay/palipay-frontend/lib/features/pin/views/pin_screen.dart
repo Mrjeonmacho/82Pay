@@ -17,7 +17,6 @@ enum PinMode {
   change, // PIN 변경
 }
 
-/// [추가] Change PIN 내부 단계를 위한 enum
 enum ChangePinStep { verifyCurrentPin, enterNewPin, confirmNewPin, completed }
 
 class PinScreen extends StatefulWidget {

@@ -11,7 +11,11 @@
         "done": "Done",
         "see_all": "See all",
         "add_money": "Add Money",
-        "cash_out": "Cash Out"
+        "cash_out": "Cash Out",
+        "add_money_success": "Money added successfully!",
+        "add_money_failure": "Failed to add money. Please try again.",
+        "cash_out_success": "Cash out successful!",
+        "cash_out_failure": "Failed to cash out. Please try again."
     },
     "profile": {
         "user_name": "User Name",
@@ -221,6 +225,7 @@
         "recipient": "Recipient"
     },
     "login": {
+        "no_acount": "First time here? ",
         "auto_login": "Auto Login",
         "title": "Login",
         "hint_email": "Email",
@@ -278,6 +283,7 @@
     },
     "transfer": {
         "title": "Transfer",
+        "details": "Transfer Details",
         "btn_next": "Next",
         "input": {
             "hint_account_number": "Enter the account number",

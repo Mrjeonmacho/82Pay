@@ -11,7 +11,11 @@
         "done": "完了",
         "see_all": "すべて見る",
         "add_money": "チャージ",
-        "cash_out": "出金"
+        "cash_out": "出金",
+        "add_money_success": "チャージが成功しました！",
+        "add_money_failure": "チャージに失敗しました。もう一度お試しください。",
+        "cash_out_success": "出金が成功しました！",
+        "cash_out_failure": "出金に失敗しました。もう一度お試しください。"
     },
     "profile": {
         "user_name": "ユーザー名",
@@ -221,11 +225,11 @@
         "recipient": "受取人"
     },
     "login": {
-        "auto_login": "自動ログイン",
         "title": "ログイン",
         "hint_email": "メールアドレス",
         "hint_password": "パスワード",
         "btn_login": "ログイン",
+        "auto_login": "自動ログイン",
         "or": "または",
         "msg_password_changed": "パスワードが変更されました。再度ログインしてください。",
         "welcome": "ようこそ！",
@@ -278,6 +282,7 @@
     },
     "transfer": {
         "title": "移行",
+        "details": "送金詳細",
         "btn_next": "次へ",
         "input": {
             "hint_account_number": "口座番号を入力してください",

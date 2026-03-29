@@ -1,13 +1,16 @@
 // lib/core/providers/user_provider.dart
+// lib/core/providers/user_provider.dart
 
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class UserProvider extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
 
   int? _userId;
+
   String? _userName;
   String? _userEmail;
   String? _countryCode = 'US';

@@ -7,14 +7,14 @@ import '../../../core/utils/currency_input_formatter.dart';
 import '../providers/wallet_provider.dart';
 
 class CurrencyAmountInput extends StatelessWidget {
-  final String label; // "AMOUNT TO TOP-UP" 또는 "AMOUNT TO REFUND"
+  // final String label; // "AMOUNT TO TOP-UP" 또는 "AMOUNT TO REFUND"
   final TextEditingController controller;
   final FocusNode? focusNode;
   final ValueChanged<String> onChanged; // String을 인자로 받도록 수정
 
   const CurrencyAmountInput({
     super.key,
-    required this.label,
+    // required this.label,
     required this.controller,
     required this.onChanged,
     this.focusNode,
@@ -28,13 +28,6 @@ class CurrencyAmountInput extends StatelessWidget {
     return Column(
       children: [
         // 1. 상단 라벨 (와이어프레임 1번 반영)
-        Text(
-          label,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.abledFont,
-            letterSpacing: 1.2,
-          ),
-        ),
         const SizedBox(height: 16),
 
         // 2. 메인 금액 입력창 (KRW 기준)

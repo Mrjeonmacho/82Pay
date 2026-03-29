@@ -3,18 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:palipay_app/features/user/provider/logout_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
-import '../providers/profile_provider.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/widgets.dart';
-import '../models/profile_user_model.dart';
-import '../widgets/language_trailing.dart';
 import '../widgets/menu_tile.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/section_card.dart';
 import '../views/change_passowrd_screen.dart';
-import '../views/linked_accounts_screen.dart';
 import '../../account/views/account_management_view.dart';
 import '../../pin/views/pin_screen.dart';
 import '../../user/views/login_screen.dart';
@@ -25,11 +21,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   context.read<ProfileProvider>().fetchProfile();
-    // });
-
+    // 1. UserProvider를 감시하여 실시간으로 데이터(walletId 등)를 가져옵니다.
     final userProvider = context.watch<UserProvider>();
 
     return Scaffold(
@@ -44,7 +36,6 @@ class ProfileScreen extends StatelessWidget {
 
               if (!context.mounted) return;
 
-              // 로그인 화면으로 이동 (스택 초기화)
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -60,7 +51,7 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const ProfileCard(), 
+              const ProfileCard(),
               const SizedBox(height: 24),
 
               // [Service Section]
@@ -80,11 +71,10 @@ class ProfileScreen extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 12),
-                  // 언어 설정 항목을 서비스 섹션 안으로 깔끔하게 이동!
                   MenuTile(
                     icon: Icons.language,
                     title: 'profile.menu_language'.tr(),
-                    onTap: () => _showLanguagePicker(context), // 함수 이름 매칭
+                    onTap: () => _showLanguagePicker(context),
                   ),
                 ],
               ),
@@ -93,7 +83,7 @@ class ProfileScreen extends StatelessWidget {
 
               // [Account/Security Section]
               SectionCard(
-                title: 'profile.section_security'.tr(), // JSON의 'Account' 키 활용
+                title: 'profile.section_security'.tr(),
                 children: [
                   MenuTile(
                     icon: Icons.key_outlined,
@@ -115,12 +105,29 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.lock_outline,
                     title: 'profile.menu_change_pin'.tr(),
                     onTap: () {
+                      // 🚀 [핵심 수정] 하드코딩을 제거하고 실제 walletId를 파싱하여 넘깁니다.
+                      final String? rawWalletId = userProvider.walletId;
+                      final int? actualWalletId = rawWalletId != null
+                          ? int.tryParse(rawWalletId)
+                          : null;
+
+                      if (actualWalletId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Wallet information is not available.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const PinScreen(
+                          builder: (_) => PinScreen(
                             mode: PinMode.change,
-                            walletId: 12345,
+                            walletId: actualWalletId, // 실제 ID 전달
                           ),
                         ),
                       );
@@ -130,7 +137,6 @@ class ProfileScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 16),
-
             ],
           ),
         ),
@@ -138,8 +144,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-
-  // 1. 언어 선택 팝업 함수 (모달 다이얼로그로 변경)
+  // 언어 선택 팝업 함수
   void _showLanguagePicker(BuildContext context) {
     showDialog(
       context: context,
@@ -155,34 +160,27 @@ class ProfileScreen extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              title: const Text("English", style: AppTextStyles.bodyMedium),
-              onTap: () {
-                context.setLocale(const Locale('en'));
-                Navigator.pop(context); // 선택 후 자동으로 닫기
-              },
-            ),
-            ListTile(
-              title: const Text("日本語", style: AppTextStyles.bodyMedium),
-              onTap: () {
-                context.setLocale(const Locale('ja'));
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text("中文", style: AppTextStyles.bodyMedium),
-              onTap: () {
-                context.setLocale(const Locale('zh'));
-                Navigator.pop(context);
-              },
-            ),
+            _languageOption(context, "English", 'en'),
+            _languageOption(context, "日本語", 'ja'),
+            _languageOption(context, "中文", 'zh'),
+            _languageOption(context, "한국어", 'ko'),
           ],
         ),
       ),
     );
   }
 
-  // 2. 성공 배너 함수 (가독성을 위해 분리)
+  Widget _languageOption(BuildContext context, String label, String langCode) {
+    return ListTile(
+      title: Text(label, style: AppTextStyles.bodyMedium),
+      onTap: () {
+        context.setLocale(Locale(langCode));
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  // 성공 배너 함수
   void _showSuccessBanner(BuildContext context) {
     final messenger = ScaffoldMessenger.of(context);
     messenger
