@@ -55,11 +55,15 @@ class _BankPasswordViewState extends State<BankPasswordView> {
     try {
       final accountProvider = context.read<AccountProvider>();
 
+      final int walletId =
+          int.tryParse(accountProvider.walletId ?? '0') ??
+          0; // 초기값만 0으로 request
+
       // 1. 요청 데이터 구성 (walletId 불필요 — 서버가 생성해서 응답으로 줌)
       final Map<String, dynamic> requestData = {
         ...widget.partialData,
         'accountPassword': _inputPassword,
-        'walletId': 0, // 최초 연동 시 0으로 전송 — 서버가 지갑 생성
+        'walletId': walletId, // 실제값으로 수정
       };
 
       // 2. 토큰 읽기 (소문자 키로 통일)
