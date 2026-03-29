@@ -41,7 +41,7 @@ class _TransferResultViewState extends State<TransferResultView> {
     final walletProvider = context.read<WalletProvider>();
     final String senderName = walletProvider.accountUsername ?? "나의 지갑";
     final String formattedAmount = CurrencyInputFormatter.format(widget.amount);
-    final dateFormat = DateFormat('yyyy.MM.dd HH:mm:ss');
+    final dateFormat = DateFormat('yyyy.MM.dd HH:mm');
     final now = DateTime.now();
     // 가짜 거래 ID 생성
     final transactionId =

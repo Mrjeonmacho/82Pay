@@ -238,42 +238,56 @@ class _TopupViewState extends State<TopupView> {
     final int pinWalletId =
         int.tryParse(context.read<AccountProvider>().walletId ?? '0') ?? 0;
 
-    final String? pinNumber = await Navigator.push<String>(
+    await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            PinScreen(mode: PinMode.auth, walletId: pinWalletId),
+        builder: (pinContext) => PinScreen(
+          mode: PinMode.auth, 
+          walletId: pinWalletId,
+          onAuthSuccess: (pinContext, authenticatedPin) async {
+            final success = await provider.chargeWallet(
+              pinNumber: authenticatedPin,
+            );
+
+            if (!pinContext.mounted) return;
+
+            if (success && mounted) {
+              final accountProvider = context.read<AccountProvider>();
+              final currentBankBalance = accountProvider.linkedAccount?.amount ?? 0;
+              accountProvider.updateBalance(
+                currentBankBalance - provider.krwAmount.toInt(),
+              );
+
+              final historyWalletId = provider.walletId;
+              if (historyWalletId != null) {
+                context.read<HistoryProvider>().fetchHistory(
+                  walletId: historyWalletId,
+                );
+              }
+
+              Navigator.of(pinContext).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => WalletResultView(
+                    isRecharge: true,
+                    amount:
+                        '₩ ${CurrencyInputFormatter.format(provider.krwAmount.toInt())}',
+                  ),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(pinContext).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    provider.errorMessage ?? 'Topup failed.',
+                  ),
+                  backgroundColor: AppColors.warningRed,
+                ),
+              );
+            }
+          },
+        ),
       ),
     );
-
-    if (pinNumber != null && mounted) {
-      final success = await provider.chargeWallet(pinNumber: pinNumber);
-
-      if (success && mounted) {
-        final accountProvider = context.read<AccountProvider>();
-        final currentBankBalance = accountProvider.linkedAccount?.amount ?? 0;
-        accountProvider.updateBalance(
-          currentBankBalance - provider.krwAmount.toInt(),
-        );
-
-        final historyWalletId = provider.walletId;
-        if (historyWalletId != null) {
-          context.read<HistoryProvider>().fetchHistory(
-            walletId: historyWalletId,
-          );
-        }
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => WalletResultView(
-              isRecharge: true,
-              amount:
-                  '₩ ${CurrencyInputFormatter.format(provider.krwAmount.toInt())}',
-            ),
-          ),
-        );
-      }
-    }
   }
 }
+

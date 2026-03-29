@@ -209,51 +209,57 @@ class _ExchangeViewState extends State<ExchangeView> {
                                 ) ??
                                 0;
 
-                            final String? pinNumber =
-                                await Navigator.push<String>(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PinScreen(
-                                      mode: PinMode.auth,
-                                      walletId: pinWalletId,
-                                    ),
-                                  ),
-                                );
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (pinContext) => PinScreen(
+                                  mode: PinMode.auth,
+                                  walletId: pinWalletId,
+                                  onAuthSuccess: (pinContext, authenticatedPin) async {
+                                    final success = await provider.refundWallet(
+                                      pinNumber: authenticatedPin,
+                                    );
 
-                            if (pinNumber != null && mounted) {
-                              final success = await provider.refundWallet(
-                                pinNumber: pinNumber,
-                              );
+                                    if (!pinContext.mounted) return;
 
-                              if (success && mounted) {
-                                final accountProvider = context
-                                    .read<AccountProvider>();
-                                final currentBankBalance =
-                                    accountProvider.linkedAccount?.amount ?? 0;
-                                accountProvider.updateBalance(
-                                  currentBankBalance +
-                                      provider.krwAmount.toInt(),
-                                );
+                                    if (success && mounted) {
+                                      final accountProvider = context.read<AccountProvider>();
+                                      final currentBankBalance =
+                                          accountProvider.linkedAccount?.amount ?? 0;
+                                      accountProvider.updateBalance(
+                                        currentBankBalance + provider.krwAmount.toInt(),
+                                      );
 
-                                final historyWalletId = provider.walletId;
-                                if (historyWalletId != null) {
-                                  context.read<HistoryProvider>().fetchHistory(
-                                    walletId: historyWalletId,
-                                  );
-                                }
+                                      final historyWalletId = provider.walletId;
+                                      if (historyWalletId != null) {
+                                        context.read<HistoryProvider>().fetchHistory(
+                                          walletId: historyWalletId,
+                                        );
+                                      }
 
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => WalletResultView(
-                                      isRecharge: false,
-                                      amount:
-                                          '₩ ${CurrencyInputFormatter.format(provider.krwAmount.toInt())}',
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
+                                      Navigator.of(pinContext).pushReplacement(
+                                        MaterialPageRoute(
+                                          builder: (context) => WalletResultView(
+                                            isRecharge: false,
+                                            amount:
+                                                '₩ ${CurrencyInputFormatter.format(provider.krwAmount.toInt())}',
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(pinContext).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            provider.errorMessage ?? '환불에 실패했습니다.',
+                                          ),
+                                          backgroundColor: AppColors.warningRed,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                            );                          
                           }
                         : null,
                   ),
